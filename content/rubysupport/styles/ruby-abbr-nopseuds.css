@@ -1,0 +1,10 @@
+@namespace url(http://www.w3.org/1999/xhtml);
+
+
+abbr[title]:before,
+abbr[title]:after,
+acronym[title]:before,
+acronym[title]:after {
+	content: "" !important;
+	display: none !important;
+}

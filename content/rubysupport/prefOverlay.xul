@@ -1,0 +1,80 @@
+<?xml version="1.0"?>
+
+<?xml-stylesheet href="chrome://rubysupport/content/prefOverlay.css" type="text/css"?>
+
+<!DOCTYPE overlay [
+<!ENTITY % versionDTD SYSTEM "chrome://rubysupport/content/_version.dtd">
+%versionDTD;
+<!ENTITY % rubysupportDTD SYSTEM "chrome://rubysupport/locale/">
+%rubysupportDTD;
+]>
+
+<overlay xmlns="http://www.mozilla.org/keymaster/gatekeeper/there.is.only.xul">
+
+<box orient="vertical" id="rubysupportPrefs">
+
+<script type="application/x-javascript" src="chrome://rubysupport/content/exUnregisterer.js"/>
+<script type="application/x-javascript" src="chrome://rubysupport/content/prefOverlay.js"/>
+
+	<groupbox orient="vertical">
+		<caption label="&ruby.rendering;"/>
+		<checkbox label="&ruby.enabled;"
+			prefstring="rubysupport.general.enabled"
+			id="rubysupport.general.enabled"/>
+	</groupbox>
+
+	<groupbox orient="vertical">
+		<caption label="&ruby.abbrToRuby;"/>
+		<box orient="vertical">
+			<checkbox label="&ruby.abbrToRuby.enabled;"
+				linked="rubysupport.abbrToRuby.mode rubysupport.abbrToRuby.noPseuds"
+				oncommand="controlLinkedItems(this);"
+				prefstring="rubysupport.abbrToRuby.enabled"
+				id="rubysupport.abbrToRuby.enabled"/>
+		</box>
+		<box orient="horizontal" align="center">
+			<label value="&ruby.abbrToRuby.mode;"
+				control="rubysupport.abbrToRuby.mode"/>
+			<menulist id="rubysupport.abbrToRuby.mode" flex="1"
+				prefstring="rubysupport.abbrToRuby.mode">
+				<menupopup>
+					<menuitem value="0" label="&ruby.abbrToRuby.mode.all;"/>
+					<menuitem value="1" label="&ruby.abbrToRuby.mode.onlyFirst;"/>
+				</menupopup>
+			</menulist>
+		</box>
+		<box orient="vertical">
+			<checkbox label="&ruby.abbrToRuby.noPseuds;"
+				prefstring="rubysupport.abbrToRuby.noPseuds"
+				id="rubysupport.abbrToRuby.noPseuds"/>
+		</box>
+	</groupbox>
+
+	<spacer flex="1"/>
+
+	<groupbox orient="vertical">
+		<caption label="&ruby.about.title;"/>
+		<box orient="horizontal">
+			<spacer flex="1"/>
+			<description value="&ruby.about.name_before;&ruby.version;&ruby.about.name_after;"/>
+			<spacer flex="1"/>
+		</box>
+		<box orient="horizontal">
+			<spacer flex="1"/>
+			<description value="&ruby.about.destributed;"
+				onclick="loadURI('http://piro.sakura.ne.jp/');"
+				class="text-link"/>
+			<spacer flex="1"/>
+		</box>
+		<box orient="horizontal" id="uninstallBox">
+			<spacer flex="2"/>
+			<button flex="1"
+				label="&ruby.about.uninstall;"
+				oncommand="Unregister();"/>
+			<spacer flex="2"/>
+		</box>
+	</groupbox>
+
+</box>
+
+</overlay>

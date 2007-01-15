@@ -1,0 +1,19 @@
+<!ENTITY ruby.title               "XHTMLルビサポート">
+<!ENTITY ruby.rendering           "ルビの表示">
+
+<!ENTITY ruby.enabled             "XHTMLのルビを表示する">
+
+<!ENTITY ruby.abbrToRuby          "略語のルビ表示">
+<!ENTITY ruby.abbrToRuby.enabled  "略語のフルスペルをルビとして表示する">
+<!ENTITY ruby.abbrToRuby.mode     "フルスペルをルビ表示する対象：">
+<!ENTITY ruby.abbrToRuby.mode.all "全ての略語について表示する">
+<!ENTITY ruby.abbrToRuby.mode.onlyFirst
+                                  "最初に登場した略語にのみ表示する">
+<!ENTITY ruby.abbrToRuby.noPseuds "略語の前後の:before/:after疑似要素を隠す">
+
+
+<!ENTITY ruby.about.title       "XHTMLルビサポートについて">
+<!ENTITY ruby.about.name_before "XHTMLルビサポート Ver.">
+<!ENTITY ruby.about.name_after  "">
+<!ENTITY ruby.about.destributed "http://piro.sakura.ne.jp/">
+<!ENTITY ruby.about.uninstall   "アンインストール">

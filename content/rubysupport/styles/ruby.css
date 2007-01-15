@@ -1,0 +1,219 @@
+@namespace url("http://www.w3.org/1999/xhtml");
+@namespace RUBY url("http://piro.sakura.ne.jp/rubysupport");
+
+
+ruby[moz-ruby-parsed="done"],
+RUBY|ruby[moz-ruby-parsed="done"],
+*|*[moz-ruby-parsed="done"] > *|ruby {
+	display: inline !important;
+/*	-moz-binding: url("chrome://rubysupport/content/styles/ruby.xml#ruby");*/
+}
+
+
+/* ルビ内の各要素の表示を初期化 */
+ruby[moz-ruby-parsed="done"] *|*,
+RUBY|ruby[moz-ruby-parsed="done"] *|*,
+*|*[moz-ruby-parsed="done"] > *|ruby *|* {
+	display: inline !important;
+	line-height: 1 !important;
+	margin: 0 !important;
+	padding: 0 !important;
+	position: static !important;
+	text-indent: 0 !important;
+/*	text-align: justify !important; */
+	text-align: center !important;
+	white-space: nowrap !important;
+	vertical-align: baseline !important;
+}
+
+
+/* ルビ要素直下の要素をtbody相当にさせ、縦に並べる */
+ruby[moz-ruby-parsed="done"] > *|*,
+RUBY|ruby[moz-ruby-parsed="done"] > *|*,
+*|*[moz-ruby-parsed="done"] > *|ruby > *|* {
+	display: table-row-group !important;
+	-moz-binding: url("chrome://rubysupport/content/styles/ruby.xml#ruby-row-group") !important;
+/*	line-height: 90% !important;*/
+}
+
+/* ルビテキストはthead相当にさせ、上に持ってくる */
+ruby[moz-ruby-parsed="done"] > *|rt,
+ruby[moz-ruby-parsed="done"] > *|rtc,
+ruby[moz-ruby-parsed="done"] > *|rtc-ie,
+RUBY|ruby[moz-ruby-parsed="done"] > *|rt,
+RUBY|ruby[moz-ruby-parsed="done"] > *|rtc,
+RUBY|ruby[moz-ruby-parsed="done"] > *|rtc-ie,
+*|*[moz-ruby-parsed="done"] > *|ruby > *|rt {
+	display: table-header-group !important;
+	-moz-binding: url("chrome://rubysupport/content/styles/ruby.xml#ruby-row-group") !important;
+	font: 60%/40% sans-serif !important;
+	font-family: inherit !important;
+/*
+	text-align: justify !important;
+	text-align-last: justify !important;
+	text-justify: inter-ideograph !important;
+*/
+}
+ruby[moz-ruby-parsed="done"] *|rtc RUBY|cell,
+ruby[moz-ruby-parsed="done"] *|rt RUBY|cell,
+*|*[moz-ruby-parsed="done"] > *|ruby *|rt RUBY|cell {
+	vertical-align: -0.1em !important;
+}
+
+/* 二つ目のルビテキストはtfoot相当にさせ、下に持ってくる */
+ruby[moz-ruby-parsed="done"] *|rtc + *|rtc,
+RUBY|ruby[moz-ruby-parsed="done"] *|rtc + *|rtc {
+	display: table-footer-group !important;
+}
+*|rtc + *|rtc RUBY|cell {
+	vertical-align: 0.1em !important;
+}
+
+
+/* パーレンは全て非表示 */
+ruby[moz-ruby-parsed="done"] *|rp,
+RUBY|ruby[moz-ruby-parsed="done"] *|rp,
+*|*[moz-ruby-parsed="done"] > *|ruby *|rp {
+	display: none !important;
+}
+
+
+
+
+/* 複雑ルビ */
+
+/* コンテナ内の各要素はセル扱い */
+ruby[moz-ruby-parsed="done"] *|rbc,
+ruby[moz-ruby-parsed="done"] *|rtc,
+RUBY|ruby[moz-ruby-parsed="done"] *|rbc,
+RUBY|ruby[moz-ruby-parsed="done"] *|rtc {
+	-moz-binding: url("chrome://rubysupport/content/styles/ruby.xml#ruby-row-group-row") !important;
+}
+ruby[moz-ruby-parsed="done"] *|rbc > *|*,
+ruby[moz-ruby-parsed="done"] *|rtc > *|*,
+RUBY|ruby[moz-ruby-parsed="done"] *|rbc > *|*,
+RUBY|ruby[moz-ruby-parsed="done"] *|rtc > *|* {
+	display: table-cell !important;
+}
+
+/* 挿入されたtdの中のrtはインラインにする（tdがセルになる） */
+ruby[moz-ruby-parsed="done"] *|rtc > *|td > *|*,
+RUBY|ruby[moz-ruby-parsed="done"] *|rtc > *|td > *|* {
+	display: inline !important;
+}
+
+
+
+
+
+ruby[moz-ruby-parsed="done"] RUBY|row {
+	display: table-row !important;
+}
+ruby[moz-ruby-parsed="done"] RUBY|cell {
+	display: table-cell !important;
+}
+
+
+
+
+
+
+/* 参考にしました。http://www.alib.jp/template.css */
+
+ruby[moz-ruby-parsed="done"] *|td,
+RUBY|ruby[moz-ruby-parsed="done"] *|td {
+	background: transparent !important;
+	border: none !important;
+	bottom: auto !important;
+	caption-side: top !important;
+	clear: none !important;
+	clip: auto !important;
+	color: black !important;
+/* Mozilla don't know these properties.
+	counter-increment: none !important;
+	counter-reset: none !important;
+*/
+	cursor: inherit !important;
+	direction: inherit !important;
+	display: table-cell !important;
+	empty-cells: show !important;
+	float: none !important;
+	font-family: inherit !important;
+	font-style: normal !important;
+	font-size-adjust: none !important;
+	font-stretch: normal !important;
+	font-variant: normal !important;
+	font-weight: normal !important;
+	height: auto !important;
+	left: auto !important;
+	letter-spacing: inherit !important;
+	line-height: 90% !important;
+	list-style: none !important;
+	margin: 0 !important;
+	max-height: none !important;
+	max-width: none !important;
+	min-height: 0 !important;
+	min-width: 0 !important;
+	orphans: 2 !important;
+/* Mozilla don't know these properties.
+	outline: none !important;
+*/
+	padding: 0 !important;
+	page: auto !important;
+	page-break-after: auto !important;
+	page-break-before: auto !important;
+	page-break-inside: auto !important;
+	position: static !important;
+	quotes: none !important;
+	right: auto !important;
+	table-layout: auto !important;
+	text-align: center !important;
+	text-decoration: none !important;
+	text-indent: 0 !important;
+	text-shadow: none !important;
+	text-transform: none !important;
+	top: auto !important;
+	unicode-bidi: inherit !important;
+	vertical-align: baseline !important;
+	visibility: inherit !important;
+	white-space: inherit !important;
+	widows: 2 !important;
+	width: auto !important;
+	word-spacing: normal !important;
+	z-index: auto !important;
+}
+
+
+
+
+*|*:link    ruby[moz-ruby-parsed="done"] *|rt,
+*|*:visited ruby[moz-ruby-parsed="done"] *|rt,
+*|*:link    ruby[moz-ruby-parsed="done"] *|rtc,
+*|*:visited ruby[moz-ruby-parsed="done"] *|rtc,
+*|*:link    RUBY|ruby[moz-ruby-parsed="done"] *|rt,
+*|*:visited RUBY|ruby[moz-ruby-parsed="done"] *|rt,
+*|*:link    RUBY|ruby[moz-ruby-parsed="done"] *|rtc,
+*|*:visited RUBY|ruby[moz-ruby-parsed="done"] *|rtc,
+*|*:link    *|*[moz-ruby-parsed="done"] > *|ruby *|rt,
+*|*:visited *|*[moz-ruby-parsed="done"] > *|ruby *|rt {
+	text-decoration: none !important;
+}
+
+
+
+
+*|*[rubytext] {
+	-moz-binding: url("chrome://rubysupport/content/styles/ruby.xml#ruby-attribute");
+}
+
+abbr[rubytext],
+acronym[rubytext] {
+	border: none;
+}
+
+RUBY|text:after {
+	content: attr(value) !important;
+	display: inline !important;
+	color: inherit !important;
+	background: transparent !important;
+}

@@ -1,0 +1,54 @@
+<?xml version="1.0"?>
+
+<bindings id="rubyBinding"
+		xmlns="http://www.mozilla.org/xbl"
+		xmlns:xbl="http://www.mozilla.org/xbl"
+		xmlns:html="http://www.w3.org/1999/xhtml"
+		xmlns:RUBY="http://piro.sakura.ne.jp/rubysupport">
+
+	<binding id="ruby-attribute" includes="*">
+		<content>
+			<html:ruby
+				inherits="moz-ruby-parsed,title=rubytext"
+				xbl:inherits="title=rubytext">
+				<html:rb><children/></html:rb>
+				<html:rp>(</html:rp>
+				<html:rt><RUBY:text xbl:inherits="value=rubytext"/></html:rt>
+				<html:rp>)</html:rp>
+			</html:ruby>
+		</content>
+	</binding>
+
+	<binding id="ruby-row-base" includes="*">
+		<implementation>
+			<property name="cellBoxObject" readonly="true"
+				onget="return document.getBoxObjectFor(this.cellBox);"/>
+			<field name="_cellBox">
+				null
+			</field>
+		</implementation>
+	</binding>
+
+	<binding id="ruby-row-group" includes="*"
+		extends="chrome://rubysupport/content/styles/ruby.xml#ruby-row-base">
+		<content>
+			<RUBY:row><RUBY:cell><children/></RUBY:cell></RUBY:row>
+		</content>
+		<implementation>
+			<property name="cellBox" readonly="true"
+				onget="if (!this._cellBox) { this._cellBox = document.getAnonymousNodes(this)[0].firstChild; } return this._cellBox;"/>
+		</implementation>
+	</binding>
+
+	<binding id="ruby-row-group-row" includes="*"
+		extends="chrome://rubysupport/content/styles/ruby.xml#ruby-row-base">
+		<content>
+			<RUBY:row><children/></RUBY:row>
+		</content>
+		<implementation>
+			<property name="cellBox" readonly="true"
+				onget="if (!this._cellBox) { this._cellBox = this.firstChild; } return this._cellBox;"/>
+		</implementation>
+	</binding>
+
+</bindings>
