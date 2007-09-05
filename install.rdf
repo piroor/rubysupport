@@ -1,50 +1,42 @@
-<?xml version="1.0"?>
-<RDF xmlns="http://www.w3.org/1999/02/22-rdf-syntax-ns#"
-	 xmlns:em="http://www.mozilla.org/2004/em-rdf#">
-	<Description about="urn:mozilla:install-manifest">
-
-		<em:id>{0620B69D-7B58-416d-A92A-0198860C2757}</em:id>
-
-		<em:version>1.4.2006100801</em:version>
-
-
-		<em:targetApplication>
-			<Description><!-- Firefox -->
-				<em:id>{ec8030f7-c20a-464f-9b0e-13a3a9e97384}</em:id>
-				<em:minVersion>1.0</em:minVersion>
-				<em:maxVersion>2.0.0.*</em:maxVersion>
-			</Description>
-			<Description><!-- Mozilla Suite -->
-				<em:id>{86c18b42-e466-45a9-ae7a-9b95ba6f5640}</em:id>
-				<em:minVersion>1.0</em:minVersion>
-				<em:maxVersion>1.8</em:maxVersion>
-			</Description>
-			<Description><!-- Netscape Browser 8 -->
-				<em:id>{3db10fab-e461-4c80-8b97-957ad5f8ea47}</em:id>
-				<em:minVersion>8.0</em:minVersion>
-				<em:maxVersion>8.1</em:maxVersion>
-			</Description>
-		</em:targetApplication>
-
-		<em:name>XHTML Ruby Support</em:name>
-		<em:description>Adds XHTML Ruby support. Ruby texts will be rendered above the base texts, as a small text.</em:description>
-		<em:creator>SHIMODA Hiroshi</em:creator>
-		<em:contributor>Takeshi Nishimura</em:contributor>
-		<em:homepageURL>http://piro.sakura.ne.jp/xul/_rubysupport.html.en</em:homepageURL>
-		<em:updateURL>https://pub.cozmixng.org/~piro/xul/xul.rdf.en</em:updateURL>
+<?xml version="1.0" encoding="UTF-8"?>
+<RDF:RDF xmlns:em="http://www.mozilla.org/2004/em-rdf#"
+         xmlns:NC="http://home.netscape.com/NC-rdf#"
+         xmlns:RDF="http://www.w3.org/1999/02/22-rdf-syntax-ns#">
+  <RDF:Description RDF:about="urn:mozilla:install-manifest"
+                   em:id="{0620B69D-7B58-416d-A92A-0198860C2757}"
+                   em:name="XHTML Ruby Support"
+                   em:version="1.4.2006100801"
+                   em:creator="SHIMODA Hiroshi"
+                   em:description="Adds XHTML Ruby support. Ruby texts will be rendered above the base texts, as a small text."
+                   em:homepageURL="http://piro.sakura.ne.jp/xul/_rubysupport.html.en"
+                   em:iconURL="chrome://rubysupport/content/icon.png"
+                   em:optionsURL="chrome://rubysupport/content/prefDialog.xul">
+	<em:contributor>Takeshi Nishimura</em:contributor>
 
 
-		<em:optionsURL>chrome://rubysupport/content/prefDialog.xul</em:optionsURL>
-		<!--em:aboutURL>chrome://rubysupport/content/prefDialog.xul</em:aboutURL-->
-		<em:iconURL>chrome://rubysupport/content/icon.png</em:iconURL>
+    <em:updateURL>https://pub.cozmixng.org/~piro/xul/xul.rdf.en</em:updateURL>
 
 
-		<em:file>
-			<Description about="urn:mozilla:extension:file:rubysupport.jar">
-				<em:package>content/rubysupport/</em:package>
-				<em:locale>locale/en-US/rubysupport/</em:locale>
-				<em:locale>locale/ja-JP/rubysupport/</em:locale>
-			</Description>
-		</em:file>
-	</Description>
-</RDF>
+    <em:targetApplication>
+      <!-- Firefox -->
+      <RDF:Description em:id="{ec8030f7-c20a-464f-9b0e-13a3a9e97384}"
+                       em:minVersion="1.0"
+                       em:maxVersion="2.0.0.*" />
+      <!-- Mozilla Suite -->
+      <RDF:Description em:id="{86c18b42-e466-45a9-ae7a-9b95ba6f5640}"
+                       em:minVersion="1.0"
+                       em:maxVersion="1.8.*" />
+      <!-- Netscape Browser 8 -->
+      <RDF:Description em:id="{86c18b42-e466-45a9-ae7a-9b95ba6f5640}"
+                       em:minVersion="8.0"
+                       em:maxVersion="8.*" />
+    </em:targetApplication>
+	<em:file>
+		<RDF:Description RDF:about="urn:mozilla:extension:file:rubysupport.jar">
+			<em:package>content/rubysupport/</em:package>
+			<em:locale>locale/en-US/rubysupport/</em:locale>
+			<em:locale>locale/ja-JP/rubysupport/</em:locale>
+		</RDF:Description>
+	</em:file>
+  </RDF:Description>
+</RDF:RDF>
