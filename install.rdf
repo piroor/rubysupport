@@ -21,12 +21,14 @@
     <em:localized>
       <RDF:Description em:locale="en-US"
                        em:name="XHTML Ruby Support"
-                       em:description="Adds XHTML Ruby support. Ruby texts will be rendered above the base texts, as a small text."/>
+                       em:description="Adds XHTML Ruby support. Ruby texts will be rendered above the base texts, as a small text."
+                       em:homepageURL="http://piro.sakura.ne.jp/xul/_rubysupport.html.en"/>
     </em:localized>
     <em:localized>
       <RDF:Description em:locale="ja-JP"
                        em:name="XHTMLルビサポート"
-                       em:description="XHTMLのルビ（読み仮名など）を表示できるようにします。"/>
+                       em:description="XHTMLのルビ（読み仮名など）を表示できるようにします。"
+                       em:homepageURL="http://piro.sakura.ne.jp/xul/_rubysupport.html"/>
     </em:localized>
 
 
