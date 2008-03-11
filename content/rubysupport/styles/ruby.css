@@ -9,6 +9,12 @@ RUBY|ruby[moz-ruby-parsed="done"],
 /*	-moz-binding: url("chrome://rubysupport/content/styles/ruby.xml#ruby");*/
 }
 
+ruby[moz-ruby-parsed="done"][moz-ruby-type="inline-table"],
+RUBY|ruby[moz-ruby-parsed="done"][moz-ruby-type="inline-table"],
+*|*[moz-ruby-parsed="done"][moz-ruby-type="inline-table"] > *|ruby {
+	display: inline-table !important;
+}
+
 
 /* ルビ内の各要素の表示を初期化 */
 ruby[moz-ruby-parsed="done"] *|*,

@@ -7,6 +7,9 @@ var RubyService =
 	XHTMLNS : 'http://www.w3.org/1999/xhtml',
 	RUBYNS  : 'http://piro.sakura.ne.jp/rubysupport',
 
+	kSTATE : 'moz-ruby-parsed',
+	kTYPE  : 'moz-ruby-type',
+
 	get SSS()
 	{
 		if (this._SSS === void(0)) {
@@ -91,7 +94,7 @@ if (!aWindow.rubyStart) aWindow.rubyStart = (new Date()).getTime();
 		var docWrapper = new XPCNativeWrapper(winWrapper.document, 'documentElement');
 		var count = 0;
 
-		var ruby = this.evaluateXPath('/descendant::*[contains(" ruby RUBY ", concat(" ", local-name(), " ")) and not(@moz-ruby-parsed)]', docWrapper.documentElement);
+		var ruby = this.evaluateXPath('/descendant::*[contains(" ruby RUBY ", concat(" ", local-name(), " ")) and not(@'+this.kSTATE+')]', docWrapper.documentElement);
 		for (var i = ruby.snapshotLength-1; i > -1; i--)
 		{
 			try {
@@ -106,7 +109,7 @@ if (!aWindow.rubyStart) aWindow.rubyStart = (new Date()).getTime();
 
 		if (nsPreferences.getBoolPref('rubysupport.abbrToRuby.enabled')) {
 			var abbr = this.evaluateXPath(
-						'/descendant::*[contains(" abbr ABBR ", concat(" ", local-name(), " ")) and @title and not(@title = "") and not(@moz-ruby-parsed)]',
+						'/descendant::*[contains(" abbr ABBR ", concat(" ", local-name(), " ")) and @title and not(@title = "") and not(@'+this.kSTATE+')]',
 						docWrapper.documentElement,
 						XPathResult.ORDERED_NODE_ITERATOR_TYPE
 					);
@@ -115,9 +118,11 @@ if (!aWindow.rubyStart) aWindow.rubyStart = (new Date()).getTime();
 			{
 				try {
 					var nodeWrapper = new XPCNativeWrapper(abbrNode, 'setAttribute()');
-					nodeWrapper.setAttribute('moz-ruby-parsed', 'progress');
+					nodeWrapper.setAttribute(this.kSTATE, 'progress');
 					this.parseAbbr(abbrNode);
-					nodeWrapper.setAttribute('moz-ruby-parsed', 'done');
+					nodeWrapper.setAttribute(this.kSTATE, 'done');
+					if (this.isGecko19)
+						nodeWrapper.setAttribute(this.kTYPE, 'inline-table');
 				}
 				catch(e) {
 	//				dump(e+'\n > '+abbr[i]+'\n');
@@ -127,7 +132,9 @@ if (!aWindow.rubyStart) aWindow.rubyStart = (new Date()).getTime();
 			count += this.evaluateXPath('/descendant::*[contains(" abbr ABBR ", concat(" ", local-name(), " ")) and @title and not(@title = "")]', docWrapper.documentElement).snapshotLength;
 		}
 
-		window.setTimeout(RubyService.correctVerticalPositionsIn, 0, aWindow);
+		window.setTimeout(function(aSelf, aWindow) {
+			aSelf.correctVerticalPositionsIn(aWindow);
+		}, 0, this, aWindow);
 
 //dump('ruby parsing: '+((new Date()).getTime()-aWindow.rubyStart) +'msec\n');
 		return count;
@@ -140,9 +147,9 @@ if (!aWindow.rubyStart) aWindow.rubyStart = (new Date()).getTime();
 
 		var docWrapper = new XPCNativeWrapper(winWrapper.document, 'documentElement');
 
-		var ruby = RubyService.evaluateXPath('/descendant::*[contains(" ruby RUBY ", concat(" ", local-name(), " ")) and @moz-ruby-parsed = "done"]', docWrapper.documentElement);
+		var ruby = this.evaluateXPath('/descendant::*[contains(" ruby RUBY ", concat(" ", local-name(), " ")) and @'+this.kSTATE+' = "done"]', docWrapper.documentElement);
 		for (var i = ruby.snapshotLength-1; i > -1; i--)
-			RubyService.correctVerticalPosition(ruby.snapshotItem(i));
+			this.correctVerticalPosition(ruby.snapshotItem(i));
 	},
  
 	correctVerticalPosition : function(aNode) 
@@ -187,16 +194,16 @@ if (!aWindow.rubyStart) aWindow.rubyStart = (new Date()).getTime();
 		try {
 			nodeWrapper.setAttribute('style', 'vertical-align: baseline !important;');
 
-			var base = RubyService.getRubyBase(node);
+			var base = this.getRubyBase(node);
 			if (!base) return done; // if we get box object for "undefined", Mozilla makes crash.
 			var rbBox = base.cellBoxObject || docWrapper.getBoxObjectFor(base);
 			if (!rbBox) return done;
 
 
 			// 前後に仮のボックスを挿入し、高さ補正の基準にする
-			var beforeBoxNode = document.createElementNS(RubyService.RUBYNS, 'dummyBox');
+			var beforeBoxNode = document.createElementNS(this.RUBYNS, 'dummyBox');
 			beforeBoxNode.appendChild(document.createTextNode('['));
-			var afterBoxNode  = document.createElementNS(RubyService.RUBYNS, 'dummyBox');
+			var afterBoxNode  = document.createElementNS(this.RUBYNS, 'dummyBox');
 			afterBoxNode.appendChild(document.createTextNode(']'));
 
 			var parentWrapper = new XPCNativeWrapper(nodeWrapper.parentNode,
@@ -247,7 +254,7 @@ if (!aWindow.rubyStart) aWindow.rubyStart = (new Date()).getTime();
 				'doctype'
 			);
 
-		nodeWrapper.setAttribute('moz-ruby-parsed', 'progress');
+		nodeWrapper.setAttribute(this.kSTATE, 'progress');
 
 
 		// 後方互換モードあるいは非XHTMLの場合でのみタグの補完を行う
@@ -276,7 +283,7 @@ if (!aWindow.rubyStart) aWindow.rubyStart = (new Date()).getTime();
 						'replaceChild()'
 					);
 
-				tmp_td = document.createElementNS(RubyService.XHTMLNS, 'td');
+				tmp_td = document.createElementNS(this.XHTMLNS, 'td');
 				tmp_td.setAttribute('moz-ruby-inserted', true);
 				tmp_td.setAttribute('colspan', rtWrapper.getAttribute('rbspan'));
 				// 以下の2行は、一行にまとめて書こうとすると何故かエラーになる
@@ -285,7 +292,9 @@ if (!aWindow.rubyStart) aWindow.rubyStart = (new Date()).getTime();
 			}
 		}
 
-		nodeWrapper.setAttribute('moz-ruby-parsed', 'done');
+		nodeWrapper.setAttribute(this.kSTATE, 'done');
+		if (this.isGecko19)
+			nodeWrapper.setAttribute(this.kTYPE, 'inline-table');
 	},
 	 
 	// IE用のマークアップをXHTMLの仕様に準拠したものに修正 
@@ -485,7 +494,7 @@ try{
 
 		// 既に展開した略語はもう展開しない
 		var basetext = aNode.textContent;
-		var info = RubyService.getDocInfo((new XPCNativeWrapper(nodeWrapper.ownerDocument, 'defaultView')).defaultView);
+		var info = this.getDocInfo((new XPCNativeWrapper(nodeWrapper.ownerDocument, 'defaultView')).defaultView);
 
 		if (!info.fullspell) info.fullspell = {};
 
@@ -705,7 +714,7 @@ try{
 			}
 		}
 	},
-   
+  	 
 	handleEvent : function(aEvent) 
 	{
 		switch (aEvent.type)
@@ -757,7 +766,7 @@ try{
 			}
 		};
 	}
- 	
+ 
 }; 
   
 window.addEventListener('load', RubyService, false); 

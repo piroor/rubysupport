@@ -9,7 +9,7 @@
 	<binding id="ruby-attribute" includes="*">
 		<content>
 			<html:ruby
-				inherits="moz-ruby-parsed,title=rubytext"
+				inherits="moz-ruby-parsed,moz-ruby-type,title=rubytext"
 				xbl:inherits="title=rubytext">
 				<html:rb><children/></html:rb>
 				<html:rp>(</html:rp>
