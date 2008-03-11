@@ -10,6 +10,7 @@ var RubyService =
 	kSTATE : 'moz-ruby-parsed',
 	kTYPE  : 'moz-ruby-type',
 
+	kDONE     : 'moz-ruby-parsed',
 	kLOADED   : 'moz-ruby-stylesheet-loaded',
 	kEXPANDED : 'moz-ruby-expanded-abbr',
 
@@ -76,23 +77,50 @@ var RubyService =
 			this.SSS.unregisterSheet(sheet, this.SSS.AGENT_SHEET);
 	},
  
-	getRubyBase : function(aNode) 
+	processFrames : function(aFrames) 
 	{
-		var bases = this.evaluateXPath('child::*[contains(" rb rbc RB RBC ", concat(" ", local-name(), " "))]', aNode);
-		if (bases.snapshotLength)
-			return bases.snapshotItem(0);
-
-		var nodeWrapper = new XPCNativeWrapper(aNode, 'childNodes', 'getElementsByTagName()');
-		return nodeWrapper.getElementsByTagName('*')[0];
+		var frame, frameWrapper, docWrapper, nodeWrapper, docShell;
+		for (var i = 0, maxi = aFrames.length; i < maxi; i++)
+		{
+			frame = aFrames[i];
+			try {
+				frameWrapper = new XPCNativeWrapper(frame, 'frames', 'document');
+				docWrapper = new XPCNativeWrapper(frameWrapper.document, 'documentElement');
+				nodeWrapper = new XPCNativeWrapper(docWrapper.documentElement,
+					'hasAttribute()',
+					'setAttribute()'
+				);
+				if (!nodeWrapper.hasAttribute(this.kDONE)) {
+					this.parseRubyNodes(frame);
+					docShell = this.getDocShellForFrame(frame);
+					if (!docShell.isLoadingDocument)
+						nodeWrapper.setAttribute(this.kDONE, true);
+				}
+			}
+			catch(e) {
+			}
+			try {
+				if (frameWrapper.frames)
+					this.processFrames(frameWrapper.frames);
+			}
+			catch(e) {
+			}
+		}
 	},
- 
+	getDocShellForFrame : function(aFrame) 
+	{
+		return (new XPCNativeWrapper(aFrame, 'QueryInterface()'))
+				.QueryInterface(Components.interfaces.nsIInterfaceRequestor)
+				.getInterface(Components.interfaces.nsIWebNavigation)
+				.QueryInterface(Components.interfaces.nsIDocShell);
+	},
+	 
 	parseRubyNodes : function(aWindow) 
 	{
 		var winWrapper = new XPCNativeWrapper(aWindow, 'document');
 		if (!winWrapper.document) return 0;
 
-if (!aWindow.rubyStart) aWindow.rubyStart = (new Date()).getTime();
-
+//if (!aWindow.rubyStart) aWindow.rubyStart = (new Date()).getTime();
 
 		var docWrapper = new XPCNativeWrapper(winWrapper.document, 'documentElement');
 		var count = 0;
@@ -135,116 +163,23 @@ if (!aWindow.rubyStart) aWindow.rubyStart = (new Date()).getTime();
 			count += this.evaluateXPath('/descendant::*[contains(" abbr ABBR ", concat(" ", local-name(), " ")) and @title and not(@title = "")]', docWrapper.documentElement).snapshotLength;
 		}
 
-		window.setTimeout(function(aSelf, aWindow) {
-			aSelf.correctVerticalPositionsIn(aWindow);
-		}, 0, this, aWindow);
+		if (count) {
+			window.setTimeout(function(aSelf, aWindow) {
+				aSelf.correctVerticalPositionsIn(aWindow);
+			}, 0, this, aWindow);
+
+			// Apply Stylesheet (legacy operation, for old Mozilla)
+			if (!this.useGlobalStyleSheets) {
+				var nodeWrapper = new XPCNativeWrapper(docWrapper.documentElement, 'hasAttribute()');
+				if (!nodeWrapper.hasAttribute(this.kLOADED))
+					this.setRubyStyle(aWindow);
+			}
+		}
 
 //dump('ruby parsing: '+((new Date()).getTime()-aWindow.rubyStart) +'msec\n');
 		return count;
 	},
- 
-	correctVerticalPositionsIn : function(aWindow) 
-	{
-		var winWrapper = new XPCNativeWrapper(aWindow, 'document');
-		if (!winWrapper.document) return;
-
-		var docWrapper = new XPCNativeWrapper(winWrapper.document, 'documentElement');
-
-		var ruby = this.evaluateXPath('/descendant::*[contains(" ruby RUBY ", concat(" ", local-name(), " ")) and @'+this.kSTATE+' = "done"]', docWrapper.documentElement);
-		for (var i = ruby.snapshotLength-1; i > -1; i--)
-			this.correctVerticalPosition(ruby.snapshotItem(i));
-	},
- 
-	correctVerticalPosition : function(aNode) 
-	{
-		var done = false;
-
-		var node = aNode;
-		var nodeWrapper = new XPCNativeWrapper(node,
-				'localName',
-				'ownerDocument',
-				'parentNode',
-				'nextSibling',
-				'hasAttribute()',
-				'setAttribute()'
-			);
-		if (nodeWrapper.hasAttribute('moz-ruby-vertical-position-corrected'))
-			return done;
-
-
-		var d = nodeWrapper.ownerDocument;
-		var docWrapper = new XPCNativeWrapper(nodeWrapper.ownerDocument,
-				'getAnonymousNodes()',
-				'getBoxObjectFor()'
-			);
-
-		if (String(nodeWrapper.localName).toLowerCase() != 'ruby') {
-			node = docWrapper.getAnonymousNodes(node);
-			if (node && node.length)
-				node = node[0];
-			else
-				return done;
-
-			nodeWrapper = new XPCNativeWrapper(node,
-					'localName',
-					'ownerDocument',
-					'parentNode',
-					'nextSibling',
-					'setAttribute()'
-				);
-		}
-
-		try {
-			nodeWrapper.setAttribute('style', 'vertical-align: baseline !important;');
-
-			var base = this.getRubyBase(node);
-			if (!base) return done; // if we get box object for "undefined", Mozilla makes crash.
-			var rbBox = base.cellBoxObject || docWrapper.getBoxObjectFor(base);
-			if (!rbBox) return done;
-
-
-			// 前後に仮のボックスを挿入し、高さ補正の基準にする
-			var beforeBoxNode = document.createElementNS(this.RUBYNS, 'dummyBox');
-			beforeBoxNode.appendChild(document.createTextNode('['));
-			var afterBoxNode  = document.createElementNS(this.RUBYNS, 'dummyBox');
-			afterBoxNode.appendChild(document.createTextNode(']'));
-
-			var parentWrapper = new XPCNativeWrapper(nodeWrapper.parentNode,
-					'insertBefore()',
-					'removeChild()'
-				);
-			parentWrapper.insertBefore(beforeBoxNode, node);
-			parentWrapper.insertBefore(afterBoxNode, nodeWrapper.nextSibling);
-
-			var beforeBox = docWrapper.getBoxObjectFor(beforeBoxNode);
-			var afterBox  = docWrapper.getBoxObjectFor(afterBoxNode);
-
-			var baseBox = (
-					Math.abs((rbBox.y+rbBox.height) - (beforeBox.y+beforeBox.height)) >
-					Math.abs((rbBox.y+rbBox.height) - (afterBox.y+afterBox.height))
-				) ?
-					afterBox :
-					beforeBox ;
-
-//dump('RUBY VERTICAL POSITION::\nBOX Y: '+rbBox.y+'\nBOX HEIGHT: '+rbBox.height+'\nBASE Y: '+baseBox.y+'\nBASE HEIGHT: '+baseBox.height+'\n');
-
-			var offset = (rbBox.y+rbBox.height) - (baseBox.y+baseBox.height);// + 1;
-			if (offset != 0) {
-				nodeWrapper.setAttribute('style', 'vertical-align: '+offset+'px !important;');
-				nodeWrapper.setAttribute('moz-ruby-vertical-position-corrected', true);
-				done = true;
-			}
-
-			parentWrapper.removeChild(beforeBoxNode);
-			parentWrapper.removeChild(afterBoxNode);
-		}
-		catch(e) {
-//alert(e+'\n');
-		}
-
-		return done;
-	},
- 
+	 
 	parseRuby : function(aNode) 
 	{
 		var nodeWrapper = new XPCNativeWrapper(aNode,
@@ -299,7 +234,7 @@ if (!aWindow.rubyStart) aWindow.rubyStart = (new Date()).getTime();
 		if (this.isGecko19)
 			nodeWrapper.setAttribute(this.kTYPE, 'inline-table');
 	},
-	 
+	
 	// IE用のマークアップをXHTMLの仕様に準拠したものに修正 
 	fixUpMSIERuby : function(aNode)
 	{
@@ -541,19 +476,7 @@ try{
 
 		nodeWrapper.setAttribute(this.kLOADED, true);
 	},
-	 
-	getDocInfo : function(aWindow) 
-	{
-		var winWrapper = new XPCNativeWrapper(aWindow, 'document');
-
-		if (!('__mozInfo__' in winWrapper.document) ||
-			!winWrapper.document.__mozInfo__) {
-			winWrapper.document.__mozInfo__ = {};
-		}
-
-		return winWrapper.document.__mozInfo__;
-	},
- 
+	
 	addStyleSheet : function(path, targetWindow) 
 	{
 		var winWrapper = new XPCNativeWrapper(targetWindow, 'document');
@@ -566,7 +489,119 @@ try{
 		docWrapper.insertBefore(newPI, docWrapper.firstChild);
 		return;
 	},
-  
+   
+	correctVerticalPositionsIn : function(aWindow) 
+	{
+		var winWrapper = new XPCNativeWrapper(aWindow, 'document');
+		if (!winWrapper.document) return;
+
+		var docWrapper = new XPCNativeWrapper(winWrapper.document, 'documentElement');
+
+		var ruby = this.evaluateXPath('/descendant::*[contains(" ruby RUBY ", concat(" ", local-name(), " ")) and @'+this.kSTATE+' = "done"]', docWrapper.documentElement);
+		for (var i = ruby.snapshotLength-1; i > -1; i--)
+			this.correctVerticalPosition(ruby.snapshotItem(i));
+	},
+	 
+	correctVerticalPosition : function(aNode) 
+	{
+		var done = false;
+
+		var node = aNode;
+		var nodeWrapper = new XPCNativeWrapper(node,
+				'localName',
+				'ownerDocument',
+				'parentNode',
+				'nextSibling',
+				'hasAttribute()',
+				'setAttribute()'
+			);
+		if (nodeWrapper.hasAttribute('moz-ruby-vertical-position-corrected'))
+			return done;
+
+
+		var d = nodeWrapper.ownerDocument;
+		var docWrapper = new XPCNativeWrapper(nodeWrapper.ownerDocument,
+				'getAnonymousNodes()',
+				'getBoxObjectFor()'
+			);
+
+		if (String(nodeWrapper.localName).toLowerCase() != 'ruby') {
+			node = docWrapper.getAnonymousNodes(node);
+			if (node && node.length)
+				node = node[0];
+			else
+				return done;
+
+			nodeWrapper = new XPCNativeWrapper(node,
+					'localName',
+					'ownerDocument',
+					'parentNode',
+					'nextSibling',
+					'setAttribute()'
+				);
+		}
+
+		try {
+			nodeWrapper.setAttribute('style', 'vertical-align: baseline !important;');
+
+			var base = this.getRubyBase(node);
+			if (!base) return done; // if we get box object for "undefined", Mozilla makes crash.
+			var rbBox = base.cellBoxObject || docWrapper.getBoxObjectFor(base);
+			if (!rbBox) return done;
+
+
+			// 前後に仮のボックスを挿入し、高さ補正の基準にする
+			var beforeBoxNode = document.createElementNS(this.RUBYNS, 'dummyBox');
+			beforeBoxNode.appendChild(document.createTextNode('['));
+			var afterBoxNode  = document.createElementNS(this.RUBYNS, 'dummyBox');
+			afterBoxNode.appendChild(document.createTextNode(']'));
+
+			var parentWrapper = new XPCNativeWrapper(nodeWrapper.parentNode,
+					'insertBefore()',
+					'removeChild()'
+				);
+			parentWrapper.insertBefore(beforeBoxNode, node);
+			parentWrapper.insertBefore(afterBoxNode, nodeWrapper.nextSibling);
+
+			var beforeBox = docWrapper.getBoxObjectFor(beforeBoxNode);
+			var afterBox  = docWrapper.getBoxObjectFor(afterBoxNode);
+
+			var baseBox = (
+					Math.abs((rbBox.y+rbBox.height) - (beforeBox.y+beforeBox.height)) >
+					Math.abs((rbBox.y+rbBox.height) - (afterBox.y+afterBox.height))
+				) ?
+					afterBox :
+					beforeBox ;
+
+//dump('RUBY VERTICAL POSITION::\nBOX Y: '+rbBox.y+'\nBOX HEIGHT: '+rbBox.height+'\nBASE Y: '+baseBox.y+'\nBASE HEIGHT: '+baseBox.height+'\n');
+
+			var offset = (rbBox.y+rbBox.height) - (baseBox.y+baseBox.height);// + 1;
+			if (offset != 0) {
+				nodeWrapper.setAttribute('style', 'vertical-align: '+offset+'px !important;');
+				nodeWrapper.setAttribute('moz-ruby-vertical-position-corrected', true);
+				done = true;
+			}
+
+			parentWrapper.removeChild(beforeBoxNode);
+			parentWrapper.removeChild(afterBoxNode);
+		}
+		catch(e) {
+//alert(e+'\n');
+		}
+
+		return done;
+	},
+	 
+	getRubyBase : function(aNode) 
+	{
+		var bases = this.evaluateXPath('child::*[contains(" rb rbc RB RBC ", concat(" ", local-name(), " "))]', aNode);
+		if (bases.snapshotLength)
+			return bases.snapshotItem(0);
+
+		var nodeWrapper = new XPCNativeWrapper(aNode, 'childNodes', 'getElementsByTagName()');
+		return nodeWrapper.getElementsByTagName('*')[0];
+	},
+ 	   
 	init : function() 
 	{
 		if (this.initialized) return;
@@ -695,44 +730,10 @@ try{
 
 		if (!aWebProgress) return;
 
-		var w = aWebProgress.DOMWindow;
-		var rubyLength = RubyService.parseRubyNodes(w);
-
-
-
-		const PL = Components.interfaces.nsIWebProgressListener;
-
-		// Apply Stylesheet (legacy operation, for old Mozilla)
-		if (
-			!RubyService.useGlobalStyleSheets &&
-			(aStateFlags & PL.STATE_IS_DOCUMENT ||
-			aStateFlags & PL.STATE_IS_WINDOW) &&
-			(!('rubyStyleEnabled' in w) || !w.rubyStyleEnabled)
-			) {
-			if (rubyLength) RubyService.setRubyStyle(w);
-			w.rubyStyleEnabled = true;
-		}
-
-		var winWrapper = new XPCNativeWrapper(w, 'frames');
-		var count = winWrapper.frames.length;
-		for (var i = 0; i < count; i++) {
-			rubyLength = RubyService.parseRubyNodes(winWrapper.frames[i]);
-
-			// Apply Stylesheet (legacy operation, for old Mozilla)
-			if (
-				!RubyService.useGlobalStyleSheets &&
-				(
-					aStateFlags & PL.STATE_IS_DOCUMENT ||
-					aStateFlags & PL.STATE_IS_WINDOW
-				) &&
-				!winWrapper.frames[i].rubyStyleEnabled
-				) {
-				if (rubyLength) RubyService.setRubyStyle(winWrapper.frames[i]);
-				winWrapper.frames[i].rubyStyleEnabled = true;
-			}
-		}
+		if (nsPreferences.getBoolPref('rubysupport.general.enabled'))
+			RubyService.processFrames([aWebProgress.DOMWindow]);
 	},
-  	 
+   
 	handleEvent : function(aEvent) 
 	{
 		switch (aEvent.type)
