@@ -10,6 +10,9 @@ var RubyService =
 	kSTATE : 'moz-ruby-parsed',
 	kTYPE  : 'moz-ruby-type',
 
+	kLOADED   : 'moz-ruby-stylesheet-loaded',
+	kEXPANDED : 'moz-ruby-expanded-abbr',
+
 	get SSS()
 	{
 		if (this._SSS === void(0)) {
@@ -487,6 +490,14 @@ try{
 		var nodeWrapper = new XPCNativeWrapper(aNode,
 				'title',
 				'ownerDocument',
+				'getAttribute()',
+				'setAttribute()'
+			);
+		var docWrapper = new XPCNativeWrapper(nodeWrapper.ownerDocument,
+				'documentElement'
+			);
+		var rootWrapper = new XPCNativeWrapper(docWrapper.documentElement,
+				'getAttribute()',
 				'setAttribute()'
 			);
 
@@ -494,26 +505,33 @@ try{
 
 		// 既に展開した略語はもう展開しない
 		var basetext = aNode.textContent;
-		var info = this.getDocInfo((new XPCNativeWrapper(nodeWrapper.ownerDocument, 'defaultView')).defaultView);
+		var expanded = rootWrapper.getAttribute(this.kEXPANDED) || '';
+		var key = encodeURICompoent(basetext+'::'+nodeWrapper.title);
+		if (('|'+expanded+'|').indexOf('|'+key+'|') > -1) return;
 
-		if (!info.fullspell) info.fullspell = {};
+		nodeWrapper.setAttribute('rubytext', nodeWrapper.title);
+		rootWrapper.setAttribute(this.kEXPANDED, (expanded ? expanded + '|' : '' ) + key);
 
-		if (!info.fullspell[basetext+'::'+nodeWrapper.title] || !mode) {
-			nodeWrapper.setAttribute('rubytext', nodeWrapper.title);
-			info.fullspell[basetext+'::'+nodeWrapper.title] = true;
-
-			if (!this.correctVerticalPosition(aNode))
-				window.setTimeout(this.correctVerticalPosition, 0, aNode); // fallback
-		}
+		if (!this.correctVerticalPosition(aNode))
+			window.setTimeout(function(aSelf, aNode) {
+				aSelf.correctVerticalPosition(aNode);
+			}, 0, this, aNode); // fallback
 	},
  
 	// ルビ表示のスタイルを追加 
 	setRubyStyle : function(targetWindow)
 	{
-		var info = this.getDocInfo(targetWindow);
-
-		if (!nsPreferences.getBoolPref('rubysupport.general.enabled') ||
-			info.ruby_styleDone) return;
+		var winWrapper = new XPCNativeWrapper(targetWindow, 'document');
+		var docWrapper = new XPCNativeWrapper(winWrapper.document, 'documentElement');
+		var nodeWrapper = new XPCNativeWrapper(docWrapper.documentElement,
+				'getAttribute()',
+				'setAttribute()'
+			);
+		if (
+			!nsPreferences.getBoolPref('rubysupport.general.enabled') ||
+			nodeWrapper.getAttribute(this.kLOADED) == 'true'
+			)
+			return;
 
 		// ルビ用のスタイルシートを追加する
 		this.addStyleSheet('chrome://rubysupport/content/styles/ruby.css', targetWindow);
@@ -521,7 +539,7 @@ try{
 		if (nsPreferences.getBoolPref('rubysupport.abbrToRuby.noPseuds'))
 			this.addStyleSheet('chrome://rubysupport/content/styles/ruby-abbr-nopseuds.css', targetWindow);
 
-		info.ruby_styleDone = true;
+		nodeWrapper.setAttribute(this.kLOADED, true);
 	},
 	 
 	getDocInfo : function(aWindow) 
