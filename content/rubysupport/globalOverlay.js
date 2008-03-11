@@ -1,40 +1,3 @@
-function RubyServiceStartup() 
-{
-	if (RubyService.initialized) return;
-	RubyService.initialized = true;
-
-try {
-	if (nsPreferences.getBoolPref('rubysupport.general.enabled') === null)
-		nsPreferences.setBoolPref('rubysupport.general.enabled', true);
-
-	if (nsPreferences.getBoolPref('rubysupport.abbrToRuby.enabled') === null)
-		nsPreferences.setBoolPref('rubysupport.abbrToRuby.enabled', false);
-
-	if (nsPreferences.getIntPref('rubysupport.abbrToRuby.mode') === null)
-		nsPreferences.setIntPref('rubysupport.abbrToRuby.mode', 1);
-
-	if (nsPreferences.getBoolPref('rubysupport.abbrToRuby.noPseuds') === null)
-		nsPreferences.setBoolPref('rubysupport.abbrToRuby.noPseuds', true);
-
-
-	if (RubyService.SSS) {
-		RubyService.useGlobalStyleSheets = true;
-		RubyService.updateGlobalStyleSheets();
-	}
-
-	RubyService.overrideFunctions();
-
-}
-catch(e) {
-dump('CAUTION: XHTML Ruby Support fails to initialize!\n  Error: '+e+'\n');
-}
-//	window.removeEventListener('load', RubyServiceStartup, false);
-//	window.removeEventListener('load', RubyServiceStartup, false);
-}
- 
-window.addEventListener('load', RubyServiceStartup, false); 
-window.addEventListener('load', RubyServiceStartup, false);
- 
 var RubyService = 
 {
 	initialized : false,
@@ -64,7 +27,15 @@ var RubyService =
 		return this._IOService;
 	},
 	_IOService : null,
-	
+
+	get isGecko19()
+	{
+		const XULAppInfo = Components.classes['@mozilla.org/xre/app-info;1']
+				.getService(Components.interfaces.nsIXULAppInfo);
+		var version = XULAppInfo.platformVersion.split('.');
+		return parseInt(version[0]) >= 2 || parseInt(version[1]) >= 9;
+	},
+	 
 	updateGlobalStyleSheets : function() 
 	{
 		if (!this.useGlobalStyleSheets) return;
@@ -101,7 +72,7 @@ var RubyService =
  
 	getRubyBase : function(aNode) 
 	{
-		var bases = this.getNodesFromXPath('child::*[contains(" rb rbc RB RBC ", concat(" ", local-name(), " "))]', aNode);
+		var bases = this.evaluateXPath('child::*[contains(" rb rbc RB RBC ", concat(" ", local-name(), " "))]', aNode);
 		if (bases.snapshotLength)
 			return bases.snapshotItem(0);
 
@@ -120,7 +91,7 @@ if (!aWindow.rubyStart) aWindow.rubyStart = (new Date()).getTime();
 		var docWrapper = new XPCNativeWrapper(winWrapper.document, 'documentElement');
 		var count = 0;
 
-		var ruby = this.getNodesFromXPath('/descendant::*[contains(" ruby RUBY ", concat(" ", local-name(), " ")) and not(@moz-ruby-parsed)]', docWrapper.documentElement);
+		var ruby = this.evaluateXPath('/descendant::*[contains(" ruby RUBY ", concat(" ", local-name(), " ")) and not(@moz-ruby-parsed)]', docWrapper.documentElement);
 		for (var i = ruby.snapshotLength-1; i > -1; i--)
 		{
 			try {
@@ -131,10 +102,10 @@ if (!aWindow.rubyStart) aWindow.rubyStart = (new Date()).getTime();
 			}
 		}
 
-		count += this.getNodesFromXPath('/descendant::*[contains(" ruby RUBY ", concat(" ", local-name(), " "))]', docWrapper.documentElement).snapshotLength;
+		count += this.evaluateXPath('/descendant::*[contains(" ruby RUBY ", concat(" ", local-name(), " "))]', docWrapper.documentElement).snapshotLength;
 
 		if (nsPreferences.getBoolPref('rubysupport.abbrToRuby.enabled')) {
-			var abbr = this.getNodesFromXPath(
+			var abbr = this.evaluateXPath(
 						'/descendant::*[contains(" abbr ABBR ", concat(" ", local-name(), " ")) and @title and not(@title = "") and not(@moz-ruby-parsed)]',
 						docWrapper.documentElement,
 						XPathResult.ORDERED_NODE_ITERATOR_TYPE
@@ -153,12 +124,12 @@ if (!aWindow.rubyStart) aWindow.rubyStart = (new Date()).getTime();
 				}
 			}
 
-			count += this.getNodesFromXPath('/descendant::*[contains(" abbr ABBR ", concat(" ", local-name(), " ")) and @title and not(@title = "")]', docWrapper.documentElement).snapshotLength;
+			count += this.evaluateXPath('/descendant::*[contains(" abbr ABBR ", concat(" ", local-name(), " ")) and @title and not(@title = "")]', docWrapper.documentElement).snapshotLength;
 		}
 
 		window.setTimeout(RubyService.correctVerticalPositionsIn, 0, aWindow);
 
-dump('ruby parsing: '+((new Date()).getTime()-aWindow.rubyStart) +'msec\n');
+//dump('ruby parsing: '+((new Date()).getTime()-aWindow.rubyStart) +'msec\n');
 		return count;
 	},
  
@@ -169,7 +140,7 @@ dump('ruby parsing: '+((new Date()).getTime()-aWindow.rubyStart) +'msec\n');
 
 		var docWrapper = new XPCNativeWrapper(winWrapper.document, 'documentElement');
 
-		var ruby = RubyService.getNodesFromXPath('/descendant::*[contains(" ruby RUBY ", concat(" ", local-name(), " ")) and @moz-ruby-parsed = "done"]', docWrapper.documentElement);
+		var ruby = RubyService.evaluateXPath('/descendant::*[contains(" ruby RUBY ", concat(" ", local-name(), " ")) and @moz-ruby-parsed = "done"]', docWrapper.documentElement);
 		for (var i = ruby.snapshotLength-1; i > -1; i--)
 			RubyService.correctVerticalPosition(ruby.snapshotItem(i));
 	},
@@ -288,9 +259,9 @@ dump('ruby parsing: '+((new Date()).getTime()-aWindow.rubyStart) +'msec\n');
 
 		// rbspan付きのrtをtdで包む
 		// マークアップを破壊するので宜しくないけど、どうせ視覚系ブラウザだし……（ぉぃ
-		var rtcs = this.getNodesFromXPath('descendant::*[contains(" rtc RTC ", concat(" ", local-name(), " "))]', aNode);
+		var rtcs = this.evaluateXPath('descendant::*[contains(" rtc RTC ", concat(" ", local-name(), " "))]', aNode);
 		if (rtcs.snapshotLength) {
-			var rts = this.getNodesFromXPath('descendant::*[contains(" rt RT ", concat(" ", local-name(), " ")) and @rbspan and not((@rbspan = "") or (number(@rbspan) < 2) or parent::xhtml:td)]', aNode);
+			var rts = this.evaluateXPath('descendant::*[contains(" rt RT ", concat(" ", local-name(), " ")) and @rbspan and not((@rbspan = "") or (number(@rbspan) < 2) or parent::xhtml:td)]', aNode);
 
 			var tmp_td, tmp_td_content;
 			var rtWrapper, parentWrapper;
@@ -316,11 +287,13 @@ dump('ruby parsing: '+((new Date()).getTime()-aWindow.rubyStart) +'msec\n');
 
 		nodeWrapper.setAttribute('moz-ruby-parsed', 'done');
 	},
-	
+	 
 	// IE用のマークアップをXHTMLの仕様に準拠したものに修正 
 	fixUpMSIERuby : function(aNode)
 	{
 try{
+		var namespace = this.isGecko19 ? this.XHTMLNS : this.RUBYNS;
+
 		var i, j;
 		var nodeWrapper = new XPCNativeWrapper(aNode,
 				'nextSibling',
@@ -340,7 +313,7 @@ try{
 			複雑ルビが使用されている場合、この処理は行わない。
 			（XHTMLでは終了タグは省略され得ないので）
 		*/
-		var rbcs = this.getNodesFromXPath('descendant::*[contains(" rbc RBC ", concat(" ", local-name(), " "))]', aNode);
+		var rbcs = this.evaluateXPath('descendant::*[contains(" rbc RBC ", concat(" ", local-name(), " "))]', aNode);
 		if (rbcs.snapshotLength) return;
 
 
@@ -367,14 +340,14 @@ try{
 		// まず、閉じられていないタグによって破壊されたツリーを復元する。
 		while (
 			(
-				notClosedRubyElements = this.getNodesFromXPath(
+				notClosedRubyElements = this.evaluateXPath(
 					'child::*[contains(" rb RB rt RT rp RP ", concat(" ", local-name(), " "))][child::*[contains(" rb RB rt RT rp RP ", concat(" ", local-name(), " "))]]',
 					aNode
 				)
 			).snapshotLength
 			)
 		{
-			childRubyElement = this.getNodesFromXPath(
+			childRubyElement = this.evaluateXPath(
 				'child::*[contains(" rb RB rt RT rp RP ", concat(" ", local-name(), " "))]',
 				notClosedRubyElements.snapshotItem(0)
 			);
@@ -392,7 +365,7 @@ try{
 
 		// マークアップされていないrbをマークアップし直す。
 		// rtより前にあるものはすべてrbにする。
-		var rts = this.getNodesFromXPath('child::*[contains(" rt RT ", concat(" ", local-name(), " "))]', aNode);
+		var rts = this.evaluateXPath('child::*[contains(" rt RT ", concat(" ", local-name(), " "))]', aNode);
 		var startWrapper,
 			startNextWrapper,
 			endWrapper,
@@ -440,7 +413,7 @@ try{
 					continue;
 			}
 
-			containerRubyBase = document.createElementNS(RubyService.RUBYNS, 'rb');
+			containerRubyBase = document.createElementNS(namespace, 'rb');
 			containerRubyBase.appendChild(range.extractContents());
 			range.insertNode(containerRubyBase);
 
@@ -448,7 +421,7 @@ try{
 			// <ruby>hoge<rb></rb><rt>foobar</rt></ruby> のようなマークアップは
 			// <ruby><RB>hoge<rb></rb></RB><rt>foobar</rt></ruby> という風になってしまっている。
 			// なので、ここで入れ子になったrbを削除しておく。
-			rangeContents = this.getNodesFromXPath('child::*[contains(" rb RB ", concat(" ", local-name(), " "))]', containerRubyBase);
+			rangeContents = this.evaluateXPath('child::*[contains(" rb RB ", concat(" ", local-name(), " "))]', containerRubyBase);
 			for (var j = rangeContents.snapshotLength-1; j > -1; j--)
 			{
 				range.selectNodeContents(rangeContents.snapshotItem(j));
@@ -462,19 +435,19 @@ try{
 
 
 		// 2つめのrb以降、あるいは最後のルビ関連要素よりも後の要素は、すべて外に追い出す。
-		var nextStart = this.getNodesFromXPath(
+		var nextStart = this.evaluateXPath(
 			'(child::*[contains(" rb RB ", concat(" ", local-name(), " "))][2] | child::*[contains(" rb RB rt RT rp RP ", concat(" ", local-name(), " "))][last()]/following-sibling::node()[1])',
 			aNode
 		);
 		if (nextStart.snapshotLength) {
-			var shouldCreateNewRubyElement = this.getNodesFromXPath('child::*[contains(" rb RB ", concat(" ", local-name(), " "))][2]', aNode).snapshotLength > 0;
+			var shouldCreateNewRubyElement = this.evaluateXPath('child::*[contains(" rb RB ", concat(" ", local-name(), " "))][2]', aNode).snapshotLength > 0;
 
 			range.selectNodeContents(aNode);
 			range.setStartBefore(nextStart.snapshotItem(0));
 			movedContents = range.extractContents();
 
 			if (shouldCreateNewRubyElement) {
-				var newRubyElement = docWrapper.createElementNS(RubyService.RUBYNS, 'ruby');
+				var newRubyElement = docWrapper.createElementNS(namespace, 'ruby');
 				newRubyElement.appendChild(movedContents);
 				movedContents = newRubyElement;
 			}
@@ -489,9 +462,9 @@ try{
 
 
 		// 複数あるrtを、一つにまとめる
-		var rts = this.getNodesFromXPath('child::*[contains(" rt RT ", concat(" ", local-name(), " "))]', aNode);
+		var rts = this.evaluateXPath('child::*[contains(" rt RT ", concat(" ", local-name(), " "))]', aNode);
 		if (rts.snapshotLength > 1) {
-			var text = document.createElementNS(RubyService.RUBYNS, 'rtc-ie');
+			var text = document.createElementNS(namespace, 'rtc-ie');
 			nodeWrapper.insertBefore(text, rts.snapshotItem(0));
 
 			for (i = rts.snapshotLength-1; i > -1; i--)
@@ -525,6 +498,85 @@ try{
 		}
 	},
  
+	// ルビ表示のスタイルを追加 
+	setRubyStyle : function(targetWindow)
+	{
+		var info = this.getDocInfo(targetWindow);
+
+		if (!nsPreferences.getBoolPref('rubysupport.general.enabled') ||
+			info.ruby_styleDone) return;
+
+		// ルビ用のスタイルシートを追加する
+		this.addStyleSheet('chrome://rubysupport/content/styles/ruby.css', targetWindow);
+
+		if (nsPreferences.getBoolPref('rubysupport.abbrToRuby.noPseuds'))
+			this.addStyleSheet('chrome://rubysupport/content/styles/ruby-abbr-nopseuds.css', targetWindow);
+
+		info.ruby_styleDone = true;
+	},
+	 
+	getDocInfo : function(aWindow) 
+	{
+		var winWrapper = new XPCNativeWrapper(aWindow, 'document');
+
+		if (!('__mozInfo__' in winWrapper.document) ||
+			!winWrapper.document.__mozInfo__) {
+			winWrapper.document.__mozInfo__ = {};
+		}
+
+		return winWrapper.document.__mozInfo__;
+	},
+ 
+	addStyleSheet : function(path, targetWindow) 
+	{
+		var winWrapper = new XPCNativeWrapper(targetWindow, 'document');
+
+		var d     = winWrapper.document,
+			newPI = document.createProcessingInstruction('xml-stylesheet',
+				'href="'+path+'" type="text/css" media="all"');
+
+		var docWrapper = new XPCNativeWrapper(d, 'firstChild', 'insertBefore()');
+		docWrapper.insertBefore(newPI, docWrapper.firstChild);
+		return;
+	},
+  
+	init : function() 
+	{
+		if (this.initialized) return;
+		this.initialized = true;
+
+		try {
+			window.removeEventListener('load', this, false);
+			window.removeEventListener('load', this, false);
+		}
+		catch(e) {
+		}
+
+		try {
+			if (nsPreferences.getBoolPref('rubysupport.general.enabled') === null)
+				nsPreferences.setBoolPref('rubysupport.general.enabled', true);
+
+			if (nsPreferences.getBoolPref('rubysupport.abbrToRuby.enabled') === null)
+				nsPreferences.setBoolPref('rubysupport.abbrToRuby.enabled', false);
+
+			if (nsPreferences.getIntPref('rubysupport.abbrToRuby.mode') === null)
+				nsPreferences.setIntPref('rubysupport.abbrToRuby.mode', 1);
+
+			if (nsPreferences.getBoolPref('rubysupport.abbrToRuby.noPseuds') === null)
+				nsPreferences.setBoolPref('rubysupport.abbrToRuby.noPseuds', true);
+
+			if (this.SSS) {
+				this.useGlobalStyleSheets = true;
+				this.updateGlobalStyleSheets();
+			}
+
+			this.overrideFunctions();
+		}
+		catch(e) {
+			dump('CAUTION: XHTML Ruby Support fails to initialize!\n  Error: '+e+'\n');
+		}
+	},
+	 
 	overrideFunctions : function() 
 	{
 		if (window.FillInHTMLTooltip) {
@@ -565,7 +617,7 @@ try{
 			dump('CAUTION: XHTML Ruby Support initialization failed!\n');
 		}
 	},
-	
+	 
 	FillInHTMLTooltip : function(elem) 
 	{
 		var popuptext = '',
@@ -576,16 +628,16 @@ try{
 		if (
 			target &&
 			!(/^\[object .*Document\]$/.test(String(target))) &&
-			!RubyService.getNodesFromXPath('descendant-or-self::*[@title and not(@title = "")]', target).snapshotLength
+			!RubyService.evaluateXPath('descendant-or-self::*[@title and not(@title = "")]', target).snapshotLength
 			) {
-			var rtc = RubyService.getNodesFromXPath('descendant::*[contains(" rtc RTC ", concat(" ", local-name(), " "))]', target);
+			var rtc = RubyService.evaluateXPath('descendant::*[contains(" rtc RTC ", concat(" ", local-name(), " "))]', target);
 			if (rtc.snapshotLength) {
 				popuptext = rtc.snapshotItem(0).textContent;
 				if (rtc.snapshotLength > 1)
 					popuptext += ' / '+rtc.snapshotItem(1).textContent;
 			}
 			else {
-				var rt = RubyService.getNodesFromXPath('descendant::*[contains(" rt RT ", concat(" ", local-name(), " "))]', target);
+				var rt = RubyService.evaluateXPath('descendant::*[contains(" rt RT ", concat(" ", local-name(), " "))]', target);
 				popuptext = rt.snapshotItem(0).textContent;
 			}
 		}
@@ -653,57 +705,19 @@ try{
 			}
 		}
 	},
-	
-	// ルビ表示のスタイルを追加 
-	setRubyStyle : function(targetWindow)
+   
+	handleEvent : function(aEvent) 
 	{
-		var info = this.getDocInfo(targetWindow);
-
-		if (!nsPreferences.getBoolPref('rubysupport.general.enabled') ||
-			info.ruby_styleDone) return;
-
-		// ルビ用のスタイルシートを追加する
-		this.addStyleSheet('chrome://rubysupport/content/styles/ruby.css', targetWindow);
-
-		if (nsPreferences.getBoolPref('rubysupport.abbrToRuby.noPseuds'))
-			this.addStyleSheet('chrome://rubysupport/content/styles/ruby-abbr-nopseuds.css', targetWindow);
-
-		info.ruby_styleDone = true;
-	},
-	
-	getDocInfo : function(aWindow) 
-	{
-		var winWrapper = new XPCNativeWrapper(aWindow, 'document');
-
-		if (!('__mozInfo__' in winWrapper.document) ||
-			!winWrapper.document.__mozInfo__) {
-			winWrapper.document.__mozInfo__ = {};
+		switch (aEvent.type)
+		{
+			case 'load':
+				this.init();
+				break;
 		}
-
-		return winWrapper.document.__mozInfo__;
 	},
  
-	addStyleSheet : function(path, targetWindow) 
+	evaluateXPath : function(aExpression, aContextNode, aType) 
 	{
-		var winWrapper = new XPCNativeWrapper(targetWindow, 'document');
-
-		var d     = winWrapper.document,
-			newPI = document.createProcessingInstruction('xml-stylesheet',
-				'href="'+path+'" type="text/css" media="all"');
-
-		var docWrapper = new XPCNativeWrapper(d, 'firstChild', 'insertBefore()');
-		docWrapper.insertBefore(newPI, docWrapper.firstChild);
-		return;
-	},
-    
-	getNodesFromXPath : function(aXPath, aContextNode, aType) 
-	{
-		// http://www.hawk.34sp.com/stdpls/xml/
-		// http://www.hawk.34sp.com/stdpls/xml/dom_xpath.html
-		// http://www.homoon.jp/users/www/doc/CR-css3-selectors-20011113.shtml
-		const xmlDoc  = aContextNode ? aContextNode.ownerDocument : document ;
-		const context = aContextNode || xmlDoc.documentElement;
-		const type    = aType || XPathResult.ORDERED_NODE_SNAPSHOT_TYPE;
 		const resolver = {
 			lookupNamespaceURI : function(aPrefix)
 			{
@@ -720,69 +734,32 @@ try{
 			}
 		};
 
-
-		var resultObj = (type == XPathResult.ORDERED_NODE_ITERATOR_TYPE ||
-						type == XPathResult.UNORDERED_NODE_ITERATOR_TYPE) ?
-				{
-					count       : 0,
-					iterateNext : function()
-					{
-						try {
-							return this.XPathResult.iterateNext();
-						}
-						catch(e) {
-							return null;
-						}
-					}
-				} :
-				{
-					get length() {
-						return this.snapshotLength;
-					},
-					get snapshotLength() {
-						return this.XPathResult.snapshotLength;
-					},
-
-					item : function(aIndex)
-					{
-						return this.snapshotItem(aIndex);
-					},
-					snapshotItem : function(aIndex)
-					{
-						return this.XPathResult.snapshotItem(aIndex);
-					}
-				};
-
 		try {
-			var expression = xmlDoc.createExpression(aXPath, resolver);
-			var result     = expression.evaluate(context, type, null);
+			return (aContextNode ? aContextNode.ownerDocument : document ).evaluate(
+					aExpression,
+					aContextNode || document,
+					resolver,
+					aType || XPathResult.ORDERED_NODE_SNAPSHOT_TYPE,
+					{}
+				);
 		}
 		catch(e) {
-			dump('=============getNodesFromXPath===========\n');
-			dump('============____ERROR____============\n');
-			dump('XPath   : '+aXPath+'\n');
-			if (aContextNode)
-				dump('Context : '+aContextNode+'('+aContextNode.localName+')\n');
-			dump(e+'\n');
-			dump('============~~~~ERROR~~~~============\n');
-
-			resultObj.XPathResult = {
-				snapshotLength : 0,
-				snapshotItem : function()
-				{
-					return null;
-				},
-				iterateNext : function()
-				{
-					return null;
-				}
-			};
-			return resultObj;
 		}
 
-		resultObj.XPathResult = result;
-		return resultObj;
+		return {
+			snapshotLength : 0,
+			snapshotItem : function() {
+				return null;
+			},
+			singleNodeValue : null,
+			iterateNext : function() {
+				return null;
+			}
+		};
 	}
- 
+ 	
 }; 
   
+window.addEventListener('load', RubyService, false); 
+window.addEventListener('load', RubyService, false);
+ 
