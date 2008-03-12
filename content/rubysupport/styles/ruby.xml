@@ -52,8 +52,4 @@
 		</implementation>
 	</binding>
 
-	<binding id="ruby-text-box" includes="*">
-		<content><html:span class="ruby-text-innerBox"><children/></html:span></content>
-	</binding>
-
 </bindings>

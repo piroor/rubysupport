@@ -694,15 +694,29 @@ try{
 	},
 	justifyText : function(aNode)
 	{
+		var insertionParent = aNode;
+
 		// まず、字間を調整する対象かどうかを判別
-		var whole = aNode;
 		var wholeWrapper = new XPCNativeWrapper(aNode,
-				'parentNode',
 				'textContent',
+				'localName',
+				'parentNode',
 				'ownerDocument',
 				'setAttribute()'
 			);
-		text = wholeWrapper.textContent
+		text = wholeWrapper.textContent;
+		if (!text && wholeWrapper.localName.toLowerCase() == 'rb') {
+			var ruby = new XPCNativeWrapper(
+					wholeWrapper.parentNode,
+					'parentNode',
+					'getAttribute()'
+				);
+			if (ruby.getAttribute('class') != this.kAUTO_EXPANDED) return;
+			return; // 表示崩れをどうしても直せないので放置
+//			text = (new XPCNativeWrapper(ruby.parentNode, 'textContent')).textContent;
+//			insertionParent = ruby.parentNode;
+		}
+		text = text
 				.replace(/\s\s+|^\s+|\s+$/g, '')
 				.replace(/[\u0020-\u024F]+/ig, 'a'); // 英単語の間には字間を入れ（られ）ない
 		// 1文字しかなければ処理をスキップ
@@ -711,14 +725,22 @@ try{
 
 		// 字間を求める
 		var docWrapper = new XPCNativeWrapper(wholeWrapper.ownerDocument,
-				'getAnonymousElementByAttribute()',
+				'getAnonymousNodes()',
 				'createTextNode()',
 				'createElementNS()',
-				'getBoxObjectFor()'
+				'getBoxObjectFor()',
+				'createRange()'
 			);
-		var lettersBox = docWrapper.getBoxObjectFor(
-				docWrapper.getAnonymousElementByAttribute(aNode, 'class', this.kLETTERS_BOX)
-			);
+		var letters = docWrapper.createElementNS(this.XHTMLNS, 'span');
+		letters.setAttribute('class', this.kLETTERS_BOX);
+
+		var range = docWrapper.createRange();
+		range.selectNodeContents(insertionParent);
+		letters.appendChild(range.extractContents());
+		range.insertNode(letters);
+		range.detach();
+
+		var lettersBox = docWrapper.getBoxObjectFor(letters);
 		var wholeBox = docWrapper.getBoxObjectFor(
 				(new XPCNativeWrapper(wholeWrapper.parentNode, 'localName'))
 					.localName.toLowerCase() == 'td' ?
@@ -733,7 +755,7 @@ try{
 
 
 		// 最後の文字をspanで囲う
-		var lastLetterNode = this.findLastLetterNode(aNode);
+		var lastLetterNode = this.findLastLetterNode(insertionParent);
 		if (!lastLetterNode) return;
 
 		var nodeWrapper = new XPCNativeWrapper(lastLetterNode,
@@ -957,7 +979,8 @@ try{
 			singleNodeValue : null,
 			iterateNext : function() {
 				return null;
-			}
+			},
+			stringValue : ''
 		};
 	}
  

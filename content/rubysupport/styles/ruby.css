@@ -108,13 +108,6 @@ ruby[moz-ruby-parsed="done"] RUBY|cell {
 
 
 /* ŽšŠÔ’²®—p */
-*|ruby[moz-ruby-parsed="done"] *|rb,
-*|ruby[moz-ruby-parsed="done"] *|rt,
-*|*[moz-ruby-parsed="done"] > *|ruby *|rb,
-*|*[moz-ruby-parsed="done"] > *|ruby *|rt {
-	-moz-binding: url("chrome://rubysupport/content/styles/ruby.xml#ruby-text-box") !important;
-}
-
 span.ruby-text-lastLetterBox {
 	letter-spacing: 0 !important;
 }
