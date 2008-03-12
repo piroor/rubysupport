@@ -275,7 +275,8 @@ try{
 			);
 		var docWrapper = new XPCNativeWrapper(nodeWrapper.ownerDocument,
 				'defaultView',
-				'createElementNS()'
+				'createElementNS()',
+				'createRange()'
 			);
 
 		/*
@@ -301,7 +302,7 @@ try{
 		*/
 
 
-		var range = nodeWrapper.ownerDocument.createRange();
+		var range = docWrapper.createRange();
 		var notClosedRubyElements,
 			childRubyElement,
 			movedContents;
@@ -821,9 +822,9 @@ try{
 				}
 			}
 		};
-
+		var doc = aContextNode ? (new XPCNativeWrapper(aContextNode, 'ownerDocument')).ownerDocument : document ;
 		try {
-			return (aContextNode ? aContextNode.ownerDocument : document ).evaluate(
+			return doc.evaluate(
 					aExpression,
 					aContextNode || document,
 					resolver,
