@@ -5,7 +5,7 @@
   <RDF:Description RDF:about="urn:mozilla:install-manifest"
                    em:id="{0620B69D-7B58-416d-A92A-0198860C2757}"
                    em:name="XHTML Ruby Support"
-                   em:version="1.5.2008031101"
+                   em:version="1.6.2008031201"
                    em:creator="SHIMODA Hiroshi"
                    em:description="Adds XHTML Ruby support. Ruby texts will be rendered above the base texts, as a small text."
                    em:homepageURL="http://piro.sakura.ne.jp/xul/_rubysupport.html.en"

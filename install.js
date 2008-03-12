@@ -1,4 +1,4 @@
-var version     = '1.5.2008031101',
+var version     = '1.6.2008031201',
 	displayName = 'XHTML Ruby Support',
 	appName     = 'rubysupport',
 	author      = 'SHIMODA Hiroshi',
