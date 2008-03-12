@@ -53,18 +53,7 @@
 	</binding>
 
 	<binding id="ruby-text-box" includes="*">
-		<content>
-			<html:span class="ruby-text-lettersBox">
-				<children/>
-			</html:span>
-			<html:span class="ruby-text-lastLetterBox"/>
-		</content>
-		<implementation>
-			<property name="lettersBox" readonly="true"
-				onget="if (!this._letters) { this._letters = document.getAnonymousNodes(this)[0]; } return this._letters;"/>
-			<property name="lastLetterBox" readonly="true"
-				onget="if (!this._lastLetter) { this._lastLetter = document.getAnonymousNodes(this)[1]; } return this._lastLetter;"/>
-		</implementation>
+		<content><html:span class="ruby-text-innerBox"><children/></html:span></content>
 	</binding>
 
 </bindings>

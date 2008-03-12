@@ -107,16 +107,18 @@ ruby[moz-ruby-parsed="done"] RUBY|cell {
 
 
 
-*|ruby[moz-ruby-parsed="done"] > *|rb,
-*|ruby[moz-ruby-parsed="done"] > *|rt,
-*|ruby[moz-ruby-parsed="done"] > *|rbc > RUBY|row > *|rb,
-*|ruby[moz-ruby-parsed="done"] > *|rtc > RUBY|row > *|rt,
-*|*[moz-ruby-parsed="done"] > *|ruby > *|rb,
-*|*[moz-ruby-parsed="done"] > *|ruby > *|rt,
-*|*[moz-ruby-parsed="done"] > *|ruby > *|rbc > RUBY|row > *|rb,
-*|*[moz-ruby-parsed="done"] > *|ruby > *|rtc > RUBY|row > *|rt {
+/* ŽšŠÔ’²®—p */
+*|ruby[moz-ruby-parsed="done"] *|rb,
+*|ruby[moz-ruby-parsed="done"] *|rt,
+*|*[moz-ruby-parsed="done"] > *|ruby *|rb,
+*|*[moz-ruby-parsed="done"] > *|ruby *|rt {
 	-moz-binding: url("chrome://rubysupport/content/styles/ruby.xml#ruby-text-box") !important;
 }
+
+span.ruby-text-lastLetterBox {
+	letter-spacing: 0 !important;
+}
+
 
 
 

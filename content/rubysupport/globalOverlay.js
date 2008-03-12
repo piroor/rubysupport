@@ -9,7 +9,10 @@ var RubyService =
 
 	kSTATE : 'moz-ruby-parsed',
 	kTYPE  : 'moz-ruby-type',
-	kPOSITIONED : 'moz-ruby-vertical-position-corrected',
+	kREFORMED : 'moz-ruby-reformed',
+
+	kLETTERS_BOX : 'ruby-text-innerBox',
+	kLAST_LETTER_BOX : 'ruby-text-lastLetterBox',
 
 	kAUTO_EXPANDED : 'ruby-auto-expanded',
 
@@ -174,7 +177,7 @@ var RubyService =
 					nodeWrapper.setAttribute(this.kSTATE, 'done');
 					if (this.isGecko19OrLater)
 						nodeWrapper.setAttribute(this.kTYPE, 'inline-table');
-					this.delayedCorrectVerticalPosition(abbrNode);
+					this.delayedReformRubyElement(abbrNode);
 				}
 				catch(e) {
 //				dump(e+'\n > '+abbr[i]+'\n');
@@ -185,10 +188,6 @@ var RubyService =
 		}
 
 		if (count) {
-//			window.setTimeout(function(aSelf, aWindow) {
-//				aSelf.correctVerticalPositionsIn(aWindow);
-//			}, 0, this, aWindow);
-
 			// Apply Stylesheet (legacy operation, for old Mozilla)
 			if (!this.useGlobalStyleSheets) {
 				var nodeWrapper = new XPCNativeWrapper(docWrapper.documentElement, 'hasAttribute()');
@@ -255,7 +254,7 @@ var RubyService =
 		nodeWrapper.setAttribute(this.kSTATE, 'done');
 		if (this.isGecko19OrLater)
 			nodeWrapper.setAttribute(this.kTYPE, 'inline-table');
-		this.delayedCorrectVerticalPosition(aNode);
+		this.delayedReformRubyElement(aNode);
 	},
 	 
 	// IE用のマークアップをXHTMLの仕様に準拠したものに修正 
@@ -445,7 +444,7 @@ try{
 
 
 		// 後続のDOMツリーが破壊されているので、強制的にやり直す。
-		this.delayedCorrectVerticalPositionsIn(docWrapper.defaultView);
+		this.delayedReformRubyElements(docWrapper.defaultView);
 }catch(e){dump(e+'\n');}
 	},
   
@@ -476,8 +475,7 @@ try{
 		nodeWrapper.setAttribute('rubytext', nodeWrapper.title);
 		rootWrapper.setAttribute(this.kEXPANDED, (expanded ? expanded + '|' : '' ) + key);
 
-		if (!this.correctVerticalPosition(aNode))
-			this.delayedCorrectVerticalPosition(aNode);
+		this.reformRubyElement(aNode);
 	},
  
 	// ルビ表示のスタイルを追加 
@@ -517,7 +515,19 @@ try{
 		return;
 	},
    
-	delayedCorrectVerticalPositionsIn : function(aWindow) 
+	reformRubyElements : function(aWindow) 
+	{
+		var winWrapper = new XPCNativeWrapper(aWindow, 'document');
+		if (!winWrapper.document) return;
+
+		var docWrapper = new XPCNativeWrapper(winWrapper.document, 'documentElement');
+
+		var ruby = this.evaluateXPath('/descendant::*[contains(" ruby RUBY ", concat(" ", local-name(), " ")) and @'+this.kSTATE+' = "done" and not(@'+this.kREFORMED+')]', docWrapper.documentElement);
+		for (var i = ruby.snapshotLength-1; i > -1; i--)
+			this.reformRubyElement(ruby.snapshotItem(i));
+	},
+	 
+	delayedReformRubyElements : function(aWindow) 
 	{
 		var winWrapper = new XPCNativeWrapper(aWindow, 'document');
 		var docWrapper = new XPCNativeWrapper(winWrapper.document, 'documentElement');
@@ -531,37 +541,56 @@ try{
 
 		var timer = window.setTimeout(function(aSelf) {
 			nodeWrapper.removeAttribute(attr);
-			aSelf.correctVerticalPositionsIn(aWindow);
+			aSelf.reformRubyElements(aWindow);
 		}, 0, this);
 		nodeWrapper.setAttribute(attr, timer);
 	},
- 
-	correctVerticalPositionsIn : function(aWindow) 
+  
+	reformRubyElement : function(aNode) 
 	{
-		var winWrapper = new XPCNativeWrapper(aWindow, 'document');
-		if (!winWrapper.document) return;
+		var nodeWrapper = new XPCNativeWrapper(aNode,
+				'localName',
+				'ownerDocument',
+				'hasAttribute()',
+				'setAttribute()'
+			);
+		if (String(nodeWrapper.localName).toLowerCase() != 'ruby') {
+			var docWrapper = new XPCNativeWrapper(nodeWrapper.ownerDocument,
+					'getAnonymousElementByAttribute()'
+				);
+			var ruby = docWrapper.getAnonymousElementByAttribute(aNode, 'class', this.kAUTO_EXPANDED);
+			if (!ruby) {
+				this.delayedReformRubyElement(aNode);
+				return;
+			}
+			aNode = ruby;
+			nodeWrapper = new XPCNativeWrapper(
+				aNode,
+				'hasAttribute()',
+				'setAttribute()'
+			);
+		}
 
-		var docWrapper = new XPCNativeWrapper(winWrapper.document, 'documentElement');
+		if (nodeWrapper.hasAttribute(this.kREFORMED))
+			return;
 
-		var ruby = this.evaluateXPath('/descendant::*[contains(" ruby RUBY ", concat(" ", local-name(), " ")) and @'+this.kSTATE+' = "done" and not(@'+this.kPOSITIONED+')]', docWrapper.documentElement);
-		for (var i = ruby.snapshotLength-1; i > -1; i--)
-			this.correctVerticalPosition(ruby.snapshotItem(i));
+		this.correctVerticalPosition(aNode);
+		this.justifyTexts(aNode);
+
+		nodeWrapper.setAttribute(this.kREFORMED, true);
 	},
 	 
-	delayedCorrectVerticalPosition : function(aNode) 
+	delayedReformRubyElement : function(aNode) 
 	{
-		window.setTimeout(function(aSelf, aNode) {
-			aSelf.correctVerticalPosition(aNode);
-		}, 0, this, aNode);
+		window.setTimeout(function(aSelf) {
+			aSelf.reformRubyElement(aNode);
+		}, 0, this);
 	},
  
 	correctVerticalPosition : function(aNode) 
 	{
-		var done = false;
-
 		var node = aNode;
 		var nodeWrapper = new XPCNativeWrapper(node,
-				'localName',
 				'ownerDocument',
 				'parentNode',
 				'nextSibling',
@@ -570,13 +599,10 @@ try{
 				'setAttribute()'
 			);
 
-		if (!nodeWrapper.parentNode ||
-			nodeWrapper.hasAttribute(this.kPOSITIONED))
+		if (!nodeWrapper.parentNode)
 			return;
 
-		var d = nodeWrapper.ownerDocument;
 		var docWrapper = new XPCNativeWrapper(nodeWrapper.ownerDocument,
-				'getAnonymousNodes()',
 				'getAnonymousElementByAttribute()',
 				'getBoxObjectFor()',
 				'createElementNS()',
@@ -586,21 +612,18 @@ try{
 		if (nodeWrapper.getAttribute('class') == this.kAUTO_EXPANDED) {
 			node = nodeWrapper.parentNode;
 			nodeWrapper = new XPCNativeWrapper(node,
-					'localName',
-					'ownerDocument',
-					'parentNode',
-					'nextSibling',
-					'hasAttribute()',
-					'getAttribute()',
-					'setAttribute()'
-				);
+				'parentNode',
+				'nextSibling',
+				'hasAttribute()',
+				'getAttribute()',
+				'setAttribute()'
+			);
 		}
 
 		try {
 			nodeWrapper.setAttribute('style', 'vertical-align: baseline !important;');
 
-			var base = this.getRubyBase(node) ||
-						this.getRubyBase(docWrapper.getAnonymousElementByAttribute(node, 'class', this.kAUTO_EXPANDED));
+			var base = this.getRubyBase(aNode);
 			if (!base) return; // if we get box object for "undefined", Mozilla makes crash.
 
 
@@ -638,11 +661,8 @@ try{
 					beforeBox ;
 
 			var offset = (rbBox.y+rbBox.height) - (baseBox.y+baseBox.height);
-			if (offset != 0) {
+			if (offset != 0)
 				nodeWrapper.setAttribute('style', 'vertical-align: '+offset+'px !important;');
-				nodeWrapper.setAttribute(this.kPOSITIONED, true);
-				done = true;
-			}
 
 			parentWrapper.removeChild(beforeBoxNode);
 			parentWrapper.removeChild(afterBoxNode);
@@ -654,7 +674,7 @@ try{
 
 		return;
 	},
-	 
+	
 	getRubyBase : function(aNode) 
 	{
 		if (!aNode) return null;
@@ -665,7 +685,98 @@ try{
 		var nodeWrapper = new XPCNativeWrapper(aNode, 'childNodes', 'getElementsByTagName()');
 		return nodeWrapper.getElementsByTagName('*')[0];
 	},
-  	  
+  	
+	justifyTexts : function(aNode) 
+	{
+		var boxes = this.evaluateXPath('descendant::*[contains(" rb rt RB RT ", concat(" ", local-name(), " "))]', aNode);
+		for (var i = 0, maxi = boxes.snapshotLength; i < maxi; i++)
+			this.justifyText(boxes.snapshotItem(i));
+	},
+	justifyText : function(aNode)
+	{
+		// まず、字間を調整する対象かどうかを判別
+		var whole = aNode;
+		var wholeWrapper = new XPCNativeWrapper(aNode,
+				'parentNode',
+				'textContent',
+				'ownerDocument',
+				'setAttribute()'
+			);
+		text = wholeWrapper.textContent
+				.replace(/\s\s+|^\s+|\s+$/g, '')
+				.replace(/[\u0020-\u024F]+/ig, 'a'); // 英単語の間には字間を入れ（られ）ない
+		// 1文字しかなければ処理をスキップ
+		if (text.length <= 1) return;
+
+
+		// 字間を求める
+		var docWrapper = new XPCNativeWrapper(wholeWrapper.ownerDocument,
+				'getAnonymousElementByAttribute()',
+				'createTextNode()',
+				'createElementNS()',
+				'getBoxObjectFor()'
+			);
+		var lettersBox = docWrapper.getBoxObjectFor(
+				docWrapper.getAnonymousElementByAttribute(aNode, 'class', this.kLETTERS_BOX)
+			);
+		var wholeBox = docWrapper.getBoxObjectFor(
+				(new XPCNativeWrapper(wholeWrapper.parentNode, 'localName'))
+					.localName.toLowerCase() == 'td' ?
+					wholeWrapper.parentNode :
+					aNode
+			);
+		var padding = wholeBox.width - lettersBox.width;
+		if (padding <= 0) return;
+
+		var space = parseInt(padding / text.length);
+		if (space <= 0) return;
+
+
+		// 最後の文字をspanで囲う
+		var lastLetterNode = this.findLastLetterNode(aNode);
+		if (!lastLetterNode) return;
+
+		var nodeWrapper = new XPCNativeWrapper(lastLetterNode,
+				'nodeValue',
+				'parentNode'
+			);
+		nodeWrapper.nodeValue = nodeWrapper.nodeValue.replace(/([^\s]\s*)$/, '');
+		var lastLetter = docWrapper.createElementNS(this.XHTMLNS, 'span');
+		lastLetter.setAttribute('class', this.kLAST_LETTER_BOX);
+		lastLetter.appendChild(docWrapper.createTextNode(RegExp.$1));
+
+		var parentWrapper = new XPCNativeWrapper(nodeWrapper.parentNode,
+				'appendChild()'
+			);
+		parentWrapper.appendChild(lastLetter);
+
+
+		wholeWrapper.setAttribute('style', 'letter-spacing: '+space+'px !important;');
+	},
+	findLastLetterNode : function(aNode)
+	{
+		var nodeWrapper = new XPCNativeWrapper(aNode, 'childNodes');
+		var nodes = nodeWrapper.childNodes;
+		var node;
+		for (var i = nodes.length-1; i > -1; i--)
+		{
+			node = new XPCNativeWrapper(nodes[i],
+				'nodeType',
+				'nodeValue'
+			);
+			if (node.nodeType == Node.TEXT_NODE) {
+				if (/[^\s]/.test(node.nodeValue))
+					return nodes[i];
+			}
+			else if (node.nodeType == Node.ELEMENT_NODE) {
+				node = this.findLastLetterNode(nodes[i]);
+				if (node)
+					return node;
+			}
+		}
+		return null;
+	},
+   
 	init : function() 
 	{
 		if (this.initialized) return;
