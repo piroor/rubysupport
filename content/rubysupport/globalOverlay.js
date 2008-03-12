@@ -208,7 +208,8 @@ var RubyService =
 		var docWrapper = new XPCNativeWrapper(nodeWrapper.ownerDocument,
 				'compatMode',
 				'contentType',
-				'doctype'
+				'doctype',
+				'createElementNS()'
 			);
 
 		nodeWrapper.setAttribute(this.kSTATE, 'progress');
@@ -240,7 +241,7 @@ var RubyService =
 						'replaceChild()'
 					);
 
-				tmp_td = document.createElementNS(this.XHTMLNS, 'td');
+				tmp_td = docWrapper.createElementNS(this.XHTMLNS, 'td');
 				tmp_td.setAttribute('moz-ruby-inserted', true);
 				tmp_td.setAttribute('colspan', rtWrapper.getAttribute('rbspan'));
 				// 以下の2行は、一行にまとめて書こうとすると何故かエラーになる
@@ -381,7 +382,7 @@ try{
 					continue;
 			}
 
-			containerRubyBase = document.createElementNS(namespace, 'rb');
+			containerRubyBase = docWrapper.createElementNS(namespace, 'rb');
 			containerRubyBase.appendChild(range.extractContents());
 			range.insertNode(containerRubyBase);
 
@@ -432,7 +433,7 @@ try{
 		// 複数あるrtを、一つにまとめる
 		var rts = this.evaluateXPath('child::*[contains(" rt RT ", concat(" ", local-name(), " "))]', aNode);
 		if (rts.snapshotLength > 1) {
-			var text = document.createElementNS(namespace, 'rtc-ie');
+			var text = docWrapper.createElementNS(namespace, 'rtc-ie');
 			nodeWrapper.insertBefore(text, rts.snapshotItem(0));
 
 			for (i = rts.snapshotLength-1; i > -1; i--)
@@ -572,7 +573,9 @@ try{
 		var d = nodeWrapper.ownerDocument;
 		var docWrapper = new XPCNativeWrapper(nodeWrapper.ownerDocument,
 				'getAnonymousNodes()',
-				'getBoxObjectFor()'
+				'getBoxObjectFor()',
+				'createElementNS()',
+				'createTextNode()'
 			);
 
 		if (String(nodeWrapper.localName).toLowerCase() != 'ruby') {
@@ -599,12 +602,12 @@ try{
 
 
 			// 仮のボックスを挿入し、高さ補正の基準にする
-			var beforeBoxNode = document.createElementNS(this.RUBYNS, 'dummyBox');
-			beforeBoxNode.appendChild(document.createTextNode('['));
-			var afterBoxNode  = document.createElementNS(this.RUBYNS, 'dummyBox');
-			afterBoxNode.appendChild(document.createTextNode(']'));
-			var baseBoxNode  = document.createElementNS(this.RUBYNS, 'dummyBox');
-			baseBoxNode.appendChild(document.createTextNode('['));
+			var beforeBoxNode = docWrapper.createElementNS(this.RUBYNS, 'dummyBox');
+			beforeBoxNode.appendChild(docWrapper.createTextNode('['));
+			var afterBoxNode  = docWrapper.createElementNS(this.RUBYNS, 'dummyBox');
+			afterBoxNode.appendChild(docWrapper.createTextNode(']'));
+			var baseBoxNode  = docWrapper.createElementNS(this.RUBYNS, 'dummyBox');
+			baseBoxNode.appendChild(docWrapper.createTextNode('['));
 
 			var baseWrapper = new XPCNativeWrapper(base,
 					'firstChild',
