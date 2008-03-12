@@ -2,23 +2,20 @@
 @namespace RUBY url("http://piro.sakura.ne.jp/rubysupport");
 
 
-ruby[moz-ruby-parsed="done"],
-RUBY|ruby[moz-ruby-parsed="done"],
+*|ruby[moz-ruby-parsed="done"],
 *|*[moz-ruby-parsed="done"] > *|ruby {
 	display: inline !important;
 /*	-moz-binding: url("chrome://rubysupport/content/styles/ruby.xml#ruby");*/
 }
 
-ruby[moz-ruby-parsed="done"][moz-ruby-type="inline-table"],
-RUBY|ruby[moz-ruby-parsed="done"][moz-ruby-type="inline-table"],
+*|ruby[moz-ruby-parsed="done"][moz-ruby-type="inline-table"],
 *|*[moz-ruby-parsed="done"][moz-ruby-type="inline-table"] > *|ruby {
 	display: inline-table !important;
 }
 
 
 /* ルビ内の各要素の表示を初期化 */
-ruby[moz-ruby-parsed="done"] *|*,
-RUBY|ruby[moz-ruby-parsed="done"] *|*,
+*|ruby[moz-ruby-parsed="done"] *|*,
 *|*[moz-ruby-parsed="done"] > *|ruby *|* {
 	display: inline !important;
 	line-height: 1 !important;
@@ -34,8 +31,7 @@ RUBY|ruby[moz-ruby-parsed="done"] *|*,
 
 
 /* ルビ要素直下の要素をtbody相当にさせ、縦に並べる */
-ruby[moz-ruby-parsed="done"] > *|*,
-RUBY|ruby[moz-ruby-parsed="done"] > *|*,
+*|ruby[moz-ruby-parsed="done"] > *|*,
 *|*[moz-ruby-parsed="done"] > *|ruby > *|* {
 	display: table-row-group !important;
 	-moz-binding: url("chrome://rubysupport/content/styles/ruby.xml#ruby-row-group") !important;
@@ -43,12 +39,9 @@ RUBY|ruby[moz-ruby-parsed="done"] > *|*,
 }
 
 /* ルビテキストはthead相当にさせ、上に持ってくる */
-ruby[moz-ruby-parsed="done"] > *|rt,
-ruby[moz-ruby-parsed="done"] > *|rtc,
-ruby[moz-ruby-parsed="done"] > *|rtc-ie,
-RUBY|ruby[moz-ruby-parsed="done"] > *|rt,
-RUBY|ruby[moz-ruby-parsed="done"] > *|rtc,
-RUBY|ruby[moz-ruby-parsed="done"] > *|rtc-ie,
+*|ruby[moz-ruby-parsed="done"] > *|rt,
+*|ruby[moz-ruby-parsed="done"] > *|rtc,
+*|ruby[moz-ruby-parsed="done"] > *|rtc-ie,
 *|*[moz-ruby-parsed="done"] > *|ruby > *|rt {
 	display: table-header-group !important;
 	-moz-binding: url("chrome://rubysupport/content/styles/ruby.xml#ruby-row-group") !important;
@@ -67,8 +60,7 @@ ruby[moz-ruby-parsed="done"] *|rt RUBY|cell,
 }
 
 /* 二つ目のルビテキストはtfoot相当にさせ、下に持ってくる */
-ruby[moz-ruby-parsed="done"] *|rtc + *|rtc,
-RUBY|ruby[moz-ruby-parsed="done"] *|rtc + *|rtc {
+*|ruby[moz-ruby-parsed="done"] *|rtc + *|rtc {
 	display: table-footer-group !important;
 }
 *|rtc + *|rtc RUBY|cell {
@@ -77,8 +69,7 @@ RUBY|ruby[moz-ruby-parsed="done"] *|rtc + *|rtc {
 
 
 /* パーレンは全て非表示 */
-ruby[moz-ruby-parsed="done"] *|rp,
-RUBY|ruby[moz-ruby-parsed="done"] *|rp,
+*|ruby[moz-ruby-parsed="done"] *|rp,
 *|*[moz-ruby-parsed="done"] > *|ruby *|rp {
 	display: none !important;
 }
@@ -89,22 +80,17 @@ RUBY|ruby[moz-ruby-parsed="done"] *|rp,
 /* 複雑ルビ */
 
 /* コンテナ内の各要素はセル扱い */
-ruby[moz-ruby-parsed="done"] *|rbc,
-ruby[moz-ruby-parsed="done"] *|rtc,
-RUBY|ruby[moz-ruby-parsed="done"] *|rbc,
-RUBY|ruby[moz-ruby-parsed="done"] *|rtc {
+*|ruby[moz-ruby-parsed="done"] *|rbc,
+*|ruby[moz-ruby-parsed="done"] *|rtc {
 	-moz-binding: url("chrome://rubysupport/content/styles/ruby.xml#ruby-row-group-row") !important;
 }
-ruby[moz-ruby-parsed="done"] *|rbc > *|*,
-ruby[moz-ruby-parsed="done"] *|rtc > *|*,
-RUBY|ruby[moz-ruby-parsed="done"] *|rbc > *|*,
-RUBY|ruby[moz-ruby-parsed="done"] *|rtc > *|* {
+*|ruby[moz-ruby-parsed="done"] *|rbc > *|*,
+*|ruby[moz-ruby-parsed="done"] *|rtc > *|* {
 	display: table-cell !important;
 }
 
 /* 挿入されたtdの中のrtはインラインにする（tdがセルになる） */
-ruby[moz-ruby-parsed="done"] *|rtc > *|td > *|*,
-RUBY|ruby[moz-ruby-parsed="done"] *|rtc > *|td > *|* {
+*|ruby[moz-ruby-parsed="done"] *|rtc > *|td > *|* {
 	display: inline !important;
 }
 
@@ -121,13 +107,25 @@ ruby[moz-ruby-parsed="done"] RUBY|cell {
 
 
 
+*|ruby[moz-ruby-parsed="done"] > *|rb,
+*|ruby[moz-ruby-parsed="done"] > *|rt,
+*|ruby[moz-ruby-parsed="done"] > *|rbc > RUBY|row > *|rb,
+*|ruby[moz-ruby-parsed="done"] > *|rtc > RUBY|row > *|rt,
+*|*[moz-ruby-parsed="done"] > *|ruby > *|rb,
+*|*[moz-ruby-parsed="done"] > *|ruby > *|rt,
+*|*[moz-ruby-parsed="done"] > *|ruby > *|rbc > RUBY|row > *|rb,
+*|*[moz-ruby-parsed="done"] > *|ruby > *|rtc > RUBY|row > *|rt {
+	-moz-binding: url("chrome://rubysupport/content/styles/ruby.xml#ruby-text-box") !important;
+}
+
+
+
 
 
 
 /* 参考にしました。http://www.alib.jp/template.css */
 
-ruby[moz-ruby-parsed="done"] *|td,
-RUBY|ruby[moz-ruby-parsed="done"] *|td {
+*|ruby[moz-ruby-parsed="done"] *|td {
 	background: transparent !important;
 	border: none !important;
 	bottom: auto !important;
@@ -192,14 +190,10 @@ RUBY|ruby[moz-ruby-parsed="done"] *|td {
 
 
 
-*|*:link    ruby[moz-ruby-parsed="done"] *|rt,
-*|*:visited ruby[moz-ruby-parsed="done"] *|rt,
-*|*:link    ruby[moz-ruby-parsed="done"] *|rtc,
-*|*:visited ruby[moz-ruby-parsed="done"] *|rtc,
-*|*:link    RUBY|ruby[moz-ruby-parsed="done"] *|rt,
-*|*:visited RUBY|ruby[moz-ruby-parsed="done"] *|rt,
-*|*:link    RUBY|ruby[moz-ruby-parsed="done"] *|rtc,
-*|*:visited RUBY|ruby[moz-ruby-parsed="done"] *|rtc,
+*|*:link    *|ruby[moz-ruby-parsed="done"] *|rt,
+*|*:visited *|ruby[moz-ruby-parsed="done"] *|rt,
+*|*:link    *|ruby[moz-ruby-parsed="done"] *|rtc,
+*|*:visited *|ruby[moz-ruby-parsed="done"] *|rtc,
 *|*:link    *|*[moz-ruby-parsed="done"] > *|ruby *|rt,
 *|*:visited *|*[moz-ruby-parsed="done"] > *|ruby *|rt {
 	text-decoration: none !important;
@@ -215,11 +209,4 @@ RUBY|ruby[moz-ruby-parsed="done"] *|td {
 abbr[rubytext],
 acronym[rubytext] {
 	border: none;
-}
-
-RUBY|text:after {
-	content: attr(value) !important;
-	display: inline !important;
-	color: inherit !important;
-	background: transparent !important;
 }

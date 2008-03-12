@@ -10,10 +10,11 @@
 		<content>
 			<html:ruby
 				inherits="moz-ruby-parsed,moz-ruby-type,title=rubytext"
-				xbl:inherits="title=rubytext">
+				xbl:inherits="title=rubytext"
+				class="ruby-auto-expanded">
 				<html:rb><children/></html:rb>
 				<html:rp>(</html:rp>
-				<html:rt><RUBY:text xbl:inherits="value=rubytext"/></html:rt>
+				<html:rt xbl:inherits="xbl:text=rubytext"/>
 				<html:rp>)</html:rp>
 			</html:ruby>
 		</content>
@@ -48,6 +49,21 @@
 		<implementation>
 			<property name="cellBox" readonly="true"
 				onget="if (!this._cellBox) { this._cellBox = this.firstChild; } return this._cellBox;"/>
+		</implementation>
+	</binding>
+
+	<binding id="ruby-text-box" includes="*">
+		<content>
+			<html:span class="ruby-text-lettersBox">
+				<children/>
+			</html:span>
+			<html:span class="ruby-text-lastLetterBox"/>
+		</content>
+		<implementation>
+			<property name="lettersBox" readonly="true"
+				onget="if (!this._letters) { this._letters = document.getAnonymousNodes(this)[0]; } return this._letters;"/>
+			<property name="lastLetterBox" readonly="true"
+				onget="if (!this._lastLetter) { this._lastLetter = document.getAnonymousNodes(this)[1]; } return this._lastLetter;"/>
 		</implementation>
 	</binding>
 

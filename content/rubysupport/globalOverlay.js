@@ -11,6 +11,8 @@ var RubyService =
 	kTYPE  : 'moz-ruby-type',
 	kPOSITIONED : 'moz-ruby-vertical-position-corrected',
 
+	kAUTO_EXPANDED : 'ruby-auto-expanded',
+
 	kDONE     : 'moz-ruby-parsed',
 	kLOADED   : 'moz-ruby-stylesheet-loaded',
 	kEXPANDED : 'moz-ruby-expanded-abbr',
@@ -175,7 +177,7 @@ var RubyService =
 					this.delayedCorrectVerticalPosition(abbrNode);
 				}
 				catch(e) {
-	//				dump(e+'\n > '+abbr[i]+'\n');
+//				dump(e+'\n > '+abbr[i]+'\n');
 				}
 			}
 
@@ -468,7 +470,7 @@ try{
 		// Šù‚É“WŠJ‚µ‚½—ªŒê‚Í‚à‚¤“WŠJ‚µ‚È‚¢
 		var basetext = aNode.textContent;
 		var expanded = rootWrapper.getAttribute(this.kEXPANDED) || '';
-		var key = encodeURICompoent(basetext+'::'+nodeWrapper.title);
+		var key = encodeURIComponent(basetext+'::'+nodeWrapper.title);
 		if (('|'+expanded+'|').indexOf('|'+key+'|') > -1) return;
 
 		nodeWrapper.setAttribute('rubytext', nodeWrapper.title);
@@ -564,6 +566,7 @@ try{
 				'parentNode',
 				'nextSibling',
 				'hasAttribute()',
+				'getAttribute()',
 				'setAttribute()'
 			);
 
@@ -574,23 +577,21 @@ try{
 		var d = nodeWrapper.ownerDocument;
 		var docWrapper = new XPCNativeWrapper(nodeWrapper.ownerDocument,
 				'getAnonymousNodes()',
+				'getAnonymousElementByAttribute()',
 				'getBoxObjectFor()',
 				'createElementNS()',
 				'createTextNode()'
 			);
 
-		if (String(nodeWrapper.localName).toLowerCase() != 'ruby') {
-			node = docWrapper.getAnonymousNodes(node);
-			if (node && node.length)
-				node = node[0];
-			else
-				return;
-
+		if (nodeWrapper.getAttribute('class') == this.kAUTO_EXPANDED) {
+			node = nodeWrapper.parentNode;
 			nodeWrapper = new XPCNativeWrapper(node,
 					'localName',
 					'ownerDocument',
 					'parentNode',
 					'nextSibling',
+					'hasAttribute()',
+					'getAttribute()',
 					'setAttribute()'
 				);
 		}
@@ -598,7 +599,8 @@ try{
 		try {
 			nodeWrapper.setAttribute('style', 'vertical-align: baseline !important;');
 
-			var base = this.getRubyBase(node);
+			var base = this.getRubyBase(node) ||
+						this.getRubyBase(docWrapper.getAnonymousElementByAttribute(node, 'class', this.kAUTO_EXPANDED));
 			if (!base) return; // if we get box object for "undefined", Mozilla makes crash.
 
 
@@ -655,6 +657,7 @@ try{
 	 
 	getRubyBase : function(aNode) 
 	{
+		if (!aNode) return null;
 		var bases = this.evaluateXPath('child::*[contains(" rb rbc RB RBC ", concat(" ", local-name(), " "))]', aNode);
 		if (bases.snapshotLength)
 			return bases.snapshotItem(0);
