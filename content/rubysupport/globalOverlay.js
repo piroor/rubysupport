@@ -9,6 +9,7 @@ var RubyService =
 
 	kSTATE : 'moz-ruby-parsed',
 	kTYPE  : 'moz-ruby-type',
+	kPOSITIONED : 'moz-ruby-vertical-position-corrected',
 
 	kDONE     : 'moz-ruby-parsed',
 	kLOADED   : 'moz-ruby-stylesheet-loaded',
@@ -35,12 +36,29 @@ var RubyService =
 	},
 	_IOService : null,
 
-	get isGecko19()
+	get XULAppInfo()
 	{
-		const XULAppInfo = Components.classes['@mozilla.org/xre/app-info;1']
+		if (!this._XULAppInfo)
+			this._XULAppInfo = Components.classes['@mozilla.org/xre/app-info;1']
 				.getService(Components.interfaces.nsIXULAppInfo);
-		var version = XULAppInfo.platformVersion.split('.');
-		return parseInt(version[0]) >= 2 || parseInt(version[1]) >= 9;
+		return this._XULAppInfo;
+	},
+	_XULAppInfo : null,
+	get isGecko18OrLater()
+	{
+		if (!('_isGecko18OrLater' in this)) {
+			var version = this.XULAppInfo.platformVersion.split('.');
+			this._isGecko18OrLater = parseInt(version[0]) >= 1 || parseInt(version[1]) >= 8;
+		}
+		return this._isGecko18OrLater;
+	},
+	get isGecko19OrLater()
+	{
+		if (!('_isGecko19OrLater' in this)) {
+			var version = this.XULAppInfo.platformVersion.split('.');
+			this._isGecko19OrLater = parseInt(version[0]) >= 1 || parseInt(version[1]) >= 9;
+		}
+		return this._isGecko19OrLater;
 	},
 	 
 	updateGlobalStyleSheets : function() 
@@ -107,7 +125,7 @@ var RubyService =
 			}
 		}
 	},
-	getDocShellForFrame : function(aFrame) 
+	getDocShellForFrame : function(aFrame)
 	{
 		return (new XPCNativeWrapper(aFrame, 'QueryInterface()'))
 				.QueryInterface(Components.interfaces.nsIInterfaceRequestor)
@@ -152,8 +170,9 @@ var RubyService =
 					nodeWrapper.setAttribute(this.kSTATE, 'progress');
 					this.parseAbbr(abbrNode);
 					nodeWrapper.setAttribute(this.kSTATE, 'done');
-					if (this.isGecko19)
+					if (this.isGecko19OrLater)
 						nodeWrapper.setAttribute(this.kTYPE, 'inline-table');
+					this.delayedCorrectVerticalPosition(abbrNode);
 				}
 				catch(e) {
 	//				dump(e+'\n > '+abbr[i]+'\n');
@@ -164,9 +183,9 @@ var RubyService =
 		}
 
 		if (count) {
-			window.setTimeout(function(aSelf, aWindow) {
-				aSelf.correctVerticalPositionsIn(aWindow);
-			}, 0, this, aWindow);
+//			window.setTimeout(function(aSelf, aWindow) {
+//				aSelf.correctVerticalPositionsIn(aWindow);
+//			}, 0, this, aWindow);
 
 			// Apply Stylesheet (legacy operation, for old Mozilla)
 			if (!this.useGlobalStyleSheets) {
@@ -231,15 +250,16 @@ var RubyService =
 		}
 
 		nodeWrapper.setAttribute(this.kSTATE, 'done');
-		if (this.isGecko19)
+		if (this.isGecko19OrLater)
 			nodeWrapper.setAttribute(this.kTYPE, 'inline-table');
+		this.delayedCorrectVerticalPosition(aNode);
 	},
-	
+	 
 	// IE用のマークアップをXHTMLの仕様に準拠したものに修正 
 	fixUpMSIERuby : function(aNode)
 	{
 try{
-		var namespace = this.isGecko19 ? this.XHTMLNS : this.RUBYNS;
+		var namespace = this.isGecko18OrLater ? this.XHTMLNS : this.RUBYNS;
 
 		var i, j;
 		var nodeWrapper = new XPCNativeWrapper(aNode,
@@ -253,6 +273,7 @@ try{
 				'ownerDocument'
 			);
 		var docWrapper = new XPCNativeWrapper(nodeWrapper.ownerDocument,
+				'defaultView',
 				'createElementNS()'
 			);
 
@@ -417,6 +438,10 @@ try{
 			for (i = rts.snapshotLength-1; i > -1; i--)
 				text.insertBefore(nodeWrapper.removeChild(rts.snapshotItem(i)), text.firstChild);
 		}
+
+
+		// 後続のDOMツリーが破壊されているので、強制的にやり直す。
+		this.delayedCorrectVerticalPositionsIn(docWrapper.defaultView);
 }catch(e){dump(e+'\n');}
 	},
   
@@ -448,9 +473,7 @@ try{
 		rootWrapper.setAttribute(this.kEXPANDED, (expanded ? expanded + '|' : '' ) + key);
 
 		if (!this.correctVerticalPosition(aNode))
-			window.setTimeout(function(aSelf, aNode) {
-				aSelf.correctVerticalPosition(aNode);
-			}, 0, this, aNode); // fallback
+			this.delayedCorrectVerticalPosition(aNode);
 	},
  
 	// ルビ表示のスタイルを追加 
@@ -490,6 +513,25 @@ try{
 		return;
 	},
    
+	delayedCorrectVerticalPositionsIn : function(aWindow) 
+	{
+		var winWrapper = new XPCNativeWrapper(aWindow, 'document');
+		var docWrapper = new XPCNativeWrapper(winWrapper.document, 'documentElement');
+		var nodeWrapper = new XPCNativeWrapper(docWrapper.documentElement,
+				'hasAttribute()',
+				'setAttribute()',
+				'removeAttribute()'
+			);
+		var attr = 'moz-rubysupport-delayed-process-timer';
+		if (nodeWrapper.hasAttribute(attr)) return;
+
+		var timer = window.setTimeout(function(aSelf) {
+			nodeWrapper.removeAttribute(attr);
+			aSelf.correctVerticalPositionsIn(aWindow);
+		}, 0, this);
+		nodeWrapper.setAttribute(attr, timer);
+	},
+ 
 	correctVerticalPositionsIn : function(aWindow) 
 	{
 		var winWrapper = new XPCNativeWrapper(aWindow, 'document');
@@ -497,11 +539,18 @@ try{
 
 		var docWrapper = new XPCNativeWrapper(winWrapper.document, 'documentElement');
 
-		var ruby = this.evaluateXPath('/descendant::*[contains(" ruby RUBY ", concat(" ", local-name(), " ")) and @'+this.kSTATE+' = "done"]', docWrapper.documentElement);
+		var ruby = this.evaluateXPath('/descendant::*[contains(" ruby RUBY ", concat(" ", local-name(), " ")) and @'+this.kSTATE+' = "done" and not(@'+this.kPOSITIONED+')]', docWrapper.documentElement);
 		for (var i = ruby.snapshotLength-1; i > -1; i--)
 			this.correctVerticalPosition(ruby.snapshotItem(i));
 	},
 	 
+	delayedCorrectVerticalPosition : function(aNode) 
+	{
+		window.setTimeout(function(aSelf, aNode) {
+			aSelf.correctVerticalPosition(aNode);
+		}, 0, this, aNode);
+	},
+ 
 	correctVerticalPosition : function(aNode) 
 	{
 		var done = false;
@@ -515,9 +564,10 @@ try{
 				'hasAttribute()',
 				'setAttribute()'
 			);
-		if (nodeWrapper.hasAttribute('moz-ruby-vertical-position-corrected'))
-			return done;
 
+		if (!nodeWrapper.parentNode ||
+			nodeWrapper.hasAttribute(this.kPOSITIONED))
+			return;
 
 		var d = nodeWrapper.ownerDocument;
 		var docWrapper = new XPCNativeWrapper(nodeWrapper.ownerDocument,
@@ -530,7 +580,7 @@ try{
 			if (node && node.length)
 				node = node[0];
 			else
-				return done;
+				return;
 
 			nodeWrapper = new XPCNativeWrapper(node,
 					'localName',
@@ -545,16 +595,24 @@ try{
 			nodeWrapper.setAttribute('style', 'vertical-align: baseline !important;');
 
 			var base = this.getRubyBase(node);
-			if (!base) return done; // if we get box object for "undefined", Mozilla makes crash.
-			var rbBox = base.cellBoxObject || docWrapper.getBoxObjectFor(base);
-			if (!rbBox) return done;
+			if (!base) return; // if we get box object for "undefined", Mozilla makes crash.
 
 
-			// 前後に仮のボックスを挿入し、高さ補正の基準にする
+			// 仮のボックスを挿入し、高さ補正の基準にする
 			var beforeBoxNode = document.createElementNS(this.RUBYNS, 'dummyBox');
 			beforeBoxNode.appendChild(document.createTextNode('['));
 			var afterBoxNode  = document.createElementNS(this.RUBYNS, 'dummyBox');
 			afterBoxNode.appendChild(document.createTextNode(']'));
+			var baseBoxNode  = document.createElementNS(this.RUBYNS, 'dummyBox');
+			baseBoxNode.appendChild(document.createTextNode('['));
+
+			var baseWrapper = new XPCNativeWrapper(base,
+					'firstChild',
+					'insertBefore()',
+					'removeChild()'
+				);
+			base.insertBefore(baseBoxNode, base.firstChild);
+			var rbBox = docWrapper.getBoxObjectFor(baseBoxNode);
 
 			var parentWrapper = new XPCNativeWrapper(nodeWrapper.parentNode,
 					'insertBefore()',
@@ -573,23 +631,22 @@ try{
 					afterBox :
 					beforeBox ;
 
-//dump('RUBY VERTICAL POSITION::\nBOX Y: '+rbBox.y+'\nBOX HEIGHT: '+rbBox.height+'\nBASE Y: '+baseBox.y+'\nBASE HEIGHT: '+baseBox.height+'\n');
-
-			var offset = (rbBox.y+rbBox.height) - (baseBox.y+baseBox.height);// + 1;
+			var offset = (rbBox.y+rbBox.height) - (baseBox.y+baseBox.height);
 			if (offset != 0) {
 				nodeWrapper.setAttribute('style', 'vertical-align: '+offset+'px !important;');
-				nodeWrapper.setAttribute('moz-ruby-vertical-position-corrected', true);
+				nodeWrapper.setAttribute(this.kPOSITIONED, true);
 				done = true;
 			}
 
 			parentWrapper.removeChild(beforeBoxNode);
 			parentWrapper.removeChild(afterBoxNode);
+			baseWrapper.removeChild(baseBoxNode);
 		}
 		catch(e) {
-//alert(e+'\n');
+//dump(e+'\n');
 		}
 
-		return done;
+		return;
 	},
 	 
 	getRubyBase : function(aNode) 
@@ -601,7 +658,7 @@ try{
 		var nodeWrapper = new XPCNativeWrapper(aNode, 'childNodes', 'getElementsByTagName()');
 		return nodeWrapper.getElementsByTagName('*')[0];
 	},
- 	   
+  	  
 	init : function() 
 	{
 		if (this.initialized) return;
