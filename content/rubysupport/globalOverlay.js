@@ -100,106 +100,112 @@ var RubyService =
 			this.SSS.unregisterSheet(sheet, this.SSS.AGENT_SHEET);
 	},
  
-	processFrames : function(aFrames) 
-	{
-		var frame, frameWrapper, docWrapper, nodeWrapper, docShell;
-		for (var i = 0, maxi = aFrames.length; i < maxi; i++)
-		{
-			frame = aFrames[i];
-			try {
-				frameWrapper = new XPCNativeWrapper(frame, 'frames', 'document');
-				docWrapper = new XPCNativeWrapper(frameWrapper.document, 'documentElement');
-				nodeWrapper = new XPCNativeWrapper(docWrapper.documentElement,
-					'hasAttribute()',
-					'setAttribute()'
-				);
-				if (!nodeWrapper.hasAttribute(this.kDONE)) {
-					this.parseRubyNodes(frame);
-					docShell = this.getDocShellForFrame(frame);
-					if (!docShell.isLoadingDocument)
-						nodeWrapper.setAttribute(this.kDONE, true);
-				}
-			}
-			catch(e) {
-			}
-			try {
-				if (frameWrapper.frames)
-					this.processFrames(frameWrapper.frames);
-			}
-			catch(e) {
-			}
-		}
-	},
-	getDocShellForFrame : function(aFrame)
-	{
-		return (new XPCNativeWrapper(aFrame, 'QueryInterface()'))
-				.QueryInterface(Components.interfaces.nsIInterfaceRequestor)
-				.getInterface(Components.interfaces.nsIWebNavigation)
-				.QueryInterface(Components.interfaces.nsIDocShell);
-	},
-	 
 	parseRubyNodes : function(aWindow) 
 	{
 		var winWrapper = new XPCNativeWrapper(aWindow, 'document');
-		if (!winWrapper.document) return 0;
+		if (!winWrapper.document) return false;
 
-//if (!aWindow.rubyStart) aWindow.rubyStart = (new Date()).getTime();
-
-		var docWrapper = new XPCNativeWrapper(winWrapper.document, 'documentElement');
-		var count = 0;
-
-		var ruby = this.evaluateXPath('/descendant::*[contains(" ruby RUBY ", concat(" ", local-name(), " ")) and not(@'+this.kSTATE+')]', docWrapper.documentElement);
-		for (var i = ruby.snapshotLength-1; i > -1; i--)
-		{
-			try {
-				this.parseRuby(ruby.snapshotItem(i));
-			}
-			catch(e) {
-//				dump(e+'\n > '+ruby.snapshotItem(i)+'\n');
-			}
+		if (nsPreferences.getBoolPref('rubysupport.general.progressive')) {
+			this.startProgressiveParse(aWindow);
 		}
-
-		count += this.evaluateXPath('/descendant::*[contains(" ruby RUBY ", concat(" ", local-name(), " "))]', docWrapper.documentElement).snapshotLength;
-
-		if (nsPreferences.getBoolPref('rubysupport.abbrToRuby.enabled')) {
-			var abbr = this.evaluateXPath(
-						'/descendant::*[contains(" abbr ABBR ", concat(" ", local-name(), " ")) and @title and not(@title = "") and not(@'+this.kSTATE+')]',
-						docWrapper.documentElement,
-						XPathResult.ORDERED_NODE_ITERATOR_TYPE
-					);
-			var abbrNode;
-			while (abbrNode = abbr.iterateNext())
+		else {
+			var expression = this.parseTargetExpression+'[last()]';
+			var root = (new XPCNativeWrapper(winWrapper.document, 'documentElement')).documentElement;
+			var target;
+			while (target = this.evaluateXPath(
+					expression,
+					root,
+					XPathResult.FIRST_ORDERED_NODE_TYPE
+				).singleNodeValue)
 			{
-				try {
-					var nodeWrapper = new XPCNativeWrapper(abbrNode, 'setAttribute()');
-					nodeWrapper.setAttribute(this.kSTATE, 'progress');
-					this.parseAbbr(abbrNode);
-					nodeWrapper.setAttribute(this.kSTATE, 'done');
-					if (this.isGecko19OrLater)
-						nodeWrapper.setAttribute(this.kTYPE, 'inline-table');
-					this.delayedReformRubyElement(abbrNode);
-				}
-				catch(e) {
-//				dump(e+'\n > '+abbr[i]+'\n');
-				}
+				this.parseOneNode(target);
 			}
 
-			count += this.evaluateXPath('/descendant::*[contains(" abbr ABBR ", concat(" ", local-name(), " ")) and @title and not(@title = "")]', docWrapper.documentElement).snapshotLength;
+			if (!this.useGlobalStyleSheets)
+				this.setRubyStyle(aWindow);
 		}
 
-		if (count) {
-			// Apply Stylesheet (legacy operation, for old Mozilla)
-			if (!this.useGlobalStyleSheets) {
-				var nodeWrapper = new XPCNativeWrapper(docWrapper.documentElement, 'hasAttribute()');
-				if (!nodeWrapper.hasAttribute(this.kLOADED))
-					this.setRubyStyle(aWindow);
-			}
-		}
-
-//dump('ruby parsing: '+((new Date()).getTime()-aWindow.rubyStart) +'msec\n');
-		return count;
+		return true;
 	},
 	 
+	get parseTargetExpression() 
+	{
+		var conditions = [
+				'contains(" ruby RUBY ", concat(" ", local-name(), " "))'
+			];
+		if (nsPreferences.getBoolPref('rubysupport.abbrToRuby.enabled'))
+			conditions.push('contains(" abbr ABBR acronym ACRONYM ", concat(" ", local-name(), " ")) and @title');
+
+		return [
+			'/descendant::*[((',
+			conditions.join(') or ('),
+			')) and (not(@'+this.kSTATE+') or not(@'+this.kREFORMED+'))]'
+		].join('');
+	},
+ 
+	parseOneNode : function(aNode) 
+	{
+		var nodeWrapper = new XPCNativeWrapper(aNode,
+				'localName',
+				'hasAttribute()',
+				'setAttribute()'
+			);
+		if (!nodeWrapper.hasAttribute(this.kSTATE)) {
+			nodeWrapper.setAttribute(this.kSTATE, 'progress');
+			try {
+				if (/^(abbr|acronym)$/.test(nodeWrapper.localName.toLowerCase())) {
+					this.parseAbbr(aNode);
+				}
+				else {
+					this.parseRuby(aNode);
+				}
+			}
+			catch(e) {
+					dump(e+'\n > '+aNode+'\n');
+			}
+			nodeWrapper.setAttribute(this.kSTATE, 'done');
+		}
+
+		if (this.isGecko19OrLater)
+			nodeWrapper.setAttribute(this.kTYPE, 'inline-table');
+
+		this.delayedReformRubyElement(aNode);
+	},
+ 
+	progressiveParse : function(aWindow) 
+	{
+		var winWrapper = new XPCNativeWrapper(aWindow, 'document');
+		var docWrapper = new XPCNativeWrapper(winWrapper.document, 'documentElement');
+
+		var unit = nsPreferences.getIntPref('rubysupport.general.progressive.unit');
+		var target;
+		var count = 0;
+		while (
+				(count++ < unit) &&
+				(target = this.evaluateXPath(
+					this.parseTargetExpression,
+					docWrapper.documentElement,
+					XPathResult.FIRST_ORDERED_NODE_TYPE
+				).singleNodeValue)
+				)
+		{
+			this.parseOneNode(target);
+		}
+
+		if (count && !this.useGlobalStyleSheets)
+			this.setRubyStyle(aWindow);
+
+		this.startProgressiveParse(aWindow);
+	},
+	 
+	startProgressiveParse : function(aWindow) 
+	{
+		var winWrapper = new XPCNativeWrapper(aWindow, 'setTimeout()');
+		aWindow.setTimeout(function(aSelf) {
+			aSelf.progressiveParse(aWindow);
+		}, 0, this);
+	},
+  
 	parseRuby : function(aNode) 
 	{
 		var nodeWrapper = new XPCNativeWrapper(aNode,
@@ -212,8 +218,6 @@ var RubyService =
 				'doctype',
 				'createElementNS()'
 			);
-
-		nodeWrapper.setAttribute(this.kSTATE, 'progress');
 
 
 		// 後方互換モードあるいは非XHTMLの場合でのみタグの補完を行う
@@ -250,13 +254,8 @@ var RubyService =
 				tmp_td.appendChild(tmp_td_content);
 			}
 		}
-
-		nodeWrapper.setAttribute(this.kSTATE, 'done');
-		if (this.isGecko19OrLater)
-			nodeWrapper.setAttribute(this.kTYPE, 'inline-table');
-		this.delayedReformRubyElement(aNode);
 	},
-	 
+	
 	// IE用のマークアップをXHTMLの仕様に準拠したものに修正 
 	fixUpMSIERuby : function(aNode)
 	{
@@ -441,10 +440,6 @@ try{
 			for (i = rts.snapshotLength-1; i > -1; i--)
 				text.insertBefore(nodeWrapper.removeChild(rts.snapshotItem(i)), text.firstChild);
 		}
-
-
-		// 後続のDOMツリーが破壊されているので、強制的にやり直す。
-		this.delayedReformRubyElements(docWrapper.defaultView);
 }catch(e){dump(e+'\n');}
 	},
   
@@ -478,7 +473,7 @@ try{
 		this.reformRubyElement(aNode);
 	},
  
-	// ルビ表示のスタイルを追加 
+	// Apply Stylesheet (legacy operation, for old Mozilla) 
 	setRubyStyle : function(targetWindow)
 	{
 		var winWrapper = new XPCNativeWrapper(targetWindow, 'document');
@@ -551,9 +546,10 @@ try{
 		var nodeWrapper = new XPCNativeWrapper(aNode,
 				'localName',
 				'ownerDocument',
-				'hasAttribute()',
+				'getAttribute()',
 				'setAttribute()'
 			);
+		var originalNodeWrapper = nodeWrapper;
 		if (String(nodeWrapper.localName).toLowerCase() != 'ruby') {
 			var docWrapper = new XPCNativeWrapper(nodeWrapper.ownerDocument,
 					'getAnonymousElementByAttribute()'
@@ -571,17 +567,26 @@ try{
 			);
 		}
 
-		if (nodeWrapper.hasAttribute(this.kREFORMED))
+		if (originalNodeWrapper.getAttribute(this.kREFORMED) == 'done')
 			return;
 
-		this.correctVerticalPosition(aNode);
-		this.justifyTexts(aNode);
+		try {
+			this.correctVerticalPosition(aNode);
+			this.justifyTexts(aNode);
+		}
+		catch(e) {
+		}
 
-		nodeWrapper.setAttribute(this.kREFORMED, true);
+		originalNodeWrapper.setAttribute(this.kREFORMED, 'done');
 	},
 	 
 	delayedReformRubyElement : function(aNode) 
 	{
+		var nodeWrapper = new XPCNativeWrapper(aNode,
+				'setAttribute()'
+			);
+		nodeWrapper.setAttribute(this.kREFORMED, 'progress');
+
 		window.setTimeout(function(aSelf) {
 			aSelf.reformRubyElement(aNode);
 		}, 0, this);
@@ -629,11 +634,11 @@ try{
 
 			// 仮のボックスを挿入し、高さ補正の基準にする
 			var beforeBoxNode = docWrapper.createElementNS(this.RUBYNS, 'dummyBox');
-			beforeBoxNode.appendChild(docWrapper.createTextNode('['));
+			beforeBoxNode.appendChild(docWrapper.createTextNode('?'));
 			var afterBoxNode  = docWrapper.createElementNS(this.RUBYNS, 'dummyBox');
-			afterBoxNode.appendChild(docWrapper.createTextNode(']'));
+			afterBoxNode.appendChild(docWrapper.createTextNode('?'));
 			var baseBoxNode  = docWrapper.createElementNS(this.RUBYNS, 'dummyBox');
-			baseBoxNode.appendChild(docWrapper.createTextNode('['));
+			baseBoxNode.appendChild(docWrapper.createTextNode('?'));
 
 			var baseWrapper = new XPCNativeWrapper(base,
 					'firstChild',
@@ -685,14 +690,15 @@ try{
 		var nodeWrapper = new XPCNativeWrapper(aNode, 'childNodes', 'getElementsByTagName()');
 		return nodeWrapper.getElementsByTagName('*')[0];
 	},
-  	
+  
 	justifyTexts : function(aNode) 
 	{
 		var boxes = this.evaluateXPath('descendant::*[contains(" rb rt RB RT ", concat(" ", local-name(), " "))]', aNode);
 		for (var i = 0, maxi = boxes.snapshotLength; i < maxi; i++)
 			this.justifyText(boxes.snapshotItem(i));
 	},
-	justifyText : function(aNode)
+	
+	justifyText : function(aNode) 
 	{
 		var insertionParent = aNode;
 
@@ -782,7 +788,8 @@ try{
 
 		wholeWrapper.setAttribute('style', 'letter-spacing: '+space+'px !important; margin-right: -'+space+'px !important;');
 	},
-	findLastLetterNode : function(aNode)
+ 
+	findLastLetterNode : function(aNode) 
 	{
 		var nodeWrapper = new XPCNativeWrapper(aNode, 'childNodes');
 		var nodes = nodeWrapper.childNodes;
@@ -811,6 +818,8 @@ try{
 		if (this.initialized) return;
 		this.initialized = true;
 
+		window.addEventListener('unload', this, false);
+
 		try {
 			window.removeEventListener('load', this, false);
 			window.removeEventListener('load', this, false);
@@ -821,6 +830,12 @@ try{
 		try {
 			if (nsPreferences.getBoolPref('rubysupport.general.enabled') === null)
 				nsPreferences.setBoolPref('rubysupport.general.enabled', true);
+
+			if (nsPreferences.getBoolPref('rubysupport.general.progressive') === null)
+				nsPreferences.setBoolPref('rubysupport.general.progressive', true);
+
+			if (nsPreferences.getIntPref('rubysupport.general.progressive.unit') === null)
+				nsPreferences.setIntPref('rubysupport.general.progressive.unit', '100');
 
 			if (nsPreferences.getBoolPref('rubysupport.abbrToRuby.enabled') === null)
 				nsPreferences.setBoolPref('rubysupport.abbrToRuby.enabled', false);
@@ -836,51 +851,21 @@ try{
 				this.updateGlobalStyleSheets();
 			}
 
+			gBrowser.addEventListener('DOMContentLoaded', this, false);
+			gBrowser.addEventListener('DOMNodeInserted', this, false);
+
 			this.overrideFunctions();
 		}
 		catch(e) {
 			dump('CAUTION: XHTML Ruby Support fails to initialize!\n  Error: '+e+'\n');
 		}
 	},
-	 
+	
 	overrideFunctions : function() 
 	{
 		if (window.FillInHTMLTooltip) {
 			window.__rubysupport__FillInHTMLTooltip = window.FillInHTMLTooltip;
 			window.FillInHTMLTooltip = this.FillInHTMLTooltip;
-		}
-
-		// ページ読み込み中に処理を行う
-		if (window.nsBrowserStatusHandler) {
-			nsBrowserStatusHandler.prototype.__rubysupport__onStateChange = nsBrowserStatusHandler.prototype.onStateChange;
-			nsBrowserStatusHandler.prototype.onStateChange = this.onStateChange;
-
-			// タブブラウザの場合、各タブについても処理を行う。
-			var b = document.getElementsByTagNameNS('http://www.mozilla.org/keymaster/gatekeeper/there.is.only.xul', 'tabbrowser')[0];
-			if (b && b.mTabProgressListener) {
-				b.__rubysupport__mTabProgressListener = b.mTabProgressListener;
-				if (b.__rubysupport__mTabProgressListener.arity == 3) {
-					b.mTabProgressListener = function(aTabBrowserOrTab, aTabOrBrowser, aStartsBlank) // aTab,aBrowser:latest implementation / aTabBrowser,aTab:old implementation
-					{
-						var ret = (aTabBrowserOrTab.localName == 'tabbrowser' ? aTabBrowserOrTab : this).__rubysupport__mTabProgressListener(aTabBrowserOrTab, aTabOrBrowser, aStartsBlank);
-						ret.__rubysupport__onStateChange = ret.onStateChange;
-						ret.onStateChange = RubyService.onStateChange;
-						return ret;
-					};
-				}
-				else // 1.x-1.4
-					b.mTabProgressListener = function(aTab, aStartsBlank)
-					{
-						var ret = this.__rubysupport__mTabProgressListener(aTab, aStartsBlank);
-						ret.__rubysupport__onStateChange = ret.onStateChange;
-						ret.onStateChange = RubyService.onStateChange;
-						return ret;
-					};
-			}
-
-			dump('XHTML Ruby Support initialized successfully\n');
-		} else {
-			dump('CAUTION: XHTML Ruby Support initialization failed!\n');
 		}
 	},
 	 
@@ -927,24 +912,40 @@ try{
 
 		return node;
 	},
- 
-	onStateChange : function(aWebProgress, aRequest, aStateFlags, aStatus) 
+   	
+	destroy : function() 
 	{
-		this.__rubysupport__onStateChange(aWebProgress, aRequest, aStateFlags, aStatus);
-
-		if (!aWebProgress) return;
-
-		if (nsPreferences.getBoolPref('rubysupport.general.enabled'))
-			RubyService.processFrames([aWebProgress.DOMWindow]);
+		window.removeEventListener('unload', this, false);
+		try {
+			gBrowser.removeEventListener('DOMContentLoaded', this, false);
+			gBrowser.removeEventListener('DOMNodeInserted', this, false);
+		}
+		catch(e) {
+		}
 	},
-   
+ 
 	handleEvent : function(aEvent) 
 	{
 		switch (aEvent.type)
 		{
 			case 'load':
 				this.init();
-				break;
+				return;
+
+			case 'unload':
+				this.destroy();
+				return;
+
+			case 'DOMContentLoaded':
+			case 'DOMNodeInserted':
+				if (!nsPreferences.getBoolPref('rubysupport.general.enabled')) return;
+				var node = aEvent.target;
+				var nodeWrapper = new XPCNativeWrapper(node, 'ownerDocument');
+				var doc = nodeWrapper.ownerDocument || node;
+				if (doc == document) return;
+				var docWrapper = new XPCNativeWrapper(doc, 'defaultView');
+				this.parseRubyNodes(docWrapper.defaultView);
+				return;
 		}
 	},
  
