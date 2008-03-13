@@ -134,8 +134,11 @@ var RubyService =
 				'contains(" ruby RUBY ", concat(" ", local-name(), " "))'
 			];
 
-		if (nsPreferences.getBoolPref('rubysupport.abbrToRuby.enabled'))
-			conditions.push('contains(" abbr ABBR acronym ACRONYM ", concat(" ", local-name(), " ")) and @title');
+		if (nsPreferences.getBoolPref('rubysupport.expand.enabled')) {
+			var list = nsPreferences.getCharPref('rubysupport.expand.list');
+			if (list)
+				conditions.push('contains(" '+list.toLowerCase()+' '+list.toUpperCase()+' ", concat(" ", local-name(), " ")) and @title');
+		}
 
 		return [
 			'/descendant::*[((',
@@ -154,7 +157,7 @@ var RubyService =
 		if (!nodeWrapper.hasAttribute(this.kSTATE)) {
 			nodeWrapper.setAttribute(this.kSTATE, 'progress');
 			try {
-				if (/^(abbr|acronym)$/i.test(nodeWrapper.localName)) {
+				if (nodeWrapper.localName.toLowerCase() != 'ruby') {
 					this.expandAttribute(aNode);
 				}
 				else {
@@ -511,37 +514,6 @@ try{
 		return;
 	},
    
-	reformRubyElements : function(aWindow) 
-	{
-		var winWrapper = new XPCNativeWrapper(aWindow, 'document');
-		if (!winWrapper.document) return;
-
-		var docWrapper = new XPCNativeWrapper(winWrapper.document, 'documentElement');
-
-		var ruby = this.evaluateXPath('/descendant::*[contains(" ruby RUBY ", concat(" ", local-name(), " ")) and @'+this.kSTATE+' = "done" and not(@'+this.kREFORMED+')]', docWrapper.documentElement);
-		for (var i = ruby.snapshotLength-1; i > -1; i--)
-			this.reformRubyElement(ruby.snapshotItem(i));
-	},
-	 
-	delayedReformRubyElements : function(aWindow) 
-	{
-		var winWrapper = new XPCNativeWrapper(aWindow, 'document');
-		var docWrapper = new XPCNativeWrapper(winWrapper.document, 'documentElement');
-		var nodeWrapper = new XPCNativeWrapper(docWrapper.documentElement,
-				'hasAttribute()',
-				'setAttribute()',
-				'removeAttribute()'
-			);
-		var attr = 'moz-rubysupport-delayed-process-timer';
-		if (nodeWrapper.hasAttribute(attr)) return;
-
-		var timer = window.setTimeout(function(aSelf) {
-			nodeWrapper.removeAttribute(attr);
-			aSelf.reformRubyElements(aWindow);
-		}, 0, this);
-		nodeWrapper.setAttribute(attr, timer);
-	},
-  
 	reformRubyElement : function(aNode) 
 	{
 		var nodeWrapper = new XPCNativeWrapper(aNode,
@@ -838,14 +810,17 @@ try{
 			if (nsPreferences.getIntPref('rubysupport.general.progressive.unit') === null)
 				nsPreferences.setIntPref('rubysupport.general.progressive.unit', '100');
 
-			if (nsPreferences.getBoolPref('rubysupport.abbrToRuby.enabled') === null)
-				nsPreferences.setBoolPref('rubysupport.abbrToRuby.enabled', false);
+			if (nsPreferences.getBoolPref('rubysupport.expand.enabled') === null)
+				nsPreferences.setBoolPref('rubysupport.expand.enabled', true);
 
-			if (nsPreferences.getIntPref('rubysupport.abbrToRuby.mode') === null)
-				nsPreferences.setIntPref('rubysupport.abbrToRuby.mode', 1);
+			if (nsPreferences.getCharPref('rubysupport.expand.list') === null)
+				nsPreferences.setCharPref('rubysupport.expand.list', 'abbr acronym dfn');
 
-			if (nsPreferences.getBoolPref('rubysupport.abbrToRuby.noPseuds') === null)
-				nsPreferences.setBoolPref('rubysupport.abbrToRuby.noPseuds', true);
+			if (nsPreferences.getIntPref('rubysupport.expand.mode') === null)
+				nsPreferences.setIntPref('rubysupport.expand.mode', 1);
+
+			if (nsPreferences.getBoolPref('rubysupport.expand.noPseuds') === null)
+				nsPreferences.setBoolPref('rubysupport.expand.noPseuds', true);
 
 			if (this.SSS) {
 				this.useGlobalStyleSheets = true;

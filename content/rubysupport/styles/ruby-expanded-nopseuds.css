@@ -4,7 +4,9 @@
 abbr[title]:before,
 abbr[title]:after,
 acronym[title]:before,
-acronym[title]:after {
+acronym[title]:after,
+dfn[title]:before,
+dfn[title]:after {
 	content: "" !important;
 	display: none !important;
 }

@@ -202,6 +202,7 @@ span.ruby-text-lastLetterBox {
 }
 
 abbr[rubytext],
-acronym[rubytext] {
+acronym[rubytext],
+dfn[rubytext] {
 	border: none;
 }

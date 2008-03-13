@@ -24,29 +24,29 @@
 	</groupbox>
 
 	<groupbox orient="vertical">
-		<caption label="&ruby.abbrToRuby;"/>
+		<caption label="&ruby.expand;"/>
 		<box orient="vertical">
-			<checkbox label="&ruby.abbrToRuby.enabled;"
-				linked="rubysupport.abbrToRuby.mode rubysupport.abbrToRuby.noPseuds"
+			<checkbox label="&ruby.expand.enabled;"
+				linked="rubysupport.expand.mode rubysupport.expand.noPseuds"
 				oncommand="controlLinkedItems(this);"
-				prefstring="rubysupport.abbrToRuby.enabled"
-				id="rubysupport.abbrToRuby.enabled"/>
+				prefstring="rubysupport.expand.enabled"
+				id="rubysupport.expand.enabled"/>
 		</box>
 		<box orient="horizontal" align="center">
-			<label value="&ruby.abbrToRuby.mode;"
-				control="rubysupport.abbrToRuby.mode"/>
-			<menulist id="rubysupport.abbrToRuby.mode" flex="1"
-				prefstring="rubysupport.abbrToRuby.mode">
+			<label value="&ruby.expand.mode;"
+				control="rubysupport.expand.mode"/>
+			<menulist id="rubysupport.expand.mode" flex="1"
+				prefstring="rubysupport.expand.mode">
 				<menupopup>
-					<menuitem value="0" label="&ruby.abbrToRuby.mode.all;"/>
-					<menuitem value="1" label="&ruby.abbrToRuby.mode.onlyFirst;"/>
+					<menuitem value="0" label="&ruby.expand.mode.all;"/>
+					<menuitem value="1" label="&ruby.expand.mode.onlyFirst;"/>
 				</menupopup>
 			</menulist>
 		</box>
 		<box orient="vertical">
-			<checkbox label="&ruby.abbrToRuby.noPseuds;"
-				prefstring="rubysupport.abbrToRuby.noPseuds"
-				id="rubysupport.abbrToRuby.noPseuds"/>
+			<checkbox label="&ruby.expand.noPseuds;"
+				prefstring="rubysupport.expand.noPseuds"
+				id="rubysupport.expand.noPseuds"/>
 		</box>
 	</groupbox>
 
