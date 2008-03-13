@@ -3,12 +3,14 @@
 
 <!ENTITY ruby.enabled             "Show XHTML Ruby">
 
-<!ENTITY ruby.expand          "Show abbreviations as Ruby">
-<!ENTITY ruby.expand.enabled  "Show abbreviations' fullspells as Ruby">
-<!ENTITY ruby.expand.mode     "Show fullspells as Ruby as for:">
-<!ENTITY ruby.expand.mode.all "All abbreviations">
+<!ENTITY ruby.expand          "Show Invisible Informations as Ruby">
+<!ENTITY ruby.expand.enabled  "Show Invisible Informations as Ruby">
+<!ENTITY ruby.expand.list.abbr "Fullspell of Abbreviations">
+<!ENTITY ruby.expand.list.dfn  "Description of definitions">
+<!ENTITY ruby.expand.mode     "When same invisible informations appear:">
+<!ENTITY ruby.expand.mode.all "Show all">
 <!ENTITY ruby.expand.mode.onlyFirst
-                                  "Only first abbreviation">
+                                  "Show only first">
 <!ENTITY ruby.expand.noPseuds "Hide :before/:after pseud elements of abbreviations">
 
 

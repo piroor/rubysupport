@@ -3,12 +3,14 @@
 
 <!ENTITY ruby.enabled             "XHTMLのルビを表示する">
 
-<!ENTITY ruby.expand          "略語のルビ表示">
-<!ENTITY ruby.expand.enabled  "略語のフルスペルをルビとして表示する">
-<!ENTITY ruby.expand.mode     "フルスペルをルビ表示する対象：">
-<!ENTITY ruby.expand.mode.all "全ての略語について表示する">
+<!ENTITY ruby.expand          "不可視情報のルビ表示">
+<!ENTITY ruby.expand.enabled  "以下の不可視情報をルビとして表示する">
+<!ENTITY ruby.expand.list.abbr "略語のフルスペル">
+<!ENTITY ruby.expand.list.dfn  "定義語の説明">
+<!ENTITY ruby.expand.mode     "同じ内容が複数ある場合：">
+<!ENTITY ruby.expand.mode.all "全てついてルビ表示する">
 <!ENTITY ruby.expand.mode.onlyFirst
-                                  "最初に登場した略語にのみ表示する">
+                                  "最初に登場した物のみルビ表示する">
 <!ENTITY ruby.expand.noPseuds "略語の前後の:before/:after疑似要素を隠す">
 
 

@@ -18,6 +18,7 @@
 function init()
 {
 	window.parent.initPanel(location.href);
+	updateExpandCheck();
 	controlLinkedItems(document.getElementById('rubysupport.abbrToRuby.enabled'));
 
 }

@@ -25,13 +25,22 @@
 
 	<groupbox orient="vertical">
 		<caption label="&ruby.expand;"/>
-		<box orient="vertical">
-			<checkbox label="&ruby.expand.enabled;"
-				linked="rubysupport.expand.mode rubysupport.expand.noPseuds"
+		<group orient="vertical">
+			<caption><checkbox label="&ruby.expand.enabled;"
+				linked="rubysupport.expand.list.abbr rubysupport.expand.list.dfn rubysupport.expand.mode rubysupport.expand.noPseuds"
 				oncommand="controlLinkedItems(this);"
 				prefstring="rubysupport.expand.enabled"
-				id="rubysupport.expand.enabled"/>
-		</box>
+				id="rubysupport.expand.enabled"/></caption>
+			<vbox oncommand="updateExpandList();">
+				<checkbox label="&ruby.expand.list.abbr;"
+					id="rubysupport.expand.list.abbr"/>
+				<checkbox label="&ruby.expand.list.dfn;"
+					id="rubysupport.expand.list.dfn"/>
+			</vbox>
+			<textbox id="rubysupport.expand.list"
+				prefstring="rubysupport.expand.list"
+				style="visibility: collapse;"/>
+		</group>
 		<box orient="horizontal" align="center">
 			<label value="&ruby.expand.mode;"
 				control="rubysupport.expand.mode"/>

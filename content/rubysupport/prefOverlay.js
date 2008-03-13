@@ -2,9 +2,10 @@ const ID = '{0620B69D-7B58-416d-A92A-0198860C2757}';
 
 var _elementIDs = [
 	'rubysupport.general.enabled',
-	'rubysupport.abbrToRuby.enabled',
-	'rubysupport.abbrToRuby.mode',
-	'rubysupport.abbrToRuby.noPseuds'
+	'rubysupport.expand.enabled',
+	'rubysupport.expand.list',
+	'rubysupport.expand.mode',
+	'rubysupport.expand.noPseuds'
 ];
 
 function controlLinkedItems(elem, aShouldEnable, aAttr)
@@ -140,4 +141,27 @@ var prefService = {
 		return;
 	}
 };
+
+function updateExpandCheck()
+{
+	var value = document.getElementById('rubysupport.expand.list');
+	document.getElementById('rubysupport.expand.list.abbr').checked = /\b(abbr\s+acronym|acronym\s+abbr)\b/i.test(value));
+	document.getElementById('rubysupport.expand.list.dfn').checked = /\bdfn\b/i.test(value));
+}
+
+function updateExpandList()
+{
+	var textbox = document.getElementById('rubysupport.expand.list');
+
+	textbox.value = '';
+
+	if (document.getElementById('rubysupport.expand.list.abbr').checked) {
+		textbox.value += ' abbr acronym';
+	}
+	if (document.getElementById('rubysupport.expand.list.dfn').checked) {
+		textbox.value += ' dfn';
+	}
+
+	textbox.value = textbox.value.replace(/^\s+|\s+$/g, '');
+}
  
