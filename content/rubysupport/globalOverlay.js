@@ -18,7 +18,7 @@ var RubyService =
 
 	kDONE     : 'moz-ruby-parsed',
 	kLOADED   : 'moz-ruby-stylesheet-loaded',
-	kEXPANDED : 'moz-ruby-expanded-abbr',
+	kEXPANDED : 'moz-ruby-expanded',
 
 	get SSS()
 	{
@@ -87,7 +87,7 @@ var RubyService =
 		}
 
 
-		sheet = this.IOService.newURI('chrome://rubysupport/content/styles/ruby-abbr-nopseuds.css', null, null);
+		sheet = this.IOService.newURI('chrome://rubysupport/content/styles/ruby-expanded-nopseuds.css', null, null);
 		if (
 			enabled && nsPreferences.getBoolPref('rubysupport.abbrToRuby.noPseuds') &&
 			!this.SSS.sheetRegistered(sheet, this.SSS.AGENT_SHEET)
@@ -133,6 +133,7 @@ var RubyService =
 		var conditions = [
 				'contains(" ruby RUBY ", concat(" ", local-name(), " "))'
 			];
+
 		if (nsPreferences.getBoolPref('rubysupport.abbrToRuby.enabled'))
 			conditions.push('contains(" abbr ABBR acronym ACRONYM ", concat(" ", local-name(), " ")) and @title');
 
@@ -142,7 +143,7 @@ var RubyService =
 			')) and (not(@'+this.kSTATE+') or not(@'+this.kREFORMED+'))]'
 		].join('');
 	},
- 
+ 	
 	parseOneNode : function(aNode) 
 	{
 		var nodeWrapper = new XPCNativeWrapper(aNode,
@@ -153,8 +154,8 @@ var RubyService =
 		if (!nodeWrapper.hasAttribute(this.kSTATE)) {
 			nodeWrapper.setAttribute(this.kSTATE, 'progress');
 			try {
-				if (/^(abbr|acronym)$/.test(nodeWrapper.localName.toLowerCase())) {
-					this.parseAbbr(aNode);
+				if (/^(abbr|acronym)$/i.test(nodeWrapper.localName)) {
+					this.expandAttribute(aNode);
 				}
 				else {
 					this.parseRuby(aNode);
@@ -197,7 +198,7 @@ var RubyService =
 
 		this.startProgressiveParse(aWindow);
 	},
-	 
+	
 	startProgressiveParse : function(aWindow) 
 	{
 		var winWrapper = new XPCNativeWrapper(aWindow, 'setTimeout()');
@@ -443,7 +444,7 @@ try{
 }catch(e){dump(e+'\n');}
 	},
   
-	parseAbbr : function(aNode) 
+	expandAttribute : function(aNode) 
 	{
 		var nodeWrapper = new XPCNativeWrapper(aNode,
 				'title',
@@ -492,7 +493,7 @@ try{
 		this.addStyleSheet('chrome://rubysupport/content/styles/ruby.css', targetWindow);
 
 		if (nsPreferences.getBoolPref('rubysupport.abbrToRuby.noPseuds'))
-			this.addStyleSheet('chrome://rubysupport/content/styles/ruby-abbr-nopseuds.css', targetWindow);
+			this.addStyleSheet('chrome://rubysupport/content/styles/ruby-expanded-nopseuds.css', targetWindow);
 
 		nodeWrapper.setAttribute(this.kLOADED, true);
 	},
@@ -912,7 +913,7 @@ try{
 
 		return node;
 	},
-   	
+   
 	destroy : function() 
 	{
 		window.removeEventListener('unload', this, false);
