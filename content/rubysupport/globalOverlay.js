@@ -911,7 +911,7 @@ try{
 		if (popuptext) {
 			var popup = document.getElementById('aHTMLTooltip');
 			popup.removeAttribute('label');
-			popup.setAttribute('label', popuptext);
+			popup.setAttribute('label', popuptext.replace(/\s\s+/g, ' '));
 			return true;
 		}
 
