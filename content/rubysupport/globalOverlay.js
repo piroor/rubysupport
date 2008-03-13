@@ -702,7 +702,8 @@ try{
 				'localName',
 				'parentNode',
 				'ownerDocument',
-				'setAttribute()'
+				'setAttribute()',
+				'appendChild()'
 			);
 		text = wholeWrapper.textContent;
 		if (!text && wholeWrapper.localName.toLowerCase() == 'rb') {
@@ -738,7 +739,6 @@ try{
 		range.selectNodeContents(insertionParent);
 		letters.appendChild(range.extractContents());
 		range.insertNode(letters);
-		range.detach();
 
 		var lettersBox = docWrapper.getBoxObjectFor(letters);
 		var wholeBox = docWrapper.getBoxObjectFor(
@@ -748,6 +748,13 @@ try{
 					aNode
 			);
 		var padding = wholeBox.width - lettersBox.width;
+
+		range.selectNodeContents(letters);
+		wholeWrapper.appendChild(range.extractContents());
+		range.selectNode(letters);
+		range.deleteContents(true);
+		range.detach();
+
 		if (padding <= 0) return;
 
 		var space = parseInt(padding / text.length);
@@ -773,7 +780,7 @@ try{
 		parentWrapper.appendChild(lastLetter);
 
 
-		wholeWrapper.setAttribute('style', 'letter-spacing: '+space+'px !important;');
+		wholeWrapper.setAttribute('style', 'letter-spacing: '+space+'px !important; margin-right: -'+space+'px !important;');
 	},
 	findLastLetterNode : function(aNode)
 	{
