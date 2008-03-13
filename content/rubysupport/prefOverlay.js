@@ -149,7 +149,7 @@ function updateExpandList()
 {
 	var textbox = document.getElementById('rubysupport.expand.list');
 
-	var value = '';
+	var value = textbox.value.replace(/\b(abbr|acronym|dfn)\b/g, '');
 
 	if (document.getElementById('rubysupport.expand.list.abbr').checked) {
 		value += ' abbr acronym';
@@ -158,6 +158,6 @@ function updateExpandList()
 		value += ' dfn';
 	}
 
-	textbox.value = value.replace(/^\s+|\s+$/g, '');
+	textbox.value = value.replace(/^\s+|\s+$/g, '').replace(/\s\s+/g, ' ');
 }
  
