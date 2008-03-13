@@ -145,8 +145,8 @@ var prefService = {
 function updateExpandCheck()
 {
 	var value = document.getElementById('rubysupport.expand.list');
-	document.getElementById('rubysupport.expand.list.abbr').checked = /\b(abbr\s+acronym|acronym\s+abbr)\b/i.test(value));
-	document.getElementById('rubysupport.expand.list.dfn').checked = /\bdfn\b/i.test(value));
+	document.getElementById('rubysupport.expand.list.abbr').checked = /\b(abbr\s+acronym|acronym\s+abbr)\b/i.test(value);
+	document.getElementById('rubysupport.expand.list.dfn').checked = /\bdfn\b/i.test(value);
 }
 
 function updateExpandList()

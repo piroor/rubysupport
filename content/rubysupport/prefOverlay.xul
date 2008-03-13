@@ -25,7 +25,7 @@
 
 	<groupbox orient="vertical">
 		<caption label="&ruby.expand;"/>
-		<group orient="vertical">
+		<groupbox orient="vertical">
 			<caption><checkbox label="&ruby.expand.enabled;"
 				linked="rubysupport.expand.list.abbr rubysupport.expand.list.dfn rubysupport.expand.mode rubysupport.expand.noPseuds"
 				oncommand="controlLinkedItems(this);"
@@ -40,7 +40,7 @@
 			<textbox id="rubysupport.expand.list"
 				prefstring="rubysupport.expand.list"
 				style="visibility: collapse;"/>
-		</group>
+		</groupbox>
 		<box orient="horizontal" align="center">
 			<label value="&ruby.expand.mode;"
 				control="rubysupport.expand.mode"/>
