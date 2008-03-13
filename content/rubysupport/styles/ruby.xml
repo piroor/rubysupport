@@ -12,7 +12,7 @@
 				inherits="moz-ruby-parsed,moz-ruby-type,title=rubytext"
 				xbl:inherits="title=rubytext"
 				class="ruby-auto-expanded">
-				<html:rb><children/></html:rb>
+				<html:rb><html:span class="ruby-text-innerBox"><children/></html:span></html:rb>
 				<html:rp>(</html:rp>
 				<html:rt xbl:inherits="xbl:text=rubytext"/>
 				<html:rp>)</html:rp>

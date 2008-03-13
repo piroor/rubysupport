@@ -692,7 +692,7 @@ try{
 					'getAttribute()'
 				);
 			if (ruby.getAttribute('class') != this.kAUTO_EXPANDED) return;
-			return; // ï\é¶ïˆÇÍÇÇ«Ç§ÇµÇƒÇ‡íºÇπÇ»Ç¢ÇÃÇ≈ï˙íu
+			return;
 //			text = (new XPCNativeWrapper(ruby.parentNode, 'textContent')).textContent;
 //			insertionParent = ruby.parentNode;
 		}
@@ -706,18 +706,24 @@ try{
 		// éöä‘ÇãÅÇﬂÇÈ
 		var docWrapper = new XPCNativeWrapper(wholeWrapper.ownerDocument,
 				'getAnonymousNodes()',
+				'getAnonymousElementByAttribute()',
 				'createTextNode()',
 				'createElementNS()',
 				'getBoxObjectFor()',
 				'createRange()'
 			);
-		var letters = docWrapper.createElementNS(this.XHTMLNS, 'span');
-		letters.setAttribute('class', this.kLETTERS_BOX);
+		var clearBox = false;
+		var letters = docWrapper.getAnonymousElementByAttribute(aNode, 'class', this.kLETTERS_BOX);
+		if (!letters) {
+			clearBox = true;
+			letters = docWrapper.createElementNS(this.XHTMLNS, 'span');
+			letters.setAttribute('class', this.kLETTERS_BOX);
 
-		var range = docWrapper.createRange();
-		range.selectNodeContents(insertionParent);
-		letters.appendChild(range.extractContents());
-		range.insertNode(letters);
+			var range = docWrapper.createRange();
+			range.selectNodeContents(insertionParent);
+			letters.appendChild(range.extractContents());
+			range.insertNode(letters);
+		}
 
 		var lettersBox = docWrapper.getBoxObjectFor(letters);
 		var wholeBox = docWrapper.getBoxObjectFor(
@@ -728,10 +734,15 @@ try{
 			);
 		var padding = wholeBox.width - lettersBox.width;
 
-		range.selectNodeContents(letters);
-		wholeWrapper.appendChild(range.extractContents());
-		range.selectNode(letters);
-		range.deleteContents(true);
+		if (clearBox) {
+			var insertionParentWrapper = new XPCNativeWrapper(insertionParent,
+					'appendChild()'
+				);
+			range.selectNodeContents(letters);
+			insertionParentWrapper.appendChild(range.extractContents());
+			range.selectNode(letters);
+			range.deleteContents(true);
+		}
 		range.detach();
 
 		if (padding <= 0) return;
@@ -753,13 +764,15 @@ try{
 		lastLetter.setAttribute('class', this.kLAST_LETTER_BOX);
 		lastLetter.appendChild(docWrapper.createTextNode(RegExp.$1));
 
-		var parentWrapper = new XPCNativeWrapper(nodeWrapper.parentNode,
+		var parent = nodeWrapper.parentNode;
+		if (insertionParent != aNode && parent == aNode) parent = insertionParent;
+		var parentWrapper = new XPCNativeWrapper(parent,
 				'appendChild()'
 			);
 		parentWrapper.appendChild(lastLetter);
 
 
-		wholeWrapper.setAttribute('style', 'letter-spacing: '+space+'px !important; margin-right: -'+space+'px !important;');
+		wholeWrapper.setAttribute('style', 'letter-spacing: '+space+'px !important;');
 	},
  
 	findLastLetterNode : function(aNode) 

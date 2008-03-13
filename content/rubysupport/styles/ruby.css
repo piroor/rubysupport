@@ -98,10 +98,12 @@ ruby[moz-ruby-parsed="done"] *|rt RUBY|cell,
 
 
 
-ruby[moz-ruby-parsed="done"] RUBY|row {
+*|ruby[moz-ruby-parsed="done"] RUBY|row,
+*|ruby.ruby-auto-expanded RUBY|row {
 	display: table-row !important;
 }
-ruby[moz-ruby-parsed="done"] RUBY|cell {
+*|ruby[moz-ruby-parsed="done"] RUBY|cell,
+*|ruby.ruby-auto-expanded RUBY|cell {
 	display: table-cell !important;
 }
 
