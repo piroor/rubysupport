@@ -135,7 +135,7 @@ var RubyService =
 			];
 
 		if (nsPreferences.getBoolPref('rubysupport.expand.enabled')) {
-			var list = nsPreferences.getCharPref('rubysupport.expand.list');
+			var list = nsPreferences.copyUnicharPref('rubysupport.expand.list');
 			if (list)
 				conditions.push('contains(" '+list.toLowerCase()+' '+list.toUpperCase()+' ", concat(" ", local-name(), " ")) and @title');
 		}
@@ -813,8 +813,8 @@ try{
 			if (nsPreferences.getBoolPref('rubysupport.expand.enabled') === null)
 				nsPreferences.setBoolPref('rubysupport.expand.enabled', true);
 
-			if (nsPreferences.getCharPref('rubysupport.expand.list') === null)
-				nsPreferences.setCharPref('rubysupport.expand.list', 'abbr acronym dfn');
+			if (nsPreferences.copyUnicharPref('rubysupport.expand.list') === null)
+				nsPreferences.setUnicharPref('rubysupport.expand.list', 'abbr acronym dfn');
 
 			if (nsPreferences.getIntPref('rubysupport.expand.mode') === null)
 				nsPreferences.setIntPref('rubysupport.expand.mode', 1);

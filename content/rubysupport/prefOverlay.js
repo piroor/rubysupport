@@ -69,8 +69,6 @@ function Unregister()
 }
  
 var prefService = { 
-	knsISupportsString : ('nsISupportsWString' in Components.interfaces) ? Components.interfaces.nsISupportsWString : Components.interfaces.nsISupportsString,
-
 	get Prefs()
 	{
 		if (!this._Prefs) {
@@ -87,13 +85,13 @@ var prefService = {
 			switch (type)
 			{
 				case this.Prefs.PREF_STRING:
-					return this.Prefs.getComplexValue(aPrefstring, this.knsISupportsString).data;
+					return nsPreferences.copyUnicharPref(aPrefstring);
 					break;
 				case this.Prefs.PREF_INT:
-					return this.Prefs.getIntPref(aPrefstring);
+					return nsPreferences.getIntPref(aPrefstring);
 					break;
 				default:
-					return this.Prefs.getBoolPref(aPrefstring);
+					return nsPreferences.getBoolPref(aPrefstring);
 					break;
 			}
 		}
@@ -116,15 +114,13 @@ var prefService = {
 		switch (type)
 		{
 			case 'string':
-				var string = Components.classes[this.kSupportsString].createInstance(this.knsISupportsString);
-				string.data = aNewValue;
-				this.Prefs.setComplexValue(aPrefstring, this.knsISupportsString, string);
+				nsPreferences.setUnicharPref(aPrefstring, aNewValue);
 				break;
 			case 'number':
-				this.Prefs.setIntPref(aPrefstring, parseInt(aNewValue));
+				nsPreferences.setIntPref(aPrefstring, parseInt(aNewValue));
 				break;
 			default:
-				this.Prefs.setBoolPref(aPrefstring, aNewValue);
+				nsPreferences.setBoolPref(aPrefstring, aNewValue ? true : false );
 				break;
 		}
 		return true;
@@ -144,7 +140,7 @@ var prefService = {
 
 function updateExpandCheck()
 {
-	var value = document.getElementById('rubysupport.expand.list');
+	var value = document.getElementById('rubysupport.expand.list').value;
 	document.getElementById('rubysupport.expand.list.abbr').checked = /\b(abbr\s+acronym|acronym\s+abbr)\b/i.test(value);
 	document.getElementById('rubysupport.expand.list.dfn').checked = /\bdfn\b/i.test(value);
 }
@@ -153,15 +149,15 @@ function updateExpandList()
 {
 	var textbox = document.getElementById('rubysupport.expand.list');
 
-	textbox.value = '';
+	var value = '';
 
 	if (document.getElementById('rubysupport.expand.list.abbr').checked) {
-		textbox.value += ' abbr acronym';
+		value += ' abbr acronym';
 	}
 	if (document.getElementById('rubysupport.expand.list.dfn').checked) {
-		textbox.value += ' dfn';
+		value += ' dfn';
 	}
 
-	textbox.value = textbox.value.replace(/^\s+|\s+$/g, '');
+	textbox.value = value.replace(/^\s+|\s+$/g, '');
 }
  

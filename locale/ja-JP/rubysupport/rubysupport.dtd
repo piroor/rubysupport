@@ -11,7 +11,7 @@
 <!ENTITY ruby.expand.mode.all "全てついてルビ表示する">
 <!ENTITY ruby.expand.mode.onlyFirst
                                   "最初に登場した物のみルビ表示する">
-<!ENTITY ruby.expand.noPseuds "略語の前後の:before/:after疑似要素を隠す">
+<!ENTITY ruby.expand.noPseuds "不可視情報を含む要素の:before/:after疑似要素を隠す">
 
 
 <!ENTITY ruby.about.title       "XHTMLルビサポートについて">

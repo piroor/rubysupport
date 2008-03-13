@@ -11,7 +11,7 @@
 <!ENTITY ruby.expand.mode.all "Show all">
 <!ENTITY ruby.expand.mode.onlyFirst
                                   "Show only first">
-<!ENTITY ruby.expand.noPseuds "Hide :before/:after pseud elements of abbreviations">
+<!ENTITY ruby.expand.noPseuds "Hide :before/:after pseud elements of invisible informations">
 
 
 <!ENTITY ruby.about.title       "About XHTML Ruby Support">

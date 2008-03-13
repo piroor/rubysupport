@@ -47,7 +47,7 @@ function init()
 
 	updateExpandCheck();
 
-	controlLinkedItems(document.getElementById('rubysupport.abbrToRuby.enabled'));
+	controlLinkedItems(document.getElementById('rubysupport.expand.enabled'));
 
 	document.getElementById('uninstallBox').setAttribute('hidden', true);
 }
