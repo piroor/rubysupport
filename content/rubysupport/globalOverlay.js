@@ -165,7 +165,7 @@ var RubyService =
 				}
 			}
 			catch(e) {
-					dump(e+'\n > '+aNode+'\n');
+//					dump(e+'\n > '+aNode+'\n');
 			}
 			nodeWrapper.setAttribute(this.kSTATE, 'done');
 		}
@@ -185,18 +185,20 @@ var RubyService =
 		var target;
 		var count = 0;
 		while (
-				(count++ < unit) &&
 				(target = this.evaluateXPath(
 					this.parseTargetExpression,
 					docWrapper.documentElement,
 					XPathResult.FIRST_ORDERED_NODE_TYPE
-				).singleNodeValue)
+				).singleNodeValue) &&
+				(count++ < unit)
 				)
 		{
 			this.parseOneNode(target);
 		}
 
-		if (count && !this.useGlobalStyleSheets)
+		if (!count) return;
+
+		if (!this.useGlobalStyleSheets)
 			this.setRubyStyle(aWindow);
 
 		this.startProgressiveParse(aWindow);
@@ -444,7 +446,9 @@ try{
 			for (i = rts.snapshotLength-1; i > -1; i--)
 				text.insertBefore(nodeWrapper.removeChild(rts.snapshotItem(i)), text.firstChild);
 		}
-}catch(e){dump(e+'\n');}
+}catch(e){
+	dump(e+'\n');
+}
 	},
   
 	expandAttribute : function(aNode) 
@@ -830,7 +834,7 @@ try{
 				nsPreferences.setBoolPref('rubysupport.general.progressive', true);
 
 			if (nsPreferences.getIntPref('rubysupport.general.progressive.unit') === null)
-				nsPreferences.setIntPref('rubysupport.general.progressive.unit', '100');
+				nsPreferences.setIntPref('rubysupport.general.progressive.unit', 30);
 
 			if (nsPreferences.getBoolPref('rubysupport.expand.enabled') === null)
 				nsPreferences.setBoolPref('rubysupport.expand.enabled', true);
