@@ -43,6 +43,8 @@ function init()
 			default:
 				break;
 		}
+		if (node.localName == 'radiogroup')
+			node.selectedItem = node.getElementsByAttribute('value', value)[0];
 	}
 
 	updateExpandCheck();

@@ -5,7 +5,9 @@ var _elementIDs = [
 	'rubysupport.expand.enabled',
 	'rubysupport.expand.list',
 	'rubysupport.expand.mode',
-	'rubysupport.expand.noPseuds'
+	'rubysupport.expand.noPseuds',
+	'rubysupport.style.default.ruby-align',
+	'rubysupport.style.default.ruby-overhang'
 ];
 
 function controlLinkedItems(elem, aShouldEnable, aAttr)

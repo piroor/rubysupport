@@ -17,6 +17,18 @@
 <script type="application/x-javascript" src="chrome://rubysupport/content/prefOverlay.js"/>
 <script type="application/x-javascript" src="chrome://global/content/nsUserSettings.js"/>
 
+
+
+<tabbox orient="vertical">
+<tabs>
+	<tab label="&ruby.tab.general;"/>
+	<tab label="&ruby.tab.style;"/>
+</tabs>
+<tabpanels>
+
+
+
+<tabpanel orient="vertical">
 	<groupbox orient="vertical">
 		<caption label="&ruby.rendering;"/>
 		<checkbox label="&ruby.enabled;"
@@ -84,6 +96,46 @@
 			<spacer flex="2"/>
 		</box>
 	</groupbox>
+
+</tabpanel>
+
+
+<tabpanel orient="vertical">
+	<groupbox orient="vertical">
+		<caption label="&ruby.style.align;"/>
+		<radiogroup id="rubysupport.style.default.ruby-align"
+			prefstring="rubysupport.style.default.ruby-align" orient="vertical">
+			<hbox align="center">
+				<radio label="&ruby.style.align.start;" value="start"/>
+				<radio label="&ruby.style.align.center;" value="center"/>
+				<radio label="&ruby.style.align.end;" value="end"/>
+			</hbox>
+			<radio label="&ruby.style.align.letter;" value="distribute-letter"/>
+			<radio label="&ruby.style.align.space;" value="distribute-space"/>
+			<radio label="&ruby.style.align.auto;" value="auto"/>
+		</radiogroup>
+	</groupbox>
+	<groupbox orient="vertical">
+		<caption label="&ruby.style.overhang;"/>
+		<radiogroup id="rubysupport.style.default.ruby-overhang"
+			prefstring="rubysupport.style.default.ruby-overhang" orient="vertical">
+			<hbox align="center">
+				<radio label="&ruby.style.overhang.start;" value="start"/>
+				<radio label="&ruby.style.overhang.end;" value="end"/>
+			</hbox>
+			<hbox align="center">
+				<radio label="&ruby.style.overhang.auto;" value="auto"/>
+				<radio label="&ruby.style.overhang.none;" value="none"/>
+			</hbox>
+		</radiogroup>
+	</groupbox>
+</tabpanel>
+
+
+</tabpanels>
+
+</tabbox>
+
 
 </box>
 

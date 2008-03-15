@@ -1,4 +1,8 @@
 <!ENTITY ruby.title               "XHTMLルビサポート">
+
+
+<!ENTITY ruby.tab.general   "全般">
+
 <!ENTITY ruby.rendering           "ルビの表示">
 
 <!ENTITY ruby.enabled             "XHTMLのルビを表示する">
@@ -12,6 +16,24 @@
 <!ENTITY ruby.expand.mode.onlyFirst
                                   "最初に登場した物のみルビ表示する">
 <!ENTITY ruby.expand.noPseuds "不可視情報を含む要素の:before/:after疑似要素を隠す">
+
+
+<!ENTITY ruby.tab.style   "ルビの表示スタイル">
+
+<!ENTITY ruby.style.align  "ルビの配置">
+<!ENTITY ruby.style.align.start  "左寄せ">
+<!ENTITY ruby.style.align.end    "右寄せ">
+<!ENTITY ruby.style.align.center "中央寄せ">
+<!ENTITY ruby.style.align.letter "両端揃え">
+<!ENTITY ruby.style.align.space  "均等割り付け">
+<!ENTITY ruby.style.align.auto   "半角英数字は中央寄せ、それ以外は均等割り付け">
+
+<!ENTITY ruby.style.overhang  "長いルビの表示">
+<!ENTITY ruby.style.overhang.auto  "左右にはみ出す">
+<!ENTITY ruby.style.overhang.start "左にはみ出す">
+<!ENTITY ruby.style.overhang.end   "右にはみ出す">
+<!ENTITY ruby.style.overhang.none  "はみ出さない">
+
 
 
 <!ENTITY ruby.about.title       "XHTMLルビサポートについて">

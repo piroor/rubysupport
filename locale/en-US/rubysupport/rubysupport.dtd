@@ -1,4 +1,8 @@
 <!ENTITY ruby.title               "XHTML Ruby Support">
+
+
+<!ENTITY ruby.tab.general   "General">
+
 <!ENTITY ruby.rendering           "Ruby Rendering">
 
 <!ENTITY ruby.enabled             "Show XHTML Ruby">
@@ -12,6 +16,23 @@
 <!ENTITY ruby.expand.mode.onlyFirst
                                   "Show only first">
 <!ENTITY ruby.expand.noPseuds "Hide :before/:after pseud elements of invisible informations">
+
+
+<!ENTITY ruby.tab.style   "Ruby Appearance">
+
+<!ENTITY ruby.style.align  "Ruby align">
+<!ENTITY ruby.style.align.start  "Left">
+<!ENTITY ruby.style.align.end    "Right">
+<!ENTITY ruby.style.align.center "Center">
+<!ENTITY ruby.style.align.letter "Justify to box edges">
+<!ENTITY ruby.style.align.space  "Justify to characters">
+<!ENTITY ruby.style.align.auto   "Narrow characters are center, others are justified">
+
+<!ENTITY ruby.style.overhang  "Overflowing of long ruby texts">
+<!ENTITY ruby.style.overhang.auto  "to Both sides">
+<!ENTITY ruby.style.overhang.start "to Left">
+<!ENTITY ruby.style.overhang.end   "to Right">
+<!ENTITY ruby.style.overhang.none  "Don't overflow">
 
 
 <!ENTITY ruby.about.title       "About XHTML Ruby Support">
