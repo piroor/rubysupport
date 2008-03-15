@@ -922,7 +922,7 @@ try{
 				'localName',
 				'ownerDocument'
 			);
-		if (baseWrapper.localName.toLowerCase == 'rbc') {
+		if (baseWrapper.localName.toLowerCase() == 'rbc') {
 			var expression = 'child::*[contains(" rb RB ", concat(" ", local-name(), " "))]';
 			firstBase = this.evaluateXPath(expression+'[1]', base, XPathResult.FIRST_ORDERED_NODE_TYPE).singleNodeValue;
 			lastBase = this.evaluateXPath(expression+'[last()]', base, XPathResult.FIRST_ORDERED_NODE_TYPE).singleNodeValue;
