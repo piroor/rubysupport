@@ -106,13 +106,19 @@
 		<radiogroup id="rubysupport.style.default.ruby-align"
 			prefstring="rubysupport.style.default.ruby-align" orient="vertical">
 			<hbox align="center">
-				<radio label="&ruby.style.align.start;" value="start"/>
-				<radio label="&ruby.style.align.center;" value="center"/>
-				<radio label="&ruby.style.align.end;" value="end"/>
+				<radio label="&ruby.style.align.start;" value="start"
+					class="image" src="chrome://rubysupport/content/styles/align-start.png"/>
+				<radio label="&ruby.style.align.center;" value="center"
+					class="image" src="chrome://rubysupport/content/styles/align-center.png"/>
+				<radio label="&ruby.style.align.end;" value="end"
+					class="image" src="chrome://rubysupport/content/styles/align-end.png"/>
 			</hbox>
-			<radio label="&ruby.style.align.letter;" value="distribute-letter"/>
-			<radio label="&ruby.style.align.space;" value="distribute-space"/>
-			<radio label="&ruby.style.align.auto;" value="auto"/>
+			<radio label="&ruby.style.align.letter;" value="distribute-letter"
+				class="image" src="chrome://rubysupport/content/styles/align-letter.png"/>
+			<radio label="&ruby.style.align.space;" value="distribute-space"
+				class="image" src="chrome://rubysupport/content/styles/align-space.png"/>
+			<radio label="&ruby.style.align.auto;" value="auto"
+				class="image" src="chrome://rubysupport/content/styles/align-auto.png"/>
 		</radiogroup>
 	</groupbox>
 	<groupbox orient="vertical">
@@ -120,12 +126,16 @@
 		<radiogroup id="rubysupport.style.default.ruby-overhang"
 			prefstring="rubysupport.style.default.ruby-overhang" orient="vertical">
 			<hbox align="center">
-				<radio label="&ruby.style.overhang.start;" value="start"/>
-				<radio label="&ruby.style.overhang.end;" value="end"/>
+				<radio label="&ruby.style.overhang.start;" value="start"
+					class="image" src="chrome://rubysupport/content/styles/overhang-start.png"/>
+				<radio label="&ruby.style.overhang.end;" value="end"
+					class="image" src="chrome://rubysupport/content/styles/overhang-end.png"/>
 			</hbox>
 			<hbox align="center">
-				<radio label="&ruby.style.overhang.auto;" value="auto"/>
-				<radio label="&ruby.style.overhang.none;" value="none"/>
+				<radio label="&ruby.style.overhang.auto;" value="auto"
+					class="image" src="chrome://rubysupport/content/styles/overhang-auto.png"/>
+				<radio label="&ruby.style.overhang.none;" value="none"
+					class="image" src="chrome://rubysupport/content/styles/overhang-none.png"/>
 			</hbox>
 		</radiogroup>
 	</groupbox>

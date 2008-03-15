@@ -26,7 +26,7 @@
 <!ENTITY ruby.style.align.center "Center">
 <!ENTITY ruby.style.align.letter "Justify to box edges">
 <!ENTITY ruby.style.align.space  "Justify to characters">
-<!ENTITY ruby.style.align.auto   "Narrow characters are center, others are justified">
+<!ENTITY ruby.style.align.auto   "Justify to characters (and don't justify narrow characters)">
 
 <!ENTITY ruby.style.overhang  "Overflowing of long ruby texts">
 <!ENTITY ruby.style.overhang.auto  "to Both sides">
