@@ -159,7 +159,7 @@ var RubyService =
 			')) and (not(@'+this.kSTATE+') or not(@'+this.kREFORMED+'))]'
 		].join('');
 	},
- 	
+ 
 	parseOneNode : function(aNode) 
 	{
 		var nodeWrapper = new XPCNativeWrapper(aNode,
@@ -567,7 +567,8 @@ try{
 
 		try {
 			this.correctVerticalPosition(aNode);
-			this.setRubyAligns(aNode);
+			this.applyRubyAligns(aNode);
+			this.applyRubyOverhang(aNode);
 		}
 		catch(e) {
 		}
@@ -686,7 +687,7 @@ try{
 		return nodeWrapper.getElementsByTagName('*')[0];
 	},
   
-	setRubyAligns : function(aNode) 
+	applyRubyAligns : function(aNode) 
 	{
 		var nodeWrapper = new XPCNativeWrapper(aNode,
 				'setAttribute()'
@@ -699,7 +700,7 @@ try{
 		for (var i = 0, maxi = boxes.snapshotLength; i < maxi; i++)
 			this.justifyText(boxes.snapshotItem(i));
 	},
-	
+	 
 	justifyText : function(aNode) 
 	{
 		var isWrapped = false;
@@ -745,13 +746,27 @@ try{
 				'createTextNode()',
 				'createElementNS()',
 				'getBoxObjectFor()',
-				'createRange()'
+				'createRange()',
+				'defaultView'
 			);
 		var letters;
+		var boxInserted = false;
 		if (isWrapped) {
 			letters = docWrapper.getAnonymousElementByAttribute(ruby.parentNode, 'class', this.kLETTERS_BOX);
 		}
 		else {
+			letters = docWrapper.getAnonymousElementByAttribute(aNode, 'class', this.kLETTERS_BOX);
+			var winWrapper = new XPCNativeWrapper(docWrapper.defaultView,
+					'getComputedStyle()'
+				);
+			if (!letters &&
+				winWrapper.getComputedStyle(aNode, null).getPropertyValue('display') == 'inline')
+				letters = aNode;
+		}
+
+		if (!letters) {
+			boxInserted = true;
+
 			letters = docWrapper.createElementNS(this.XHTMLNS, 'span');
 			letters.setAttribute('class', this.kLETTERS_BOX);
 
@@ -759,6 +774,117 @@ try{
 			range.selectNodeContents(aNode);
 			letters.appendChild(range.extractContents());
 			range.insertNode(letters);
+		}
+
+		var lettersBox = docWrapper.getBoxObjectFor(letters);
+		var wholeBox = docWrapper.getBoxObjectFor(
+				(new XPCNativeWrapper(wholeWrapper.parentNode, 'localName'))
+					.localName.toLowerCase() == 'td' ?
+					wholeWrapper.parentNode :
+					aNode
+			);
+		var padding = wholeBox.width - lettersBox.width;
+
+		if (boxInserted) {
+			range.selectNodeContents(letters);
+			wholeWrapper.appendChild(range.extractContents());
+			range.selectNode(letters);
+			range.deleteContents(true);
+			range.detach();
+		}
+
+		if (padding <= 0) return;
+
+		var spacesCount = text.length;
+		if (!isWrapped && align == 'distribute-letter') spacesCount--;
+		var space = parseInt(padding / spacesCount);
+		if (isWrapped) {
+			space = parseInt((padding - space) / spacesCount);
+		}
+		if (space <= 0) return;
+
+
+		if (isWrapped) {
+			wholeWrapper.setAttribute('style',
+				wholeWrapper.getAttribute('style')+
+				'; text-align: right !important;'
+			);
+		}
+		else {
+			// ÅŒã‚Ì•¶Žš‚ðspan‚ÅˆÍ‚¤
+			var lastLetterNode = this.findLastLetterNode(aNode);
+			if (!lastLetterNode) return;
+
+			var nodeWrapper = new XPCNativeWrapper(lastLetterNode,
+					'nodeValue',
+					'parentNode'
+				);
+			nodeWrapper.nodeValue = nodeWrapper.nodeValue.replace(/([^\s]\s*)$/, '');
+			var lastLetter = docWrapper.createElementNS(this.XHTMLNS, 'span');
+			lastLetter.setAttribute('class', this.kLAST_LETTER_BOX);
+			lastLetter.appendChild(docWrapper.createTextNode(RegExp.$1));
+
+			var parentWrapper = new XPCNativeWrapper(nodeWrapper.parentNode,
+					'appendChild()'
+				);
+			parentWrapper.appendChild(lastLetter);
+		}
+
+
+		wholeWrapper.setAttribute('style',
+			wholeWrapper.getAttribute('style')+
+			'; letter-spacing: '+space+'px !important;'
+		);
+	},
+ 	
+	findLastLetterNode : function(aNode) 
+	{
+		var nodeWrapper = new XPCNativeWrapper(aNode, 'childNodes');
+		var nodes = nodeWrapper.childNodes;
+		var node;
+		for (var i = nodes.length-1; i > -1; i--)
+		{
+			node = new XPCNativeWrapper(nodes[i],
+				'nodeType',
+				'nodeValue'
+			);
+			if (node.nodeType == Node.TEXT_NODE) {
+				if (/[^\s]/.test(node.nodeValue))
+					return nodes[i];
+			}
+			else if (node.nodeType == Node.ELEMENT_NODE) {
+				node = this.findLastLetterNode(nodes[i]);
+				if (node)
+					return node;
+			}
+		}
+		return null;
+	},
+  
+	applyRubyOverhang : function(aNode) 
+	{
+		var isWrapped = false;
+		var overhang = nsPreferences.copyUnicharPref(this.kSTYLE_OVERHANG).toLowerCase();
+
+		// ‚Ü‚¸AŽšŠÔ‚ð’²®‚·‚é‘ÎÛ‚©‚Ç‚¤‚©‚ð”»•Ê
+		var wholeWrapper = new XPCNativeWrapper(aNode,
+				'textContent',
+				'localName',
+				'parentNode',
+				'ownerDocument',
+				'setAttribute()',
+				'getAttribute()',
+				'appendChild()'
+			);
+		text = wholeWrapper.textContent;
+		if (!text && wholeWrapper.localName.toLowerCase() == 'rb') {
+			var ruby = new XPCNativeWrapper(
+					wholeWrapper.parentNode,
+					'parentNode',
+					'getAttribute()'
+				);
+			if (ruby.getAttribute('class') != this.kAUTO_EXPANDED) return;
+			isWrapped = true;
 		}
 
 		var lettersBox = docWrapper.getBoxObjectFor(letters);
@@ -821,31 +947,7 @@ try{
 			'; letter-spacing: '+space+'px !important;'
 		);
 	},
- 
-	findLastLetterNode : function(aNode) 
-	{
-		var nodeWrapper = new XPCNativeWrapper(aNode, 'childNodes');
-		var nodes = nodeWrapper.childNodes;
-		var node;
-		for (var i = nodes.length-1; i > -1; i--)
-		{
-			node = new XPCNativeWrapper(nodes[i],
-				'nodeType',
-				'nodeValue'
-			);
-			if (node.nodeType == Node.TEXT_NODE) {
-				if (/[^\s]/.test(node.nodeValue))
-					return nodes[i];
-			}
-			else if (node.nodeType == Node.ELEMENT_NODE) {
-				node = this.findLastLetterNode(nodes[i]);
-				if (node)
-					return node;
-			}
-		}
-		return null;
-	},
-   
+  
 	init : function() 
 	{
 		if (this.initialized) return;

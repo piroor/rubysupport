@@ -94,16 +94,25 @@ ruby[moz-ruby-parsed="done"] *|rt RUBY|cell,
 /* コンテナ内の各要素はセル扱い */
 *|ruby[moz-ruby-parsed="done"] *|rbc,
 *|ruby[moz-ruby-parsed="done"] *|rtc {
-	-moz-binding: url("chrome://rubysupport/content/styles/ruby.xml#ruby-row-group-row") !important;
+	-moz-binding: url("chrome://rubysupport/content/styles/ruby.xml#ruby-row") !important;
 }
+
 *|ruby[moz-ruby-parsed="done"] *|rbc > *|*,
 *|ruby[moz-ruby-parsed="done"] *|rtc > *|* {
 	display: table-cell !important;
 }
 
 /* 挿入されたtdの中のrtはインラインにする（tdがセルになる） */
+*|ruby[moz-ruby-parsed="done"] *|rbc > *|td > *|*,
 *|ruby[moz-ruby-parsed="done"] *|rtc > *|td > *|* {
 	display: inline !important;
+}
+
+*|ruby[moz-ruby-parsed="done"] *|rbc > *|rb,
+*|ruby[moz-ruby-parsed="done"] *|rbc > RUBY|row > *|rb,
+*|ruby[moz-ruby-parsed="done"] *|rtc > *|rt,
+*|ruby[moz-ruby-parsed="done"] *|rtc > RUBY|row > *|rt {
+	-moz-binding: url("chrome://rubysupport/content/styles/ruby.xml#ruby-cell") !important;
 }
 
 

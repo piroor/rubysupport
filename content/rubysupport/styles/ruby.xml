@@ -14,42 +14,28 @@
 				class="ruby-auto-expanded">
 				<html:rb><html:span class="ruby-text-innerBox"><children/></html:span></html:rb>
 				<html:rp>(</html:rp>
-				<html:rt xbl:inherits="xbl:text=rubytext"/>
+				<html:rt><html:span class="ruby-text-innerBox" xbl:inherits="xbl:text=rubytext"/></html:rt>
 				<html:rp>)</html:rp>
 			</html:ruby>
 		</content>
 	</binding>
 
-	<binding id="ruby-row-base" includes="*">
-		<implementation>
-			<property name="cellBoxObject" readonly="true"
-				onget="return document.getBoxObjectFor(this.cellBox);"/>
-			<field name="_cellBox">
-				null
-			</field>
-		</implementation>
-	</binding>
-
-	<binding id="ruby-row-group" includes="*"
-		extends="chrome://rubysupport/content/styles/ruby.xml#ruby-row-base">
+	<binding id="ruby-row-group" includes="*">
 		<content>
-			<RUBY:row><RUBY:cell><children/></RUBY:cell></RUBY:row>
+			<RUBY:row><RUBY:cell><html:span class="ruby-text-innerBox"><children/></html:span></RUBY:cell></RUBY:row>
 		</content>
-		<implementation>
-			<property name="cellBox" readonly="true"
-				onget="if (!this._cellBox) { this._cellBox = document.getAnonymousNodes(this)[0].firstChild; } return this._cellBox;"/>
-		</implementation>
 	</binding>
 
-	<binding id="ruby-row-group-row" includes="*"
-		extends="chrome://rubysupport/content/styles/ruby.xml#ruby-row-base">
+	<binding id="ruby-row" includes="*">
 		<content>
 			<RUBY:row><children/></RUBY:row>
 		</content>
-		<implementation>
-			<property name="cellBox" readonly="true"
-				onget="if (!this._cellBox) { this._cellBox = this.firstChild; } return this._cellBox;"/>
-		</implementation>
+	</binding>
+
+	<binding id="ruby-cell" includes="*">
+		<content>
+			<html:span class="ruby-text-innerBox"><children/></html:span>
+		</content>
 	</binding>
 
 </bindings>
