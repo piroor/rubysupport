@@ -20,6 +20,18 @@ var RubyService =
 	kLOADED   : 'moz-ruby-stylesheet-loaded',
 	kEXPANDED : 'moz-ruby-expanded',
 
+	kPREF_ENABLED       : 'rubysupport.general.enabled',
+	kPREF_PROGRESSIVE   : 'rubysupport.general.progressive',
+	kPREF_PROGRESS_UNIT : 'rubysupport.general.progressive.unit',
+	kPREF_EXPAND        : 'rubysupport.expand.enabled',
+	kPREF_EXPAND_LIST   : 'rubysupport.expand.list',
+	kPREF_EXPAND_MODE   : 'rubysupport.expand.mode',
+	kPREF_NOPSEUDS      : 'rubysupport.expand.noPseuds',
+
+	kSTYLE_ALIGN    : 'rubysupport.style.default.ruby-align',
+	kSTYLE_OVERHANG : 'rubysupport.style.default.ruby-overhang',
+	kSTYLE_STACKING : 'rubysupport.style.default.line-stacking-ruby',
+
 	get SSS()
 	{
 		if (this._SSS === void(0)) {
@@ -61,7 +73,7 @@ var RubyService =
 	{
 		if (!('_isGecko19OrLater' in this)) {
 			var version = this.XULAppInfo.platformVersion.split('.');
-			this._isGecko19OrLater = parseInt(version[0]) >= 1 || parseInt(version[1]) >= 9;
+			this._isGecko19OrLater = parseInt(version[0]) >= 1 && parseInt(version[1]) >= 9;
 		}
 		return this._isGecko19OrLater;
 	},
@@ -70,7 +82,7 @@ var RubyService =
 	{
 		if (!this.useGlobalStyleSheets) return;
 
-		var enabled = nsPreferences.getBoolPref('rubysupport.general.enabled');
+		var enabled = nsPreferences.getBoolPref(this.kPREF_ENABLED);
 
 		var sheet = this.IOService.newURI('chrome://rubysupport/content/styles/ruby.css', null, null);
 		if (
@@ -89,12 +101,12 @@ var RubyService =
 
 		sheet = this.IOService.newURI('chrome://rubysupport/content/styles/ruby-expanded-nopseuds.css', null, null);
 		if (
-			enabled && nsPreferences.getBoolPref('rubysupport.abbrToRuby.noPseuds') &&
+			enabled && nsPreferences.getBoolPref(this.kPREF_NOPSEUDS) &&
 			!this.SSS.sheetRegistered(sheet, this.SSS.AGENT_SHEET)
 			)
 			this.SSS.loadAndRegisterSheet(sheet, this.SSS.AGENT_SHEET);
 		else if (
-			(!enabled || !nsPreferences.getBoolPref('rubysupport.abbrToRuby.noPseuds')) &&
+			(!enabled || !nsPreferences.getBoolPref(this.kPREF_NOPSEUDS)) &&
 			this.SSS.sheetRegistered(sheet, this.SSS.AGENT_SHEET)
 			)
 			this.SSS.unregisterSheet(sheet, this.SSS.AGENT_SHEET);
@@ -105,7 +117,7 @@ var RubyService =
 		var winWrapper = new XPCNativeWrapper(aWindow, 'document');
 		if (!winWrapper.document) return false;
 
-		if (nsPreferences.getBoolPref('rubysupport.general.progressive')) {
+		if (nsPreferences.getBoolPref(this.kPREF_PROGRESSIVE)) {
 			this.startProgressiveParse(aWindow);
 		}
 		else {
@@ -134,8 +146,8 @@ var RubyService =
 				'contains(" ruby RUBY ", concat(" ", local-name(), " "))'
 			];
 
-		if (nsPreferences.getBoolPref('rubysupport.expand.enabled')) {
-			var list = nsPreferences.copyUnicharPref('rubysupport.expand.list');
+		if (nsPreferences.getBoolPref(this.kPREF_EXPAND)) {
+			var list = nsPreferences.copyUnicharPref(this.kPREF_EXPAND_LIST);
 			if (list)
 				conditions.push('contains(" '+list.toLowerCase()+' '+list.toUpperCase()+' ", concat(" ", local-name(), " ")) and @title');
 		}
@@ -181,7 +193,7 @@ var RubyService =
 		var winWrapper = new XPCNativeWrapper(aWindow, 'document');
 		var docWrapper = new XPCNativeWrapper(winWrapper.document, 'documentElement');
 
-		var unit = nsPreferences.getIntPref('rubysupport.general.progressive.unit');
+		var unit = nsPreferences.getIntPref(this.kPREF_PROGRESSIVE_UNIT);
 		var target;
 		var count = 0;
 		while (
@@ -467,16 +479,17 @@ try{
 				'setAttribute()'
 			);
 
-		var mode = nsPreferences.getIntPref('rubysupport.abbrToRuby.mode', 0);
-
-		// 既に展開した略語はもう展開しない
-		var basetext = aNode.textContent;
-		var expanded = rootWrapper.getAttribute(this.kEXPANDED) || '';
-		var key = encodeURIComponent(basetext+'::'+nodeWrapper.title);
-		if (('|'+expanded+'|').indexOf('|'+key+'|') > -1) return;
+		var mode = nsPreferences.getIntPref(this.kPREF_EXPAND_MODE);
+		if (mode == 1) {
+			// 既に展開した略語はもう展開しない
+			var basetext = aNode.textContent;
+			var expanded = rootWrapper.getAttribute(this.kEXPANDED) || '';
+			var key = encodeURIComponent(basetext+'::'+nodeWrapper.title);
+			if (('|'+expanded+'|').indexOf('|'+key+'|') > -1) return;
+			rootWrapper.setAttribute(this.kEXPANDED, (expanded ? expanded + '|' : '' ) + key);
+		}
 
 		nodeWrapper.setAttribute('rubytext', nodeWrapper.title);
-		rootWrapper.setAttribute(this.kEXPANDED, (expanded ? expanded + '|' : '' ) + key);
 
 		this.reformRubyElement(aNode);
 	},
@@ -491,7 +504,7 @@ try{
 				'setAttribute()'
 			);
 		if (
-			!nsPreferences.getBoolPref('rubysupport.general.enabled') ||
+			!nsPreferences.getBoolPref(this.kPREF_ENABLED) ||
 			nodeWrapper.getAttribute(this.kLOADED) == 'true'
 			)
 			return;
@@ -499,7 +512,7 @@ try{
 		// ルビ用のスタイルシートを追加する
 		this.addStyleSheet('chrome://rubysupport/content/styles/ruby.css', targetWindow);
 
-		if (nsPreferences.getBoolPref('rubysupport.abbrToRuby.noPseuds'))
+		if (nsPreferences.getBoolPref(this.kPREF_NOPSEUDS))
 			this.addStyleSheet('chrome://rubysupport/content/styles/ruby-expanded-nopseuds.css', targetWindow);
 
 		nodeWrapper.setAttribute(this.kLOADED, true);
@@ -827,26 +840,33 @@ try{
 		}
 
 		try {
-			if (nsPreferences.getBoolPref('rubysupport.general.enabled') === null)
-				nsPreferences.setBoolPref('rubysupport.general.enabled', true);
+			if (nsPreferences.getBoolPref(this.kPREF_ENABLED) === null)
+				nsPreferences.setBoolPref(this.kPREF_ENABLED, true);
 
-			if (nsPreferences.getBoolPref('rubysupport.general.progressive') === null)
-				nsPreferences.setBoolPref('rubysupport.general.progressive', true);
+			if (nsPreferences.getBoolPref(this.kPREF_PROGRESSIVE) === null)
+				nsPreferences.setBoolPref(this.kPREF_PROGRESSIVE, true);
 
-			if (nsPreferences.getIntPref('rubysupport.general.progressive.unit') === null)
-				nsPreferences.setIntPref('rubysupport.general.progressive.unit', 30);
+			if (nsPreferences.getIntPref(this.kPREF_PROGRESSIVE_UNIT) === null)
+				nsPreferences.setIntPref(this.kPREF_PROGRESSIVE_UNIT, 30);
 
-			if (nsPreferences.getBoolPref('rubysupport.expand.enabled') === null)
-				nsPreferences.setBoolPref('rubysupport.expand.enabled', true);
+			if (nsPreferences.getBoolPref(this.kPREF_EXPAND) === null)
+				nsPreferences.setBoolPref(this.kPREF_EXPAND, true);
 
-			if (nsPreferences.copyUnicharPref('rubysupport.expand.list') === null)
-				nsPreferences.setUnicharPref('rubysupport.expand.list', 'abbr acronym dfn');
+			if (nsPreferences.copyUnicharPref(this.kPREF_EXPAND_LIST) === null)
+				nsPreferences.setUnicharPref(this.kPREF_EXPAND_LIST, 'abbr acronym dfn');
 
-			if (nsPreferences.getIntPref('rubysupport.expand.mode') === null)
-				nsPreferences.setIntPref('rubysupport.expand.mode', 1);
+			if (nsPreferences.getIntPref(this.kPREF_EXPAND_MODE) === null)
+				nsPreferences.setIntPref(this.kPREF_EXPAND_MODE, 1);
 
-			if (nsPreferences.getBoolPref('rubysupport.expand.noPseuds') === null)
-				nsPreferences.setBoolPref('rubysupport.expand.noPseuds', true);
+			if (nsPreferences.getBoolPref(this.kPREF_NOPSEUDS) === null)
+				nsPreferences.setBoolPref(this.kPREF_NOPSEUDS, true);
+
+			if (nsPreferences.copyUnicharPref(kSTYLE_ALIGN) === null)
+				nsPreferences.setUnicharPref(kSTYLE_ALIGN, 'auto');
+			if (nsPreferences.copyUnicharPref(kSTYLE_OVERHANG) === null)
+				nsPreferences.setUnicharPref(kSTYLE_OVERHANG, 'none');
+			if (nsPreferences.copyUnicharPref(kSTYLE_STACKING) === null)
+				nsPreferences.setUnicharPref(kSTYLE_STACKING, 'exclude-ruby');
 
 			if (this.SSS) {
 				this.useGlobalStyleSheets = true;
@@ -940,7 +960,7 @@ try{
 
 			case 'DOMContentLoaded':
 			case 'DOMNodeInserted':
-				if (!nsPreferences.getBoolPref('rubysupport.general.enabled')) return;
+				if (!nsPreferences.getBoolPref(this.kPREF_ENABLED)) return;
 				var node = aEvent.target;
 				var nodeWrapper = new XPCNativeWrapper(node, 'ownerDocument');
 				var doc = nodeWrapper.ownerDocument || node;
