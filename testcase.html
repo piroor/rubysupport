@@ -2,13 +2,31 @@
 
 <h1>外部テストケースとフレーム</h1>
 
+<script type="application/x-javascript">
+function toggleNext(aNode, aURI)
+{
+	var target = aNode.nextSibling;
+	while (target && target.nodeType != Node.ELEMENT_NODE)
+	{
+		target = target.nextSibling;
+	}
+	if (target) {
+		target.style.display = target.style.display == 'none' ? 'block' : 'none' ;
+		if (target.style.display == 'block')
+			target.src = aURI;
+	}
+}
+</script>
 <ul>
 	<li><a href="http://www.w3.org/International/tests/sec-ruby-markup-1">W3Cのテストケース</a><br />
-		<iframe width="600" height="100" src="http://www.w3.org/International/tests/sec-ruby-markup-1"></iframe></li>
+		<button onclick="toggleNext(this, 'http://www.w3.org/International/tests/sec-ruby-markup-1')">フレーム</button>
+		<iframe style="display:none" width="600" height="300" src="about:blank"></iframe></li>
 	<li><a href="http://202.32.0.131/sikumi/pipo/music/music.htm">ピーポくんのうた</a><br />
-		<iframe width="600" height="100" src="http://202.32.0.131/sikumi/pipo/music/music.htm"></iframe></li>
+		<button onclick="toggleNext(this, 'http://202.32.0.131/sikumi/pipo/music/music.htm')">フレーム</button>
+		<iframe style="display:none"  width="600" height="300" src="about:blank"></iframe></li>
 	<li><a href="http://www.aozora.gr.jp/cards/000035/files/1567_14913.html">走れメロス（青空文庫）</a><br />
-		<iframe width="600" height="100" src="http://www.aozora.gr.jp/cards/000035/files/1567_14913.html"></iframe></li>
+		<button onclick="toggleNext(this, 'http://www.aozora.gr.jp/cards/000035/files/1567_14913.html')">フレーム</button>
+		<iframe style="display:none"  width="600" height="300" src="about:blank"></iframe></li>
 </ul>
 
 <h1>略語の展開</h1>
