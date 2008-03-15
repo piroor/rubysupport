@@ -9,6 +9,7 @@ var RubyService =
 
 	kSTATE : 'moz-ruby-parsed',
 	kTYPE  : 'moz-ruby-type',
+	kALIGN  : 'moz-ruby-align',
 	kREFORMED : 'moz-ruby-reformed',
 
 	kLETTERS_BOX : 'ruby-text-innerBox',
@@ -177,7 +178,7 @@ var RubyService =
 				}
 			}
 			catch(e) {
-//					dump(e+'\n > '+aNode+'\n');
+					dump(e+'\n > '+aNode+'\n');
 			}
 			nodeWrapper.setAttribute(this.kSTATE, 'done');
 		}
@@ -193,7 +194,7 @@ var RubyService =
 		var winWrapper = new XPCNativeWrapper(aWindow, 'document');
 		var docWrapper = new XPCNativeWrapper(winWrapper.document, 'documentElement');
 
-		var unit = nsPreferences.getIntPref(this.kPREF_PROGRESSIVE_UNIT);
+		var unit = nsPreferences.getIntPref(this.kPREF_PROGRESS_UNIT);
 		var target;
 		var count = 0;
 		while (
@@ -467,6 +468,7 @@ try{
 	{
 		var nodeWrapper = new XPCNativeWrapper(aNode,
 				'title',
+				'localName',
 				'ownerDocument',
 				'getAttribute()',
 				'setAttribute()'
@@ -482,9 +484,12 @@ try{
 		var mode = nsPreferences.getIntPref(this.kPREF_EXPAND_MODE);
 		if (mode == 1) {
 			// 既に展開した略語はもう展開しない
-			var basetext = aNode.textContent;
 			var expanded = rootWrapper.getAttribute(this.kEXPANDED) || '';
-			var key = encodeURIComponent(basetext+'::'+nodeWrapper.title);
+			var key = encodeURIComponent([
+						aNode.localName,
+						aNode.textContent,
+						nodeWrapper.title
+					].join('::'));
 			if (('|'+expanded+'|').indexOf('|'+key+'|') > -1) return;
 			rootWrapper.setAttribute(this.kEXPANDED, (expanded ? expanded + '|' : '' ) + key);
 		}
@@ -562,7 +567,7 @@ try{
 
 		try {
 			this.correctVerticalPosition(aNode);
-			this.justifyTexts(aNode);
+			this.setRubyAligns(aNode);
 		}
 		catch(e) {
 		}
@@ -681,8 +686,15 @@ try{
 		return nodeWrapper.getElementsByTagName('*')[0];
 	},
   
-	justifyTexts : function(aNode) 
+	setRubyAligns : function(aNode) 
 	{
+		var nodeWrapper = new XPCNativeWrapper(aNode,
+				'setAttribute()'
+			);
+		var align = nsPreferences.copyUnicharPref(this.kSTYLE_ALIGN).toLowerCase();
+		nodeWrapper.setAttribute(this.kALIGN, align);
+		if (/left|start|right|align/.test(align)) return;
+
 		var boxes = this.evaluateXPath('descendant::*[contains(" rb rt RB RT ", concat(" ", local-name(), " "))]', aNode);
 		for (var i = 0, maxi = boxes.snapshotLength; i < maxi; i++)
 			this.justifyText(boxes.snapshotItem(i));
@@ -691,6 +703,9 @@ try{
 	justifyText : function(aNode) 
 	{
 		var isWrapped = false;
+		var align = nsPreferences.copyUnicharPref(this.kSTYLE_ALIGN).toLowerCase();
+		if (align == 'letter-edge')
+			align = 'auto';
 
 		// まず、字間を調整する対象かどうかを判別
 		var wholeWrapper = new XPCNativeWrapper(aNode,
@@ -713,9 +728,12 @@ try{
 			text = (new XPCNativeWrapper(ruby.parentNode, 'textContent')).textContent;
 			isWrapped = true;
 		}
-		text = text
-				.replace(/\s\s+|^\s+|\s+$/g, '')
-				.replace(/[\u0020-\u024F]+/ig, 'a'); // 英単語の間には字間を入れ（られ）ない
+		text = text.replace(/\s\s+|^\s+|\s+$/g, '');
+
+		// 英単語の間に字間を入れるかどうか
+		if (align != 'distribute-letter' && align != 'distribute-space')
+			text = text.replace(/[\u0020-\u024F]+/ig, 'a');
+
 		// 1文字しかなければ処理をスキップ
 		if (text.length <= 1) return;
 
@@ -762,9 +780,12 @@ try{
 
 		if (padding <= 0) return;
 
-		var space = parseInt(padding / text.length);
-		if (isWrapped)
-			space = parseInt((padding - space) / text.length);
+		var spacesCount = text.length;
+		if (!isWrapped && align == 'distribute-letter') spacesCount--;
+		var space = parseInt(padding / spacesCount);
+		if (isWrapped) {
+			space = parseInt((padding - space) / spacesCount);
+		}
 		if (space <= 0) return;
 
 
@@ -846,8 +867,8 @@ try{
 			if (nsPreferences.getBoolPref(this.kPREF_PROGRESSIVE) === null)
 				nsPreferences.setBoolPref(this.kPREF_PROGRESSIVE, true);
 
-			if (nsPreferences.getIntPref(this.kPREF_PROGRESSIVE_UNIT) === null)
-				nsPreferences.setIntPref(this.kPREF_PROGRESSIVE_UNIT, 30);
+			if (nsPreferences.getIntPref(this.kPREF_PROGRESS_UNIT) === null)
+				nsPreferences.setIntPref(this.kPREF_PROGRESS_UNIT, 30);
 
 			if (nsPreferences.getBoolPref(this.kPREF_EXPAND) === null)
 				nsPreferences.setBoolPref(this.kPREF_EXPAND, true);
@@ -861,12 +882,12 @@ try{
 			if (nsPreferences.getBoolPref(this.kPREF_NOPSEUDS) === null)
 				nsPreferences.setBoolPref(this.kPREF_NOPSEUDS, true);
 
-			if (nsPreferences.copyUnicharPref(kSTYLE_ALIGN) === null)
-				nsPreferences.setUnicharPref(kSTYLE_ALIGN, 'auto');
-			if (nsPreferences.copyUnicharPref(kSTYLE_OVERHANG) === null)
-				nsPreferences.setUnicharPref(kSTYLE_OVERHANG, 'none');
-			if (nsPreferences.copyUnicharPref(kSTYLE_STACKING) === null)
-				nsPreferences.setUnicharPref(kSTYLE_STACKING, 'exclude-ruby');
+			if (nsPreferences.copyUnicharPref(this.kSTYLE_ALIGN) === null)
+				nsPreferences.setUnicharPref(this.kSTYLE_ALIGN, 'auto');
+			if (nsPreferences.copyUnicharPref(this.kSTYLE_OVERHANG) === null)
+				nsPreferences.setUnicharPref(this.kSTYLE_OVERHANG, 'none');
+			if (nsPreferences.copyUnicharPref(this.kSTYLE_STACKING) === null)
+				nsPreferences.setUnicharPref(this.kSTYLE_STACKING, 'exclude-ruby');
 
 			if (this.SSS) {
 				this.useGlobalStyleSheets = true;

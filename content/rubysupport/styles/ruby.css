@@ -28,6 +28,18 @@
 	white-space: nowrap !important;
 	vertical-align: baseline !important;
 }
+*|ruby[moz-ruby-parsed="done"][moz-ruby-align="left"] *|*,
+*|ruby[moz-ruby-parsed="done"][moz-ruby-align="start"] *|*,
+*|*[moz-ruby-parsed="done"] > *|ruby[moz-ruby-align="left"] *|*,
+*|*[moz-ruby-parsed="done"] > *|ruby[moz-ruby-align="start"] *|* {
+	text-align: left !important;
+}
+*|ruby[moz-ruby-parsed="done"][moz-ruby-align="right"] *|*,
+*|ruby[moz-ruby-parsed="done"][moz-ruby-align="end"] *|*,
+*|*[moz-ruby-parsed="done"] > *|ruby[moz-ruby-align="right"] *|*,
+*|*[moz-ruby-parsed="done"] > *|ruby[moz-ruby-align="end"] *|* {
+	text-align: right !important;
+}
 
 
 /* ルビ要素直下の要素をtbody相当にさせ、縦に並べる */
