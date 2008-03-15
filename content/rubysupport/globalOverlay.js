@@ -571,6 +571,7 @@ try{
 			this.applyRubyOverhang(aNode);
 		}
 		catch(e) {
+dump(e+'\n');
 		}
 
 		originalNodeWrapper.setAttribute(this.kREFORMED, 'done');
@@ -867,6 +868,7 @@ try{
 		var docWrapper = new XPCNativeWrapper(nodeWrapper.ownerDocument,
 				'createRange()'
 			);
+		var range = docWrapper.createRange();
 		range.selectNodeContents(aInnerBox);
 		var contents = range.extractContents();
 		range.selectNode(aInnerBox);
