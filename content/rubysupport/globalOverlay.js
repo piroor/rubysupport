@@ -683,8 +683,8 @@ try{
 		if (bases.snapshotLength)
 			return bases.snapshotItem(0);
 
-		var nodeWrapper = new XPCNativeWrapper(aNode, 'childNodes', 'getElementsByTagName()');
-		return nodeWrapper.getElementsByTagName('*')[0];
+		var nodeWrapper = new XPCNativeWrapper(aNode, 'firstChild', 'getElementsByTagName()');
+		return nodeWrapper.getElementsByTagName('*')[0] || nodeWrapper.firstChild;
 	},
   
 	applyRubyAligns : function(aNode) 
@@ -694,7 +694,7 @@ try{
 			);
 		var align = nsPreferences.copyUnicharPref(this.kSTYLE_ALIGN).toLowerCase();
 		nodeWrapper.setAttribute(this.kALIGN, align);
-		if (/left|start|right|align/.test(align)) return;
+		if (/left|start|right|end|center/.test(align)) return;
 
 		var boxes = this.evaluateXPath('descendant::*[contains(" rb rt RB RT ", concat(" ", local-name(), " "))]', aNode);
 		for (var i = 0, maxi = boxes.snapshotLength; i < maxi; i++)
@@ -741,39 +741,15 @@ try{
 
 		// ŽšŠÔ‚ð‹‚ß‚é
 		var docWrapper = new XPCNativeWrapper(wholeWrapper.ownerDocument,
-				'getAnonymousNodes()',
-				'getAnonymousElementByAttribute()',
 				'createTextNode()',
 				'createElementNS()',
-				'getBoxObjectFor()',
-				'createRange()',
-				'defaultView'
+				'getBoxObjectFor()'
 			);
-		var letters;
 		var boxInserted = false;
-		if (isWrapped) {
-			letters = docWrapper.getAnonymousElementByAttribute(ruby.parentNode, 'class', this.kLETTERS_BOX);
-		}
-		else {
-			letters = docWrapper.getAnonymousElementByAttribute(aNode, 'class', this.kLETTERS_BOX);
-			var winWrapper = new XPCNativeWrapper(docWrapper.defaultView,
-					'getComputedStyle()'
-				);
-			if (!letters &&
-				winWrapper.getComputedStyle(aNode, null).getPropertyValue('display') == 'inline')
-				letters = aNode;
-		}
-
+		var letters = this.getLettersBox(aNode, isWrapped);
 		if (!letters) {
 			boxInserted = true;
-
-			letters = docWrapper.createElementNS(this.XHTMLNS, 'span');
-			letters.setAttribute('class', this.kLETTERS_BOX);
-
-			var range = docWrapper.createRange();
-			range.selectNodeContents(aNode);
-			letters.appendChild(range.extractContents());
-			range.insertNode(letters);
+			letters = this.insertLettersBox(aNode);
 		}
 
 		var lettersBox = docWrapper.getBoxObjectFor(letters);
@@ -785,13 +761,7 @@ try{
 			);
 		var padding = wholeBox.width - lettersBox.width;
 
-		if (boxInserted) {
-			range.selectNodeContents(letters);
-			wholeWrapper.appendChild(range.extractContents());
-			range.selectNode(letters);
-			range.deleteContents(true);
-			range.detach();
-		}
+		if (boxInserted) this.clearInnerBox(aNode, letters);
 
 		if (padding <= 0) return;
 
@@ -837,6 +807,75 @@ try{
 		);
 	},
  	
+	getLettersBox : function(aNode, aWrapped) 
+	{
+		var nodeWrapper = new XPCNativeWrapper(aNode,
+				'ownerDocument',
+				'parentNode'
+			);
+		var docWrapper = new XPCNativeWrapper(nodeWrapper.ownerDocument,
+				'getAnonymousElementByAttribute()',
+				'defaultView'
+			);
+
+		var letters = null;
+		if (aWrapped) {
+			var ruby = new XPCNativeWrapper(nodeWrapper.parentNode,
+					'parentNode'
+				);
+			letters = docWrapper.getAnonymousElementByAttribute(ruby.parentNode, 'class', this.kLETTERS_BOX);
+		}
+		else {
+			var letters = docWrapper.getAnonymousElementByAttribute(aNode, 'class', this.kLETTERS_BOX);
+			var winWrapper = new XPCNativeWrapper(docWrapper.defaultView,
+					'getComputedStyle()'
+				);
+			if (!letters &&
+				winWrapper.getComputedStyle(aNode, null).getPropertyValue('display') == 'inline')
+				letters = aNode;
+		}
+		return letters;
+	},
+ 
+	insertLettersBox : function(aNode, aWrapped) 
+	{
+		var nodeWrapper = new XPCNativeWrapper(aNode,
+				'ownerDocument'
+			);
+		var docWrapper = new XPCNativeWrapper(nodeWrapper.ownerDocument,
+				'createElementNS()',
+				'createRange()'
+			);
+
+		var letters = docWrapper.createElementNS(this.XHTMLNS, 'span');
+		letters.setAttribute('class', this.kLETTERS_BOX);
+
+		var range = docWrapper.createRange();
+		range.selectNodeContents(aNode);
+		letters.appendChild(range.extractContents());
+		range.insertNode(letters);
+		range.detach();
+
+		return letters;
+	},
+ 
+	clearInnerBox : function(aNode, aInnerBox) 
+	{
+		var nodeWrapper = new XPCNativeWrapper(aNode,
+				'ownerDocument'
+			);
+		var docWrapper = new XPCNativeWrapper(nodeWrapper.ownerDocument,
+				'createRange()'
+			);
+		range.selectNodeContents(aInnerBox);
+		var contents = range.extractContents();
+		range.selectNode(aInnerBox);
+		range.deleteContents(true);
+		range.insertNode(contents);
+		range.detach();
+		return;
+	},
+ 
 	findLastLetterNode : function(aNode) 
 	{
 		var nodeWrapper = new XPCNativeWrapper(aNode, 'childNodes');
@@ -863,89 +902,87 @@ try{
   
 	applyRubyOverhang : function(aNode) 
 	{
-		var isWrapped = false;
 		var overhang = nsPreferences.copyUnicharPref(this.kSTYLE_OVERHANG).toLowerCase();
+		var align = nsPreferences.copyUnicharPref(this.kSTYLE_ALIGN).toLowerCase();
+		if (align == 'letter-edge')
+			align = 'auto';
 
-		// ‚Ü‚¸AŽšŠÔ‚ð’²®‚·‚é‘ÎÛ‚©‚Ç‚¤‚©‚ð”»•Ê
-		var wholeWrapper = new XPCNativeWrapper(aNode,
-				'textContent',
+		if (
+			overhang == 'none' ||
+			(overhang == 'start' && (align == 'left' || align == 'start')) ||
+			(overhang == 'end' && (align == 'right' || align == 'end'))
+			)
+			return;
+
+		var base = this.getRubyBase(aNode);
+		var firstBase = base;
+		var lastBase = base;
+
+		var baseWrapper = new XPCNativeWrapper(base,
 				'localName',
-				'parentNode',
+				'ownerDocument'
+			);
+		if (baseWrapper.localName.toLowerCase == 'rbc') {
+			var expression = 'child::*[contains(" rb RB ", concat(" ", local-name(), " "))]';
+			firstBase = this.evaluateXPath(expression+'[1]', base, XPathResult.FIRST_ORDERED_NODE_TYPE).singleNodeValue;
+			lastBase = this.evaluateXPath(expression+'[last()]', base, XPathResult.FIRST_ORDERED_NODE_TYPE).singleNodeValue;
+		}
+
+		var nodeWrapper = new XPCNativeWrapper(aNode,
 				'ownerDocument',
 				'setAttribute()',
-				'getAttribute()',
-				'appendChild()'
+				'getAttribute()'
 			);
-		text = wholeWrapper.textContent;
-		if (!text && wholeWrapper.localName.toLowerCase() == 'rb') {
-			var ruby = new XPCNativeWrapper(
-					wholeWrapper.parentNode,
-					'parentNode',
-					'getAttribute()'
-				);
-			if (ruby.getAttribute('class') != this.kAUTO_EXPANDED) return;
-			isWrapped = true;
-		}
-
-		var lettersBox = docWrapper.getBoxObjectFor(letters);
-		var wholeBox = docWrapper.getBoxObjectFor(
-				(new XPCNativeWrapper(wholeWrapper.parentNode, 'localName'))
-					.localName.toLowerCase() == 'td' ?
-					wholeWrapper.parentNode :
-					aNode
+		var docWrapper = new XPCNativeWrapper(nodeWrapper.ownerDocument,
+				'getBoxObjectFor()'
 			);
-		var padding = wholeBox.width - lettersBox.width;
 
-		if (!isWrapped) {
-			range.selectNodeContents(letters);
-			wholeWrapper.appendChild(range.extractContents());
-			range.selectNode(letters);
-			range.deleteContents(true);
-			range.detach();
+		var isWrapped = (nodeWrapper.getAttribute('class') == this.kAUTO_EXPANDED);
+		var wholeBox = docWrapper.getBoxObjectFor(aNode);
+
+		var style = nodeWrapper.getAttribute('style');
+
+		var firstLettersBoxInserted = false,
+			lastLettersBoxInserted = false,
+			firstLetters,
+			lastLetters,
+			lettersBox,
+			delta;
+
+		if (overhang == 'auto' || overhang == 'start') {
+			firstLetters = this.getLettersBox(firstBase, isWrapped);
+			if (!firstLetters ) {
+				firstLettersBoxInserted = true;
+				firstLetters = this.insertLettersBox(firstBase);
+			}
+			lettersBox = docWrapper.getBoxObjectFor(firstLetters);
+			delta = lettersBox.screenX - wholeBox.screenX;
+			if (delta >= 0) style += 'margin-left: '+(-delta)+'px !important;';
 		}
 
-		if (padding <= 0) return;
-
-		var spacesCount = text.length;
-		if (!isWrapped && align == 'distribute-letter') spacesCount--;
-		var space = parseInt(padding / spacesCount);
-		if (isWrapped) {
-			space = parseInt((padding - space) / spacesCount);
-		}
-		if (space <= 0) return;
-
-
-		if (isWrapped) {
-			wholeWrapper.setAttribute('style',
-				wholeWrapper.getAttribute('style')+
-				'; text-align: right !important;'
-			);
-		}
-		else {
-			// ÅŒã‚Ì•¶Žš‚ðspan‚ÅˆÍ‚¤
-			var lastLetterNode = this.findLastLetterNode(aNode);
-			if (!lastLetterNode) return;
-
-			var nodeWrapper = new XPCNativeWrapper(lastLetterNode,
-					'nodeValue',
-					'parentNode'
-				);
-			nodeWrapper.nodeValue = nodeWrapper.nodeValue.replace(/([^\s]\s*)$/, '');
-			var lastLetter = docWrapper.createElementNS(this.XHTMLNS, 'span');
-			lastLetter.setAttribute('class', this.kLAST_LETTER_BOX);
-			lastLetter.appendChild(docWrapper.createTextNode(RegExp.$1));
-
-			var parentWrapper = new XPCNativeWrapper(nodeWrapper.parentNode,
-					'appendChild()'
-				);
-			parentWrapper.appendChild(lastLetter);
+		if (overhang == 'auto' || overhang == 'end') {
+			lastLetters = this.getLettersBox(lastBase, isWrapped);
+			if (!lastLetters ) {
+				lastLettersBoxInserted = true;
+				lastLetters = this.insertLettersBox(lastBase);
+			}
+			lettersBox = docWrapper.getBoxObjectFor(lastLetters);
+			delta = (wholeBox.screenX + wholeBox.width)-(lettersBox.screenX + lettersBox.width);
+			if (delta >= 0) style += 'margin-right: '+(-delta)+'px !important;';
 		}
 
+		if (firstLettersBoxInserted)
+			this.clearInnerBox(firstBase, firstLetters);
+		if (
+			lastLettersBoxInserted && 
+			(
+				!firstLettersBoxInserted ||
+				firstBase != lastBase
+			)
+			)
+			this.clearInnerBox(lastBase, lastLetters);
 
-		wholeWrapper.setAttribute('style',
-			wholeWrapper.getAttribute('style')+
-			'; letter-spacing: '+space+'px !important;'
-		);
+		nodeWrapper.setAttribute('style', style);
 	},
   
 	init : function() 
