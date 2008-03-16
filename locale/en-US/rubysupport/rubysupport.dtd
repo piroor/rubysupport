@@ -30,12 +30,17 @@
 <!ENTITY ruby.style.align.auto   "Justify to characters (and don't justify narrow characters)">
 <!ENTITY ruby.style.align.line-edge "Justify to characters (adjust to line edge)">
 
-<!ENTITY ruby.style.overhang  "Overflowing of long ruby texts">
+<!ENTITY ruby.style.overhang  "Overflowing of long Ruby texts">
 <!ENTITY ruby.style.overhang.uri   "http://www.w3.org/TR/css3-ruby/#rubyover">
 <!ENTITY ruby.style.overhang.auto  "to Both sides">
 <!ENTITY ruby.style.overhang.start "to Left">
 <!ENTITY ruby.style.overhang.end   "to Right">
 <!ENTITY ruby.style.overhang.none  "Don't overflow">
+
+<!ENTITY ruby.style.line-stacking  "Line height which Ruby exists in">
+<!ENTITY ruby.style.line-stacking.uri   "http://www.w3.org/TR/css3-linebox/#line-stacking-ruby">
+<!ENTITY ruby.style.line-stacking.exclude "Normal">
+<!ENTITY ruby.style.line-stacking.include "Expand to Ruby height">
 
 
 <!ENTITY ruby.about.title       "About XHTML Ruby Support">

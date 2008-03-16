@@ -7,7 +7,8 @@ var _elementIDs = [
 	'rubysupport.expand.mode',
 	'rubysupport.expand.noPseuds',
 	'rubysupport.style.default.ruby-align',
-	'rubysupport.style.default.ruby-overhang'
+	'rubysupport.style.default.ruby-overhang',
+	'rubysupport.style.default.line-stacking-ruby'
 ];
 
 function controlLinkedItems(elem, aShouldEnable, aAttr)

@@ -1040,14 +1040,16 @@ dump(e+'\n');
 		if (this.initialized) return;
 		this.initialized = true;
 
-		window.addEventListener('unload', this, false);
-
 		try {
 			window.removeEventListener('load', this, false);
 			window.removeEventListener('load', this, false);
 		}
 		catch(e) {
 		}
+
+		if (!('gBrowser' in window)) return;
+
+		window.addEventListener('unload', this, false);
 
 		try {
 			if (nsPreferences.getBoolPref(this.kPREF_ENABLED) === null)

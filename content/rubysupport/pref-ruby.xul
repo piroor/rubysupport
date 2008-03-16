@@ -21,6 +21,12 @@ function init()
 	updateExpandCheck();
 	controlLinkedItems(document.getElementById('rubysupport.expand.enabled'));
 
+	var stackingGroup = document.getElementById('line-stacking-ruby-group');
+	if (RubyService.isGecko19OrLater)
+		stackingGroup.removeAttribute('hidden');
+	else
+		stackingGroup.setAttribute('hidden', true);
+
 }
 
 ]]></script>

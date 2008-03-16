@@ -15,6 +15,7 @@
 
 <script type="application/x-javascript" src="chrome://rubysupport/content/exUnregisterer.js"/>
 <script type="application/x-javascript" src="chrome://rubysupport/content/prefOverlay.js"/>
+<script type="application/x-javascript" src="chrome://rubysupport/content/globalOverlay.js"/>
 <script type="application/x-javascript" src="chrome://global/content/nsUserSettings.js"/>
 
 
@@ -118,10 +119,12 @@
 				<radio label="&ruby.style.align.end;" value="end"
 					class="image" src="chrome://rubysupport/content/styles/align-end.png"/>
 			</hbox>
-			<radio label="&ruby.style.align.letter;" value="distribute-letter"
-				class="image" src="chrome://rubysupport/content/styles/align-letter.png"/>
-			<radio label="&ruby.style.align.space;" value="distribute-space"
-				class="image" src="chrome://rubysupport/content/styles/align-space.png"/>
+			<hbox align="center">
+				<radio label="&ruby.style.align.letter;" value="distribute-letter"
+					class="image" src="chrome://rubysupport/content/styles/align-letter.png"/>
+				<radio label="&ruby.style.align.space;" value="distribute-space"
+					class="image" src="chrome://rubysupport/content/styles/align-space.png"/>
+			</hbox>
 			<radio label="&ruby.style.align.auto;" value="auto"
 				class="image" src="chrome://rubysupport/content/styles/align-auto.png"/>
 			<radio label="&ruby.style.align.line-edge;" value="line-edge"
@@ -149,6 +152,19 @@
 				<radio label="&ruby.style.overhang.none;" value="none"
 					class="image" src="chrome://rubysupport/content/styles/overhang-none.png"/>
 			</hbox>
+		</radiogroup>
+	</groupbox>
+	<groupbox id="line-stacking-ruby-group" orient="vertical">
+		<caption>
+			<label value="&ruby.style.line-stacking;"
+				class="text-link"
+				onclick="loadURI(this.getAttribute('descriptionURI'))"
+				descriptionURI="&ruby.style.line-stacking.uri;"/>
+		</caption>
+		<radiogroup id="rubysupport.style.default.line-stacking-ruby"
+			prefstring="rubysupport.style.default.line-stacking-ruby" orient="horizontal">
+			<radio label="&ruby.style.line-stacking.exclude;" value="exclude-ruby"/>
+			<radio label="&ruby.style.line-stacking.include;" value="include-ruby"/>
 		</radiogroup>
 	</groupbox>
 </tabpanel>
