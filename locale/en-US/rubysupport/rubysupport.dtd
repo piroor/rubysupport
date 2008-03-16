@@ -21,6 +21,7 @@
 <!ENTITY ruby.tab.style   "Ruby Appearance">
 
 <!ENTITY ruby.style.align  "Ruby align">
+<!ENTITY ruby.style.align.uri    "http://www.w3.org/TR/css3-ruby/#rubyalign">
 <!ENTITY ruby.style.align.start  "Left">
 <!ENTITY ruby.style.align.end    "Right">
 <!ENTITY ruby.style.align.center "Center">
@@ -30,6 +31,7 @@
 <!ENTITY ruby.style.align.line-edge "Justify to characters (adjust to line edge)">
 
 <!ENTITY ruby.style.overhang  "Overflowing of long ruby texts">
+<!ENTITY ruby.style.overhang.uri   "http://www.w3.org/TR/css3-ruby/#rubyover">
 <!ENTITY ruby.style.overhang.auto  "to Both sides">
 <!ENTITY ruby.style.overhang.start "to Left">
 <!ENTITY ruby.style.overhang.end   "to Right">

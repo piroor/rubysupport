@@ -21,6 +21,7 @@
 <!ENTITY ruby.tab.style   "ルビの表示スタイル">
 
 <!ENTITY ruby.style.align  "ルビの配置">
+<!ENTITY ruby.style.align.uri    "http://www.w3.org/TR/css3-ruby/#rubyalign">
 <!ENTITY ruby.style.align.start  "左寄せ">
 <!ENTITY ruby.style.align.end    "右寄せ">
 <!ENTITY ruby.style.align.center "中央寄せ">
@@ -30,6 +31,7 @@
 <!ENTITY ruby.style.align.line-edge "均等割り付け（行頭・行末に寄せる）">
 
 <!ENTITY ruby.style.overhang  "長いルビの表示">
+<!ENTITY ruby.style.overhang.uri   "http://www.w3.org/TR/css3-ruby/#rubyover">
 <!ENTITY ruby.style.overhang.auto  "左右にはみ出す">
 <!ENTITY ruby.style.overhang.start "左にはみ出す">
 <!ENTITY ruby.style.overhang.end   "右にはみ出す">

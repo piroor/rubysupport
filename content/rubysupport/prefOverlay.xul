@@ -102,7 +102,12 @@
 
 <tabpanel orient="vertical">
 	<groupbox orient="vertical">
-		<caption label="&ruby.style.align;"/>
+		<caption>
+			<label value="&ruby.style.align;"
+				class="text-link"
+				onclick="loadURI(this.getAttribute('descriptionURI'))"
+				descriptionURI="&ruby.style.align.uri;"/>
+		</caption>
 		<radiogroup id="rubysupport.style.default.ruby-align"
 			prefstring="rubysupport.style.default.ruby-align" orient="vertical">
 			<hbox align="center">
@@ -124,7 +129,12 @@
 		</radiogroup>
 	</groupbox>
 	<groupbox orient="vertical">
-		<caption label="&ruby.style.overhang;"/>
+		<caption>
+			<label value="&ruby.style.overhang;"
+				class="text-link"
+				onclick="loadURI(this.getAttribute('descriptionURI'))"
+				descriptionURI="&ruby.style.overhang.uri;"/>
+		</caption>
 		<radiogroup id="rubysupport.style.default.ruby-overhang"
 			prefstring="rubysupport.style.default.ruby-overhang" orient="vertical">
 			<hbox align="center">
