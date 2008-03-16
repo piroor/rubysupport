@@ -955,7 +955,7 @@ dump(e+'\n');
 
 		if (overhang == 'auto' || overhang == 'start') {
 			firstLetters = this.getLettersBox(firstBase, isWrapped);
-			if (!firstLetters ) {
+			if (!firstLetters) {
 				firstLettersBoxInserted = true;
 				firstLetters = this.insertLettersBox(firstBase);
 			}
@@ -966,7 +966,7 @@ dump(e+'\n');
 
 		if (overhang == 'auto' || overhang == 'end') {
 			lastLetters = this.getLettersBox(lastBase, isWrapped);
-			if (!lastLetters ) {
+			if (!lastLetters) {
 				lastLettersBoxInserted = true;
 				lastLetters = this.insertLettersBox(lastBase);
 			}
