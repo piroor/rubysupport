@@ -570,6 +570,7 @@ try{
 			this.correctVerticalPosition(aNode);
 			this.applyRubyAlign(aNode);
 			this.applyRubyOverhang(aNode);
+			this.applyLineStacking(aNode);
 		}
 		catch(e) {
 dump(e+'\n');
@@ -693,6 +694,21 @@ dump(e+'\n');
 
 		var nodeWrapper = new XPCNativeWrapper(aNode, 'firstChild', 'getElementsByTagName()');
 		return nodeWrapper.getElementsByTagName('*')[0] || nodeWrapper.firstChild;
+	},
+ 
+	getRubyTexts : function(aNode) 
+	{
+		var nodes = { top: null, bottom: null };
+		if (!aNode) return nodes;
+
+		var texts = this.evaluateXPath('child::*[contains(" rt rtc RT RTC ", concat(" ", local-name(), " "))]', aNode);
+
+		if (texts.snapshotLength > 0)
+			nodes.top = texts.snapshotItem(0);
+		if (texts.snapshotLength > 1)
+			nodes.bottom = texts.snapshotItem(1);
+
+		return nodes;
 	},
   
 	applyRubyAlign : function(aNode) 
@@ -986,6 +1002,36 @@ dump(e+'\n');
 			)
 			this.clearInnerBox(lastBase, lastLetters);
 
+		nodeWrapper.setAttribute('style', style);
+	},
+ 
+	applyLineStacking : function(aNode) 
+	{
+		if (!this.isGecko19OrLater) return;
+
+		var stacking = nsPreferences.copyUnicharPref(this.kSTYLE_STACKING).toLowerCase();
+		if (stacking == 'include-ruby') return;
+
+		var texts = this.getRubyTexts(aNode);
+		if (!texts.top && !texts.bottom) return;
+
+		var nodeWrapper = new XPCNativeWrapper(aNode,
+				'ownerDocument',
+				'setAttribute()',
+				'getAttribute()'
+			);
+		var docWrapper = new XPCNativeWrapper(nodeWrapper.ownerDocument,
+				'getBoxObjectFor()'
+			);
+
+		var box;
+		var style = nodeWrapper.getAttribute('style');
+		if (texts.top) {
+			style += '; margin-top: -'+docWrapper.getBoxObjectFor(texts.top).height+'px !important';
+		}
+		if (texts.bottom) {
+			style += '; margin-bottom: -'+docWrapper.getBoxObjectFor(texts.bottom).height+'px !important';
+		}
 		nodeWrapper.setAttribute('style', style);
 	},
   
