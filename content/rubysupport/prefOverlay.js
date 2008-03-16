@@ -33,12 +33,20 @@ function opener()
 	return WindowManager.getMostRecentWindow('navigator:browser');
 }
 
-function loadURI(uri)
+function loadURI(aURI, aEvent)
 {
-	if (opener())
-		opener().loadURI(uri);
+	var w = opener();
+	if (w) {
+		if (
+			aEvent.button == 1 ||
+			(aEvent.button == 0 && (aEvent.ctrlKey || aEvent.metaKey))
+			)
+			w.gBrowser.selectedTab = w.gBrowser.addTab(aURI);
+		else
+			w.loadURI(aURI);
+	}
 	else
-		window.open(uri);
+		window.open(aURI);
 }
  
 // Uninstall 

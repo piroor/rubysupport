@@ -85,7 +85,7 @@
 		<box orient="horizontal">
 			<spacer flex="1"/>
 			<description value="&ruby.about.destributed;"
-				onclick="loadURI('http://piro.sakura.ne.jp/');"
+				onclick="loadURI('http://piro.sakura.ne.jp/', event);"
 				class="text-link"/>
 			<spacer flex="1"/>
 		</box>
@@ -106,7 +106,7 @@
 		<caption>
 			<label value="&ruby.style.align;"
 				class="text-link"
-				onclick="loadURI(this.getAttribute('descriptionURI'))"
+				onclick="loadURI(this.getAttribute('descriptionURI'), event)"
 				descriptionURI="&ruby.style.align.uri;"/>
 		</caption>
 		<radiogroup id="rubysupport.style.default.ruby-align"
@@ -135,7 +135,7 @@
 		<caption>
 			<label value="&ruby.style.overhang;"
 				class="text-link"
-				onclick="loadURI(this.getAttribute('descriptionURI'))"
+				onclick="loadURI(this.getAttribute('descriptionURI'), event)"
 				descriptionURI="&ruby.style.overhang.uri;"/>
 		</caption>
 		<radiogroup id="rubysupport.style.default.ruby-overhang"
@@ -158,7 +158,7 @@
 		<caption>
 			<label value="&ruby.style.line-stacking;"
 				class="text-link"
-				onclick="loadURI(this.getAttribute('descriptionURI'))"
+				onclick="loadURI(this.getAttribute('descriptionURI'), event)"
 				descriptionURI="&ruby.style.line-stacking.uri;"/>
 		</caption>
 		<radiogroup id="rubysupport.style.default.line-stacking-ruby"
