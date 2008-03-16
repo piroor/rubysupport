@@ -30,14 +30,18 @@
 }
 *|ruby[moz-ruby-parsed="done"][moz-ruby-align="left"] *|*,
 *|ruby[moz-ruby-parsed="done"][moz-ruby-align="start"] *|*,
+*|ruby[moz-ruby-parsed="done"][moz-ruby-align="line-edge"][moz-ruby-line-edge="left"] *|rb,
 *|*[moz-ruby-parsed="done"] > *|ruby[moz-ruby-align="left"] *|*,
-*|*[moz-ruby-parsed="done"] > *|ruby[moz-ruby-align="start"] *|* {
+*|*[moz-ruby-parsed="done"] > *|ruby[moz-ruby-align="start"] *|*,
+*|*[moz-ruby-parsed="done"] > *|ruby[moz-ruby-align="line-edge"][moz-ruby-line-edge="left"] *|rb {
 	text-align: left !important;
 }
 *|ruby[moz-ruby-parsed="done"][moz-ruby-align="right"] *|*,
 *|ruby[moz-ruby-parsed="done"][moz-ruby-align="end"] *|*,
+*|ruby[moz-ruby-parsed="done"][moz-ruby-align="line-edge"][moz-ruby-line-edge="right"] *|rb,
 *|*[moz-ruby-parsed="done"] > *|ruby[moz-ruby-align="right"] *|*,
-*|*[moz-ruby-parsed="done"] > *|ruby[moz-ruby-align="end"] *|* {
+*|*[moz-ruby-parsed="done"] > *|ruby[moz-ruby-align="end"] *|*,
+*|*[moz-ruby-parsed="done"] > *|ruby[moz-ruby-align="line-edge"][moz-ruby-line-edge="right"] *|rb {
 	text-align: right !important;
 }
 

@@ -119,6 +119,8 @@
 				class="image" src="chrome://rubysupport/content/styles/align-space.png"/>
 			<radio label="&ruby.style.align.auto;" value="auto"
 				class="image" src="chrome://rubysupport/content/styles/align-auto.png"/>
+			<radio label="&ruby.style.align.line-edge;" value="line-edge"
+				class="image" src="chrome://rubysupport/content/styles/align-line-edge.png"/>
 		</radiogroup>
 	</groupbox>
 	<groupbox orient="vertical">

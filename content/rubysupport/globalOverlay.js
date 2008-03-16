@@ -10,6 +10,7 @@ var RubyService =
 	kSTATE : 'moz-ruby-parsed',
 	kTYPE  : 'moz-ruby-type',
 	kALIGN  : 'moz-ruby-align',
+	kLINE_EDGE : 'moz-ruby-line-edge',
 	kREFORMED : 'moz-ruby-reformed',
 
 	kLETTERS_BOX : 'ruby-text-innerBox',
@@ -567,7 +568,7 @@ try{
 
 		try {
 			this.correctVerticalPosition(aNode);
-			this.applyRubyAligns(aNode);
+			this.applyRubyAlign(aNode);
 			this.applyRubyOverhang(aNode);
 		}
 		catch(e) {
@@ -666,6 +667,12 @@ dump(e+'\n');
 			if (offset != 0)
 				nodeWrapper.setAttribute('style', 'vertical-align: '+offset+'px !important;');
 
+			nodeWrapper.setAttribute(this.kLINE_EDGE,
+				rbBox.screenY > beforeBox.screenY ? 'left' :
+				rbBox.screenY < afterBox.screenY ? 'right' :
+				'none'
+			);
+
 			parentWrapper.removeChild(beforeBoxNode);
 			parentWrapper.removeChild(afterBoxNode);
 			baseWrapper.removeChild(baseBoxNode);
@@ -688,7 +695,7 @@ dump(e+'\n');
 		return nodeWrapper.getElementsByTagName('*')[0] || nodeWrapper.firstChild;
 	},
   
-	applyRubyAligns : function(aNode) 
+	applyRubyAlign : function(aNode) 
 	{
 		var nodeWrapper = new XPCNativeWrapper(aNode,
 				'setAttribute()'
@@ -706,8 +713,6 @@ dump(e+'\n');
 	{
 		var isWrapped = false;
 		var align = nsPreferences.copyUnicharPref(this.kSTYLE_ALIGN).toLowerCase();
-		if (align == 'letter-edge')
-			align = 'auto';
 
 		// ‚Ü‚¸AŽšŠÔ‚ð’²®‚·‚é‘ÎÛ‚©‚Ç‚¤‚©‚ð”»•Ê
 		var wholeWrapper = new XPCNativeWrapper(aNode,
@@ -906,9 +911,6 @@ dump(e+'\n');
 	{
 		var overhang = nsPreferences.copyUnicharPref(this.kSTYLE_OVERHANG).toLowerCase();
 		var align = nsPreferences.copyUnicharPref(this.kSTYLE_ALIGN).toLowerCase();
-		if (align == 'letter-edge')
-			align = 'auto';
-
 		if (
 			overhang == 'none' ||
 			(overhang == 'start' && (align == 'left' || align == 'start')) ||
