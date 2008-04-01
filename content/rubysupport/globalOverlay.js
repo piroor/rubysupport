@@ -691,7 +691,7 @@ dump(e+'\n');
 	getRubyBase : function(aNode) 
 	{
 		if (!aNode) return null;
-		var bases = this.evaluateXPath('child::*[contains(" rb rbc RB RBC ", concat(" ", local-name(), " "))]', aNode);
+		var bases = this.evaluateXPath('descendant::*[contains(" rb RB ", concat(" ", local-name(), " "))]', aNode);
 		if (bases.snapshotLength)
 			return bases.snapshotItem(0);
 
