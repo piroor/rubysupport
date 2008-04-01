@@ -15,6 +15,7 @@ var RubyService =
 
 	kLETTERS_BOX : 'ruby-text-innerBox',
 	kLAST_LETTER_BOX : 'ruby-text-lastLetterBox',
+	kCANCEL_SPACING_BOX : 'ruby-text-cancelSpacingBox',
 
 	kAUTO_EXPANDED : 'ruby-auto-expanded',
 
@@ -33,6 +34,8 @@ var RubyService =
 	kSTYLE_ALIGN    : 'rubysupport.style.default.ruby-align',
 	kSTYLE_OVERHANG : 'rubysupport.style.default.ruby-overhang',
 	kSTYLE_STACKING : 'rubysupport.style.default.line-stacking-ruby',
+
+	kNARROW_CHARACTERS_PATTERN : /[\u0020-\u024F]+/ig,
 
 	get SSS()
 	{
@@ -755,7 +758,7 @@ dump(e+'\n');
 
 		// 英単語の間に字間を入れるかどうか
 		if (align != 'distribute-letter' && align != 'distribute-space')
-			text = text.replace(/[\u0020-\u024F]+/ig, 'a');
+			text = text.replace(this.kNARROW_CHARACTERS_PATTERN, 'a');
 
 		// 1文字しかなければ処理をスキップ
 		if (text.length <= 1) return;
@@ -795,6 +798,8 @@ dump(e+'\n');
 		}
 		if (space <= 0) return;
 
+		if (align == 'auto' || align == 'line-edge')
+			this.wrapNarrowCharacters(aNode);
 
 		if (isWrapped) {
 			wholeWrapper.setAttribute('style',
@@ -921,6 +926,58 @@ dump(e+'\n');
 			}
 		}
 		return null;
+	},
+ 
+	wrapNarrowCharacters : function(aNode) 
+	{
+		var nodeWrapper = new XPCNativeWrapper(aNode,
+				'childNodes',
+				'appendChild()',
+				'ownerDocument'
+			);
+		var docWrapper = new XPCNativeWrapper(nodeWrapper.ownerDocument,
+				'createElementNS()',
+				'createTextNode()',
+				'createRange()'
+			);
+		var nodes = nodeWrapper.childNodes;
+		var node;
+		var matched;
+		var range = docWrapper.createRange();
+
+		var wrapper = docWrapper.createElementNS(this.XHTMLNS, 'span');
+		wrapper.setAttribute('class', this.kCANCEL_SPACING_BOX);
+		wrapper.appendChild(docWrapper.createTextNode(''));
+		var clonedWrapper;
+
+		for (var i = nodes.length-1; i > -1; i--)
+		{
+			node = new XPCNativeWrapper(nodes[i],
+				'nodeType',
+				'nodeValue'
+			);
+			if (node.nodeType == Node.TEXT_NODE) {
+				matched = node.nodeValue.match(this.kNARROW_CHARACTERS_PATTERN);
+				if (!matched || !matched.length) continue;
+				for (var j = matched.length-1; j > -1; j--)
+				{
+					matched[j] = matched[j].replace(/\s+/g, '');
+					if (!matched[j] || matched[j].length == 1) continue;
+					range.selectNode(nodes[i]);
+					var pos = node.nodeValue.lastIndexOf(matched[j]);
+					range.setStart(nodes[i], pos);
+					range.setEnd(nodes[i], pos + matched[j].length - 1); // except the last letter
+					clonedWrapper = wrapper.cloneNode(true);
+					clonedWrapper.firstChild.nodeValue = range.toString();
+					range.deleteContents();
+					range.insertNode(clonedWrapper);
+				}
+			}
+			else if (node.nodeType == Node.ELEMENT_NODE) {
+				this.wrapNarrowCharacters(nodes[i]);
+			}
+		}
+		range.detach();
 	},
   
 	applyRubyOverhang : function(aNode) 

@@ -135,7 +135,8 @@ ruby[moz-ruby-parsed="done"] *|rt RUBY|cell,
 
 
 /* šŠÔ’²®—p */
-span.ruby-text-lastLetterBox {
+span.ruby-text-lastLetterBox,
+span.ruby-text-cancelSpacingBox {
 	letter-spacing: 0 !important;
 }
 
