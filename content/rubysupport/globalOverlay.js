@@ -906,46 +906,13 @@ dump(e+'\n');
 		if (this.initialized) return;
 		this.initialized = true;
 
-		try {
-			window.removeEventListener('load', this, false);
-			window.removeEventListener('load', this, false);
-		}
-		catch(e) {
-		}
-
+		window.removeEventListener('load', this, false);
+s
 		if (!('gBrowser' in window)) return;
 
 		window.addEventListener('unload', this, false);
 
 		try {
-			if (nsPreferences.getBoolPref(this.kPREF_ENABLED) === null)
-				nsPreferences.setBoolPref(this.kPREF_ENABLED, true);
-
-			if (nsPreferences.getBoolPref(this.kPREF_PROGRESSIVE) === null)
-				nsPreferences.setBoolPref(this.kPREF_PROGRESSIVE, true);
-
-			if (nsPreferences.getIntPref(this.kPREF_PROGRESS_UNIT) === null)
-				nsPreferences.setIntPref(this.kPREF_PROGRESS_UNIT, 30);
-
-			if (nsPreferences.getBoolPref(this.kPREF_EXPAND) === null)
-				nsPreferences.setBoolPref(this.kPREF_EXPAND, true);
-
-			if (nsPreferences.copyUnicharPref(this.kPREF_EXPAND_LIST) === null)
-				nsPreferences.setUnicharPref(this.kPREF_EXPAND_LIST, 'abbr acronym dfn');
-
-			if (nsPreferences.getIntPref(this.kPREF_EXPAND_MODE) === null)
-				nsPreferences.setIntPref(this.kPREF_EXPAND_MODE, 1);
-
-			if (nsPreferences.getBoolPref(this.kPREF_NOPSEUDS) === null)
-				nsPreferences.setBoolPref(this.kPREF_NOPSEUDS, true);
-
-			if (nsPreferences.copyUnicharPref(this.kSTYLE_ALIGN) === null)
-				nsPreferences.setUnicharPref(this.kSTYLE_ALIGN, 'auto');
-			if (nsPreferences.copyUnicharPref(this.kSTYLE_OVERHANG) === null)
-				nsPreferences.setUnicharPref(this.kSTYLE_OVERHANG, 'none');
-			if (nsPreferences.copyUnicharPref(this.kSTYLE_STACKING) === null)
-				nsPreferences.setUnicharPref(this.kSTYLE_STACKING, 'exclude-ruby');
-
 			if (this.SSS) {
 				this.useGlobalStyleSheets = true;
 				this.updateGlobalStyleSheets();
