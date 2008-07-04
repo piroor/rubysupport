@@ -119,15 +119,14 @@ var RubyService =
  
 	parseRubyNodes : function(aWindow) 
 	{
-		var winWrapper = new XPCNativeWrapper(aWindow, 'document');
-		if (!winWrapper.document) return false;
+		if (!aWindow.document) return false;
 
 		if (nsPreferences.getBoolPref(this.kPREF_PROGRESSIVE)) {
 			this.startProgressiveParse(aWindow);
 		}
 		else {
 			var expression = this.parseTargetExpression+'[last()]';
-			var root = (new XPCNativeWrapper(winWrapper.document, 'documentElement')).documentElement;
+			var root = aWindow.document.documentElement;
 			var target;
 			while (target = this.evaluateXPath(
 					expression,
@@ -166,15 +165,10 @@ var RubyService =
  
 	parseOneNode : function(aNode) 
 	{
-		var nodeWrapper = new XPCNativeWrapper(aNode,
-				'localName',
-				'hasAttribute()',
-				'setAttribute()'
-			);
-		if (!nodeWrapper.hasAttribute(this.kSTATE)) {
-			nodeWrapper.setAttribute(this.kSTATE, 'progress');
+		if (!aNode.hasAttribute(this.kSTATE)) {
+			aNode.setAttribute(this.kSTATE, 'progress');
 			try {
-				if (nodeWrapper.localName.toLowerCase() != 'ruby') {
+				if (aNode.localName.toLowerCase() != 'ruby') {
 					this.expandAttribute(aNode);
 				}
 				else {
@@ -184,19 +178,18 @@ var RubyService =
 			catch(e) {
 					dump(e+'\n > '+aNode+'\n');
 			}
-			nodeWrapper.setAttribute(this.kSTATE, 'done');
+			aNode.setAttribute(this.kSTATE, 'done');
 		}
 
 		if (this.isGecko19OrLater)
-			nodeWrapper.setAttribute(this.kTYPE, 'inline-table');
+			aNode.setAttribute(this.kTYPE, 'inline-table');
 
 		this.delayedReformRubyElement(aNode);
 	},
  
 	progressiveParse : function(aWindow) 
 	{
-		var winWrapper = new XPCNativeWrapper(aWindow, 'document');
-		var docWrapper = new XPCNativeWrapper(winWrapper.document, 'documentElement');
+		var doc = aWindow.document;
 
 		var unit = nsPreferences.getIntPref(this.kPREF_PROGRESS_UNIT);
 		var target;
@@ -204,7 +197,7 @@ var RubyService =
 		while (
 				(target = this.evaluateXPath(
 					this.parseTargetExpression,
-					docWrapper.documentElement,
+					doc.documentElement,
 					XPathResult.FIRST_ORDERED_NODE_TYPE
 				).singleNodeValue) &&
 				(count++ < unit)
@@ -223,7 +216,6 @@ var RubyService =
 	
 	startProgressiveParse : function(aWindow) 
 	{
-		var winWrapper = new XPCNativeWrapper(aWindow, 'setTimeout()');
 		aWindow.setTimeout(function(aSelf) {
 			aSelf.progressiveParse(aWindow);
 		}, 0, this);
@@ -231,22 +223,12 @@ var RubyService =
   
 	parseRuby : function(aNode) 
 	{
-		var nodeWrapper = new XPCNativeWrapper(aNode,
-				'ownerDocument',
-				'setAttribute()'
-			);
-		var docWrapper = new XPCNativeWrapper(nodeWrapper.ownerDocument,
-				'compatMode',
-				'contentType',
-				'doctype',
-				'createElementNS()'
-			);
-
+		var doc = aNode.ownerDocument;
 
 		// 後方互換モードあるいは非XHTMLの場合でのみタグの補完を行う
-		if (docWrapper.compatMode == 'BackCompat' ||
-			docWrapper.contentType == 'text/html' ||
-			!/XHTML/.test(docWrapper.doctype.publicId))
+		if (doc.compatMode == 'BackCompat' ||
+			doc.contentType == 'text/html' ||
+			!/XHTML/.test(doc.doctype.publicId))
 			this.fixUpMSIERuby(aNode);
 
 
@@ -257,23 +239,15 @@ var RubyService =
 			var rts = this.evaluateXPath('descendant::*[contains(" rt RT ", concat(" ", local-name(), " ")) and @rbspan and not((@rbspan = "") or (number(@rbspan) < 2) or parent::xhtml:td)]', aNode);
 
 			var tmp_td, tmp_td_content;
-			var rtWrapper, parentWrapper;
+			var rt;
 			for (var i = rts.snapshotLength-1; i > -1; i--)
 			{
-				rtWrapper = new XPCNativeWrapper(rts.snapshotItem(i),
-						'getAttribute()',
-						'parentNode'
-					);
-				parentWrapper = new XPCNativeWrapper(rtWrapper.parentNode,
-						'localName',
-						'replaceChild()'
-					);
-
-				tmp_td = docWrapper.createElementNS(this.XHTMLNS, 'td');
+				rt = rts.snapshotItem(i);
+				tmp_td = doc.createElementNS(this.XHTMLNS, 'td');
 				tmp_td.setAttribute('moz-ruby-inserted', true);
-				tmp_td.setAttribute('colspan', rtWrapper.getAttribute('rbspan'));
+				tmp_td.setAttribute('colspan', rt.getAttribute('rbspan'));
 				// 以下の2行は、一行にまとめて書こうとすると何故かエラーになる
-				tmp_td_content = parentWrapper.replaceChild(tmp_td, rts.snapshotItem(i));
+				tmp_td_content = rt.parentNode.replaceChild(tmp_td, rts.snapshotItem(i));
 				tmp_td.appendChild(tmp_td_content);
 			}
 		}
@@ -286,21 +260,7 @@ try{
 		var namespace = this.isGecko18OrLater ? this.XHTMLNS : this.RUBYNS;
 
 		var i, j;
-		var nodeWrapper = new XPCNativeWrapper(aNode,
-				'nextSibling',
-				'parentNode',
-				'childNodes',
-				'firstChild',
-				'lastChild',
-				'insertBefore()',
-				'removeChild()',
-				'ownerDocument'
-			);
-		var docWrapper = new XPCNativeWrapper(nodeWrapper.ownerDocument,
-				'defaultView',
-				'createElementNS()',
-				'createRange()'
-			);
+		var doc = aNode.ownerDocument;
 
 		/*
 			複雑ルビが使用されている場合、この処理は行わない。
@@ -325,7 +285,7 @@ try{
 		*/
 
 
-		var range = docWrapper.createRange();
+		var range = doc.createRange();
 		var notClosedRubyElements,
 			childRubyElement,
 			movedContents;
@@ -359,12 +319,12 @@ try{
 		// マークアップされていないrbをマークアップし直す。
 		// rtより前にあるものはすべてrbにする。
 		var rts = this.evaluateXPath('child::*[contains(" rt RT ", concat(" ", local-name(), " "))]', aNode);
-		var startWrapper,
-			startNextWrapper,
-			endWrapper,
-			endPreviousWrapper,
+		var start,
+			startNext,
+			end,
+			endPrevious,
 			rangeContents,
-			rangeContentWrapper;
+			rangeContent;
 		for (i = rts.snapshotLength-1; i > -1; i--)
 		{
 			range.selectNodeContents(aNode);
@@ -376,20 +336,20 @@ try{
 			// <ruby>[hoge]<rp>(</rp><rt>foobar</rt><rp>)</rp></ruby>
 			// という風にRangeの開始位置・終了位置をrpを除く位置に移動してやらないといけない。
 			if (i > 0) {
-				startWrapper = new XPCNativeWrapper(rts.snapshotItem(i-1), 'nextSibling');
-				startNextWrapper = new XPCNativeWrapper(startWrapper.nextSibling, 'localName');
-				if (startNextWrapper.localName &&
-					startNextWrapper.localName.toLowerCase() == 'rp')
-					range.setStartAfter(startWrapper.nextSibling);
+				start = rts.snapshotItem(i-1);
+				startNext = start.nextSibling;
+				if (startNext.localName &&
+					startNext.localName.toLowerCase() == 'rp')
+					range.setStartAfter(start.nextSibling);
 				else
 					range.setStartAfter(rts.snapshotItem(i-1));
 			}
 
-			endWrapper = new XPCNativeWrapper(rts.snapshotItem(i), 'previousSibling');
-			endPreviousWrapper = new XPCNativeWrapper(endWrapper.previousSibling, 'localName');
-			if (endPreviousWrapper.localName &&
-				endPreviousWrapper.localName.toLowerCase() == 'rp')
-				range.setEndBefore(endWrapper.previousSibling);
+			end = rts.snapshotItem(i);
+			endPrevious = end.previousSibling;
+			if (endPrevious.localName &&
+				endPrevious.localName.toLowerCase() == 'rp')
+				range.setEndBefore(end.previousSibling);
 			else
 				range.setEndBefore(rts.snapshotItem(i));
 
@@ -398,15 +358,15 @@ try{
 			rangeContents = range.cloneContents();
 			if (!rangeContents.childNodes.length) continue;
 			if (rangeContents.childNodes.length == 1) {
-				rangeContentWrapper = new XPCNativeWrapper(rangeContents.firstChild, 'nodeType');
+				rangeContent = rangeContents.firstChild;
 				if (
-					rangeContentWrapper.nodeType == Node.ELEMENT_NODE &&
-					(rangeContentWrapper = new XPCNativeWrapper(rangeContents.firstChild, 'localName')).localName.toLowerCase() == 'rb'
+					rangeContent.nodeType == Node.ELEMENT_NODE &&
+					(rangeContent = rangeContents.firstChild).localName.toLowerCase() == 'rb'
 					)
 					continue;
 			}
 
-			containerRubyBase = docWrapper.createElementNS(namespace, 'rb');
+			containerRubyBase = doc.createElementNS(namespace, 'rb');
 			containerRubyBase.appendChild(range.extractContents());
 			range.insertNode(containerRubyBase);
 
@@ -440,12 +400,12 @@ try{
 			movedContents = range.extractContents();
 
 			if (shouldCreateNewRubyElement) {
-				var newRubyElement = docWrapper.createElementNS(namespace, 'ruby');
+				var newRubyElement = doc.createElementNS(namespace, 'ruby');
 				newRubyElement.appendChild(movedContents);
 				movedContents = newRubyElement;
 			}
 
-			range.selectNodeContents(nodeWrapper.parentNode);
+			range.selectNodeContents(aNode.parentNode);
 			range.setStartAfter(aNode);
 			range.setEndAfter(aNode);
 			range.insertNode(movedContents);
@@ -457,11 +417,11 @@ try{
 		// 複数あるrtを、一つにまとめる
 		var rts = this.evaluateXPath('child::*[contains(" rt RT ", concat(" ", local-name(), " "))]', aNode);
 		if (rts.snapshotLength > 1) {
-			var text = docWrapper.createElementNS(namespace, 'rtc-ie');
-			nodeWrapper.insertBefore(text, rts.snapshotItem(0));
+			var text = doc.createElementNS(namespace, 'rtc-ie');
+			aNode.insertBefore(text, rts.snapshotItem(0));
 
 			for (i = rts.snapshotLength-1; i > -1; i--)
-				text.insertBefore(nodeWrapper.removeChild(rts.snapshotItem(i)), text.firstChild);
+				text.insertBefore(aNode.removeChild(rts.snapshotItem(i)), text.firstChild);
 		}
 }catch(e){
 	dump(e+'\n');
@@ -470,35 +430,22 @@ try{
   
 	expandAttribute : function(aNode) 
 	{
-		var nodeWrapper = new XPCNativeWrapper(aNode,
-				'title',
-				'localName',
-				'ownerDocument',
-				'getAttribute()',
-				'setAttribute()'
-			);
-		var docWrapper = new XPCNativeWrapper(nodeWrapper.ownerDocument,
-				'documentElement'
-			);
-		var rootWrapper = new XPCNativeWrapper(docWrapper.documentElement,
-				'getAttribute()',
-				'setAttribute()'
-			);
+		var root = aNode.ownerDocument.documentElement;
 
 		var mode = nsPreferences.getIntPref(this.kPREF_EXPAND_MODE);
 		if (mode == 1) {
 			// 既に展開した略語はもう展開しない
-			var expanded = rootWrapper.getAttribute(this.kEXPANDED) || '';
+			var expanded = root.getAttribute(this.kEXPANDED) || '';
 			var key = encodeURIComponent([
 						aNode.localName,
 						aNode.textContent,
-						nodeWrapper.title
+						aNode.title
 					].join('::'));
 			if (('|'+expanded+'|').indexOf('|'+key+'|') > -1) return;
-			rootWrapper.setAttribute(this.kEXPANDED, (expanded ? expanded + '|' : '' ) + key);
+			root.setAttribute(this.kEXPANDED, (expanded ? expanded + '|' : '' ) + key);
 		}
 
-		nodeWrapper.setAttribute('rubytext', nodeWrapper.title);
+		aNode.setAttribute('rubytext', aNode.title);
 
 		this.reformRubyElement(aNode);
 	},
@@ -506,15 +453,11 @@ try{
 	// Apply Stylesheet (legacy operation, for old Mozilla) 
 	setRubyStyle : function(targetWindow)
 	{
-		var winWrapper = new XPCNativeWrapper(targetWindow, 'document');
-		var docWrapper = new XPCNativeWrapper(winWrapper.document, 'documentElement');
-		var nodeWrapper = new XPCNativeWrapper(docWrapper.documentElement,
-				'getAttribute()',
-				'setAttribute()'
-			);
+		var doc = targetWindow.document;
+		var node = doc.documentElement;
 		if (
 			!nsPreferences.getBoolPref(this.kPREF_ENABLED) ||
-			nodeWrapper.getAttribute(this.kLOADED) == 'true'
+			node.getAttribute(this.kLOADED) == 'true'
 			)
 			return;
 
@@ -524,49 +467,32 @@ try{
 		if (nsPreferences.getBoolPref(this.kPREF_NOPSEUDS))
 			this.addStyleSheet('chrome://rubysupport/content/styles/ruby-expanded-nopseuds.css', targetWindow);
 
-		nodeWrapper.setAttribute(this.kLOADED, true);
+		node.setAttribute(this.kLOADED, true);
 	},
 	
 	addStyleSheet : function(path, targetWindow) 
 	{
-		var winWrapper = new XPCNativeWrapper(targetWindow, 'document');
-
-		var d     = winWrapper.document,
+		var d     = targetWindow.document,
 			newPI = document.createProcessingInstruction('xml-stylesheet',
 				'href="'+path+'" type="text/css" media="all"');
-
-		var docWrapper = new XPCNativeWrapper(d, 'firstChild', 'insertBefore()');
-		docWrapper.insertBefore(newPI, docWrapper.firstChild);
+		d.insertBefore(newPI, d.firstChild);
 		return;
 	},
    
 	reformRubyElement : function(aNode) 
 	{
-		var nodeWrapper = new XPCNativeWrapper(aNode,
-				'localName',
-				'ownerDocument',
-				'getAttribute()',
-				'setAttribute()'
-			);
-		var originalNodeWrapper = nodeWrapper;
-		if (String(nodeWrapper.localName).toLowerCase() != 'ruby') {
-			var docWrapper = new XPCNativeWrapper(nodeWrapper.ownerDocument,
-					'getAnonymousElementByAttribute()'
-				);
-			var ruby = docWrapper.getAnonymousElementByAttribute(aNode, 'class', this.kAUTO_EXPANDED);
+		var originalNode = aNode;
+		if (String(aNode.localName).toLowerCase() != 'ruby') {
+			var doc = aNode.ownerDocument;
+			var ruby = doc.getAnonymousElementByAttribute(aNode, 'class', this.kAUTO_EXPANDED);
 			if (!ruby) {
 				this.delayedReformRubyElement(aNode);
 				return;
 			}
 			aNode = ruby;
-			nodeWrapper = new XPCNativeWrapper(
-				aNode,
-				'hasAttribute()',
-				'setAttribute()'
-			);
 		}
 
-		if (originalNodeWrapper.getAttribute(this.kREFORMED) == 'done')
+		if (originalNode.getAttribute(this.kREFORMED) == 'done')
 			return;
 
 		try {
@@ -579,15 +505,12 @@ try{
 dump(e+'\n');
 		}
 
-		originalNodeWrapper.setAttribute(this.kREFORMED, 'done');
+		originalNode.setAttribute(this.kREFORMED, 'done');
 	},
 	 
 	delayedReformRubyElement : function(aNode) 
 	{
-		var nodeWrapper = new XPCNativeWrapper(aNode,
-				'setAttribute()'
-			);
-		nodeWrapper.setAttribute(this.kREFORMED, 'progress');
+		aNode.setAttribute(this.kREFORMED, 'progress');
 
 		window.setTimeout(function(aSelf) {
 			aSelf.reformRubyElement(aNode);
@@ -597,68 +520,39 @@ dump(e+'\n');
 	correctVerticalPosition : function(aNode) 
 	{
 		var node = aNode;
-		var nodeWrapper = new XPCNativeWrapper(node,
-				'ownerDocument',
-				'parentNode',
-				'nextSibling',
-				'hasAttribute()',
-				'getAttribute()',
-				'setAttribute()'
-			);
-
-		if (!nodeWrapper.parentNode)
+		if (!node.parentNode)
 			return;
 
-		var docWrapper = new XPCNativeWrapper(nodeWrapper.ownerDocument,
-				'getAnonymousElementByAttribute()',
-				'getBoxObjectFor()',
-				'createElementNS()',
-				'createTextNode()'
-			);
+		var doc = node.ownerDocument;
 
-		if (nodeWrapper.getAttribute('class') == this.kAUTO_EXPANDED) {
-			node = nodeWrapper.parentNode;
-			nodeWrapper = new XPCNativeWrapper(node,
-				'parentNode',
-				'nextSibling',
-				'hasAttribute()',
-				'getAttribute()',
-				'setAttribute()'
-			);
+		if (node.getAttribute('class') == this.kAUTO_EXPANDED) {
+			node = node.parentNode;
 		}
 
 		try {
-			nodeWrapper.setAttribute('style', 'vertical-align: baseline !important;');
+			node.setAttribute('style', 'vertical-align: baseline !important;');
 
 			var base = this.getRubyBase(aNode);
 			if (!base) return; // if we get box object for "undefined", Mozilla makes crash.
 
 
 			// 仮のボックスを挿入し、高さ補正の基準にする
-			var beforeBoxNode = docWrapper.createElementNS(this.RUBYNS, 'dummyBox');
-			beforeBoxNode.appendChild(docWrapper.createTextNode('?'));
-			var afterBoxNode  = docWrapper.createElementNS(this.RUBYNS, 'dummyBox');
-			afterBoxNode.appendChild(docWrapper.createTextNode('?'));
-			var baseBoxNode  = docWrapper.createElementNS(this.RUBYNS, 'dummyBox');
-			baseBoxNode.appendChild(docWrapper.createTextNode('?'));
+			var beforeBoxNode = doc.createElementNS(this.RUBYNS, 'dummyBox');
+			beforeBoxNode.appendChild(doc.createTextNode('?'));
+			var afterBoxNode  = doc.createElementNS(this.RUBYNS, 'dummyBox');
+			afterBoxNode.appendChild(doc.createTextNode('?'));
+			var baseBoxNode  = doc.createElementNS(this.RUBYNS, 'dummyBox');
+			baseBoxNode.appendChild(doc.createTextNode('?'));
 
-			var baseWrapper = new XPCNativeWrapper(base,
-					'firstChild',
-					'insertBefore()',
-					'removeChild()'
-				);
 			base.insertBefore(baseBoxNode, base.firstChild);
-			var rbBox = docWrapper.getBoxObjectFor(baseBoxNode);
+			var rbBox = doc.getBoxObjectFor(baseBoxNode);
 
-			var parentWrapper = new XPCNativeWrapper(nodeWrapper.parentNode,
-					'insertBefore()',
-					'removeChild()'
-				);
-			parentWrapper.insertBefore(beforeBoxNode, node);
-			parentWrapper.insertBefore(afterBoxNode, nodeWrapper.nextSibling);
+			var parent = node.parentNode;
+			parent.insertBefore(beforeBoxNode, node);
+			parent.insertBefore(afterBoxNode, node.nextSibling);
 
-			var beforeBox = docWrapper.getBoxObjectFor(beforeBoxNode);
-			var afterBox  = docWrapper.getBoxObjectFor(afterBoxNode);
+			var beforeBox = doc.getBoxObjectFor(beforeBoxNode);
+			var afterBox  = doc.getBoxObjectFor(afterBoxNode);
 
 			var baseBox = (
 					Math.abs((rbBox.y+rbBox.height) - (beforeBox.y+beforeBox.height)) >
@@ -669,17 +563,17 @@ dump(e+'\n');
 
 			var offset = (rbBox.y+rbBox.height) - (baseBox.y+baseBox.height);
 			if (offset != 0)
-				nodeWrapper.setAttribute('style', 'vertical-align: '+offset+'px !important;');
+				node.setAttribute('style', 'vertical-align: '+offset+'px !important;');
 
-			nodeWrapper.setAttribute(this.kLINE_EDGE,
+			node.setAttribute(this.kLINE_EDGE,
 				rbBox.screenY > beforeBox.screenY ? 'left' :
 				rbBox.screenY < afterBox.screenY ? 'right' :
 				'none'
 			);
 
-			parentWrapper.removeChild(beforeBoxNode);
-			parentWrapper.removeChild(afterBoxNode);
-			baseWrapper.removeChild(baseBoxNode);
+			parent.removeChild(beforeBoxNode);
+			parent.removeChild(afterBoxNode);
+			base.removeChild(baseBoxNode);
 		}
 		catch(e) {
 //dump(e+'\n');
@@ -695,8 +589,7 @@ dump(e+'\n');
 		if (bases.snapshotLength)
 			return bases.snapshotItem(0);
 
-		var nodeWrapper = new XPCNativeWrapper(aNode, 'firstChild', 'getElementsByTagName()');
-		return nodeWrapper.getElementsByTagName('*')[0] || nodeWrapper.firstChild;
+		return aNode.getElementsByTagName('*')[0] || aNode.firstChild;
 	},
  
 	getRubyTexts : function(aNode) 
@@ -716,11 +609,8 @@ dump(e+'\n');
   
 	applyRubyAlign : function(aNode) 
 	{
-		var nodeWrapper = new XPCNativeWrapper(aNode,
-				'setAttribute()'
-			);
 		var align = nsPreferences.copyUnicharPref(this.kSTYLE_ALIGN).toLowerCase();
-		nodeWrapper.setAttribute(this.kALIGN, align);
+		aNode.setAttribute(this.kALIGN, align);
 		if (/left|start|right|end|center/.test(align)) return;
 
 		var boxes = this.evaluateXPath('descendant::*[contains(" rb rt RB RT ", concat(" ", local-name(), " "))]', aNode);
@@ -734,24 +624,12 @@ dump(e+'\n');
 		var align = nsPreferences.copyUnicharPref(this.kSTYLE_ALIGN).toLowerCase();
 
 		// まず、字間を調整する対象かどうかを判別
-		var wholeWrapper = new XPCNativeWrapper(aNode,
-				'textContent',
-				'localName',
-				'parentNode',
-				'ownerDocument',
-				'setAttribute()',
-				'getAttribute()',
-				'appendChild()'
-			);
-		text = wholeWrapper.textContent;
-		if (!text && wholeWrapper.localName.toLowerCase() == 'rb') {
-			var ruby = new XPCNativeWrapper(
-					wholeWrapper.parentNode,
-					'parentNode',
-					'getAttribute()'
-				);
+		var whole = aNode;
+		text = whole.textContent;
+		if (!text && whole.localName.toLowerCase() == 'rb') {
+			var ruby = whole.parentNode;
 			if (ruby.getAttribute('class') != this.kAUTO_EXPANDED) return;
-			text = (new XPCNativeWrapper(ruby.parentNode, 'textContent')).textContent;
+			text = ruby.parentNode.textContent;
 			isWrapped = true;
 		}
 		text = text.replace(/\s\s+|^\s+|\s+$/g, '');
@@ -765,11 +643,7 @@ dump(e+'\n');
 
 
 		// 字間を求める
-		var docWrapper = new XPCNativeWrapper(wholeWrapper.ownerDocument,
-				'createTextNode()',
-				'createElementNS()',
-				'getBoxObjectFor()'
-			);
+		var doc = whole.ownerDocument;
 		var boxInserted = false;
 		var letters = this.getLettersBox(aNode, isWrapped);
 		if (!letters) {
@@ -777,11 +651,10 @@ dump(e+'\n');
 			letters = this.insertLettersBox(aNode);
 		}
 
-		var lettersBox = docWrapper.getBoxObjectFor(letters);
-		var wholeBox = docWrapper.getBoxObjectFor(
-				(new XPCNativeWrapper(wholeWrapper.parentNode, 'localName'))
-					.localName.toLowerCase() == 'td' ?
-					wholeWrapper.parentNode :
+		var lettersBox = doc.getBoxObjectFor(letters);
+		var wholeBox = doc.getBoxObjectFor(
+				whole.parentNode.localName.toLowerCase() == 'td' ?
+					whole.parentNode :
 					aNode
 			);
 		var padding = wholeBox.width - lettersBox.width;
@@ -802,8 +675,8 @@ dump(e+'\n');
 			this.wrapNarrowCharacters(aNode);
 
 		if (isWrapped) {
-			wholeWrapper.setAttribute('style',
-				wholeWrapper.getAttribute('style')+
+			whole.setAttribute('style',
+				whole.getAttribute('style')+
 				'; text-align: right !important;'
 			);
 		}
@@ -812,53 +685,34 @@ dump(e+'\n');
 			var lastLetterNode = this.findLastLetterNode(aNode);
 			if (!lastLetterNode) return;
 
-			var nodeWrapper = new XPCNativeWrapper(lastLetterNode,
-					'nodeValue',
-					'parentNode'
-				);
-			nodeWrapper.nodeValue = nodeWrapper.nodeValue.replace(/([^\s]\s*)$/, '');
-			var lastLetter = docWrapper.createElementNS(this.XHTMLNS, 'span');
+			lastLetterNode.nodeValue = lastLetterNode.nodeValue.replace(/([^\s]\s*)$/, '');
+			var lastLetter = doc.createElementNS(this.XHTMLNS, 'span');
 			lastLetter.setAttribute('class', this.kLAST_LETTER_BOX);
-			lastLetter.appendChild(docWrapper.createTextNode(RegExp.$1));
+			lastLetter.appendChild(doc.createTextNode(RegExp.$1));
 
-			var parentWrapper = new XPCNativeWrapper(nodeWrapper.parentNode,
-					'appendChild()'
-				);
-			parentWrapper.appendChild(lastLetter);
+			lastLetterNode.parentNode.appendChild(lastLetter);
 		}
 
 
-		wholeWrapper.setAttribute('style',
-			wholeWrapper.getAttribute('style')+
+		whole.setAttribute('style',
+			whole.getAttribute('style')+
 			'; letter-spacing: '+space+'px !important;'
 		);
 	},
  	
 	getLettersBox : function(aNode, aWrapped) 
 	{
-		var nodeWrapper = new XPCNativeWrapper(aNode,
-				'ownerDocument',
-				'parentNode'
-			);
-		var docWrapper = new XPCNativeWrapper(nodeWrapper.ownerDocument,
-				'getAnonymousElementByAttribute()',
-				'defaultView'
-			);
+		var doc = aNode.ownerDocument;
 
 		var letters = null;
 		if (aWrapped) {
-			var ruby = new XPCNativeWrapper(nodeWrapper.parentNode,
-					'parentNode'
-				);
-			letters = docWrapper.getAnonymousElementByAttribute(ruby.parentNode, 'class', this.kLETTERS_BOX);
+			var ruby = aNode.parentNode;
+			letters = doc.getAnonymousElementByAttribute(ruby.parentNode, 'class', this.kLETTERS_BOX);
 		}
 		else {
-			var letters = docWrapper.getAnonymousElementByAttribute(aNode, 'class', this.kLETTERS_BOX);
-			var winWrapper = new XPCNativeWrapper(docWrapper.defaultView,
-					'getComputedStyle()'
-				);
+			var letters = doc.getAnonymousElementByAttribute(aNode, 'class', this.kLETTERS_BOX);
 			if (!letters &&
-				winWrapper.getComputedStyle(aNode, null).getPropertyValue('display') == 'inline')
+				doc.defaultView.getComputedStyle(aNode, null).getPropertyValue('display') == 'inline')
 				letters = aNode;
 		}
 		return letters;
@@ -866,18 +720,12 @@ dump(e+'\n');
  
 	insertLettersBox : function(aNode, aWrapped) 
 	{
-		var nodeWrapper = new XPCNativeWrapper(aNode,
-				'ownerDocument'
-			);
-		var docWrapper = new XPCNativeWrapper(nodeWrapper.ownerDocument,
-				'createElementNS()',
-				'createRange()'
-			);
+		var doc = aNode.ownerDocument;
 
-		var letters = docWrapper.createElementNS(this.XHTMLNS, 'span');
+		var letters = doc.createElementNS(this.XHTMLNS, 'span');
 		letters.setAttribute('class', this.kLETTERS_BOX);
 
-		var range = docWrapper.createRange();
+		var range = doc.createRange();
 		range.selectNodeContents(aNode);
 		letters.appendChild(range.extractContents());
 		range.insertNode(letters);
@@ -888,13 +736,8 @@ dump(e+'\n');
  
 	clearInnerBox : function(aNode, aInnerBox) 
 	{
-		var nodeWrapper = new XPCNativeWrapper(aNode,
-				'ownerDocument'
-			);
-		var docWrapper = new XPCNativeWrapper(nodeWrapper.ownerDocument,
-				'createRange()'
-			);
-		var range = docWrapper.createRange();
+		var doc = aNode.ownerDocument;
+		var range = doc.createRange();
 		range.selectNodeContents(aInnerBox);
 		var contents = range.extractContents();
 		range.selectNode(aInnerBox);
@@ -906,15 +749,11 @@ dump(e+'\n');
  
 	findLastLetterNode : function(aNode) 
 	{
-		var nodeWrapper = new XPCNativeWrapper(aNode, 'childNodes');
-		var nodes = nodeWrapper.childNodes;
+		var nodes = aNode.childNodes;
 		var node;
 		for (var i = nodes.length-1; i > -1; i--)
 		{
-			node = new XPCNativeWrapper(nodes[i],
-				'nodeType',
-				'nodeValue'
-			);
+			node = nodes[i];
 			if (node.nodeType == Node.TEXT_NODE) {
 				if (/[^\s]/.test(node.nodeValue))
 					return nodes[i];
@@ -930,32 +769,20 @@ dump(e+'\n');
  
 	wrapNarrowCharacters : function(aNode) 
 	{
-		var nodeWrapper = new XPCNativeWrapper(aNode,
-				'childNodes',
-				'appendChild()',
-				'ownerDocument'
-			);
-		var docWrapper = new XPCNativeWrapper(nodeWrapper.ownerDocument,
-				'createElementNS()',
-				'createTextNode()',
-				'createRange()'
-			);
-		var nodes = nodeWrapper.childNodes;
+		var doc = aNode.ownerDocument;
+		var nodes = aNode.childNodes;
 		var node;
 		var matched;
-		var range = docWrapper.createRange();
+		var range = doc.createRange();
 
-		var wrapper = docWrapper.createElementNS(this.XHTMLNS, 'span');
+		var wrapper = doc.createElementNS(this.XHTMLNS, 'span');
 		wrapper.setAttribute('class', this.kCANCEL_SPACING_BOX);
-		wrapper.appendChild(docWrapper.createTextNode(''));
-		var clonedWrapper;
+		wrapper.appendChild(doc.createTextNode(''));
+		var cloned;
 
 		for (var i = nodes.length-1; i > -1; i--)
 		{
-			node = new XPCNativeWrapper(nodes[i],
-				'nodeType',
-				'nodeValue'
-			);
+			node = nodes[i];
 			if (node.nodeType == Node.TEXT_NODE) {
 				matched = node.nodeValue.match(this.kNARROW_CHARACTERS_PATTERN);
 				if (!matched || !matched.length) continue;
@@ -967,10 +794,10 @@ dump(e+'\n');
 					var pos = node.nodeValue.lastIndexOf(matched[j]);
 					range.setStart(nodes[i], pos);
 					range.setEnd(nodes[i], pos + matched[j].length - 1); // except the last letter
-					clonedWrapper = wrapper.cloneNode(true);
-					clonedWrapper.firstChild.nodeValue = range.toString();
+					cloned = wrapper.cloneNode(true);
+					cloned.firstChild.nodeValue = range.toString();
 					range.deleteContents();
-					range.insertNode(clonedWrapper);
+					range.insertNode(cloned);
 				}
 			}
 			else if (node.nodeType == Node.ELEMENT_NODE) {
@@ -995,29 +822,18 @@ dump(e+'\n');
 		var firstBase = base;
 		var lastBase = base;
 
-		var baseWrapper = new XPCNativeWrapper(base,
-				'localName',
-				'ownerDocument'
-			);
-		if (baseWrapper.localName.toLowerCase() == 'rbc') {
+		if (base.localName.toLowerCase() == 'rbc') {
 			var expression = 'child::*[contains(" rb RB ", concat(" ", local-name(), " "))]';
 			firstBase = this.evaluateXPath(expression+'[1]', base, XPathResult.FIRST_ORDERED_NODE_TYPE).singleNodeValue;
 			lastBase = this.evaluateXPath(expression+'[last()]', base, XPathResult.FIRST_ORDERED_NODE_TYPE).singleNodeValue;
 		}
 
-		var nodeWrapper = new XPCNativeWrapper(aNode,
-				'ownerDocument',
-				'setAttribute()',
-				'getAttribute()'
-			);
-		var docWrapper = new XPCNativeWrapper(nodeWrapper.ownerDocument,
-				'getBoxObjectFor()'
-			);
+		var doc = aNode.ownerDocument;
 
-		var isWrapped = (nodeWrapper.getAttribute('class') == this.kAUTO_EXPANDED);
-		var wholeBox = docWrapper.getBoxObjectFor(aNode);
+		var isWrapped = (aNode.getAttribute('class') == this.kAUTO_EXPANDED);
+		var wholeBox = doc.getBoxObjectFor(aNode);
 
-		var style = nodeWrapper.getAttribute('style');
+		var style = aNode.getAttribute('style');
 
 		var firstLettersBoxInserted = false,
 			lastLettersBoxInserted = false,
@@ -1032,7 +848,7 @@ dump(e+'\n');
 				firstLettersBoxInserted = true;
 				firstLetters = this.insertLettersBox(firstBase);
 			}
-			lettersBox = docWrapper.getBoxObjectFor(firstLetters);
+			lettersBox = doc.getBoxObjectFor(firstLetters);
 			delta = lettersBox.screenX - wholeBox.screenX;
 			if (delta >= 0) style += 'margin-left: '+(-delta)+'px !important;';
 		}
@@ -1043,7 +859,7 @@ dump(e+'\n');
 				lastLettersBoxInserted = true;
 				lastLetters = this.insertLettersBox(lastBase);
 			}
-			lettersBox = docWrapper.getBoxObjectFor(lastLetters);
+			lettersBox = doc.getBoxObjectFor(lastLetters);
 			delta = (wholeBox.screenX + wholeBox.width)-(lettersBox.screenX + lettersBox.width);
 			if (delta >= 0) style += 'margin-right: '+(-delta)+'px !important;';
 		}
@@ -1059,7 +875,7 @@ dump(e+'\n');
 			)
 			this.clearInnerBox(lastBase, lastLetters);
 
-		nodeWrapper.setAttribute('style', style);
+		aNode.setAttribute('style', style);
 	},
  
 	applyLineStacking : function(aNode) 
@@ -1072,24 +888,17 @@ dump(e+'\n');
 		var texts = this.getRubyTexts(aNode);
 		if (!texts.top && !texts.bottom) return;
 
-		var nodeWrapper = new XPCNativeWrapper(aNode,
-				'ownerDocument',
-				'setAttribute()',
-				'getAttribute()'
-			);
-		var docWrapper = new XPCNativeWrapper(nodeWrapper.ownerDocument,
-				'getBoxObjectFor()'
-			);
+		var doc = aNode.ownerDocument;
 
 		var box;
-		var style = nodeWrapper.getAttribute('style');
+		var style = aNode.getAttribute('style');
 		if (texts.top) {
-			style += '; margin-top: -'+docWrapper.getBoxObjectFor(texts.top).height+'px !important';
+			style += '; margin-top: -'+doc.getBoxObjectFor(texts.top).height+'px !important';
 		}
 		if (texts.bottom) {
-			style += '; margin-bottom: -'+docWrapper.getBoxObjectFor(texts.bottom).height+'px !important';
+			style += '; margin-bottom: -'+doc.getBoxObjectFor(texts.bottom).height+'px !important';
 		}
-		nodeWrapper.setAttribute('style', style);
+		aNode.setAttribute('style', style);
 	},
   
 	init : function() 
@@ -1231,11 +1040,9 @@ dump(e+'\n');
 			case 'DOMNodeInserted':
 				if (!nsPreferences.getBoolPref(this.kPREF_ENABLED)) return;
 				var node = aEvent.target;
-				var nodeWrapper = new XPCNativeWrapper(node, 'ownerDocument');
-				var doc = nodeWrapper.ownerDocument || node;
+				var doc = node.ownerDocument || node;
 				if (doc == document) return;
-				var docWrapper = new XPCNativeWrapper(doc, 'defaultView');
-				this.parseRubyNodes(docWrapper.defaultView);
+				this.parseRubyNodes(doc.defaultView);
 				return;
 		}
 	},
@@ -1257,7 +1064,7 @@ dump(e+'\n');
 				}
 			}
 		};
-		var doc = aContextNode ? (new XPCNativeWrapper(aContextNode, 'ownerDocument')).ownerDocument : document ;
+		var doc = aContextNode ? aContextNode.ownerDocument : document ;
 		try {
 			return doc.evaluate(
 					aExpression,
@@ -1286,5 +1093,4 @@ dump(e+'\n');
 }; 
   
 window.addEventListener('load', RubyService, false); 
-window.addEventListener('load', RubyService, false);
  
