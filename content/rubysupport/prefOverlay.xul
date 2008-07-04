@@ -1,40 +1,39 @@
 <?xml version="1.0"?>
-
-<?xml-stylesheet href="chrome://rubysupport/content/prefOverlay.css" type="text/css"?>
-
+<?xml-stylesheet href="chrome://global/skin/" type="text/css"?>
+<?xml-stylesheet href="chrome://rubysupport/content/prefDialog.css" type="text/css"?>
 <!DOCTYPE overlay [
-<!ENTITY % versionDTD SYSTEM "chrome://rubysupport/content/_version.dtd">
-%versionDTD;
 <!ENTITY % rubysupportDTD SYSTEM "chrome://rubysupport/locale/">
 %rubysupportDTD;
 ]>
+<prefwindow id="rubyrupport-config"
+	xmlns="http://www.mozilla.org/keymaster/gatekeeper/there.is.only.xul"
+	title="&ruby.title;">
 
-<overlay xmlns="http://www.mozilla.org/keymaster/gatekeeper/there.is.only.xul">
+<prefpane id="general-pane" label="&ruby.tab.general;"
+	onpaneload="initGeneralPane();">
+	<preferences>
+		<preference id="rubysupport.general.enabled"
+			name="rubysupport.general.enabled"
+			type="bool"/>
+		<preference id="rubysupport.expand.enabled"
+			name="rubysupport.expand.enabled"
+			type="bool"/>
+		<preference id="rubysupport.expand.list"
+			name="rubysupport.expand.list"
+			type="string"/>
+		<preference id="rubysupport.expand.mode"
+			name="rubysupport.expand.mode"
+			type="int"/>
+		<preference id="rubysupport.expand.noPseuds"
+			name="rubysupport.expand.noPseuds"
+			type="bool"/>
+	</preferences>
 
-<box orient="vertical" id="rubysupportPrefs">
-
-<script type="application/x-javascript" src="chrome://rubysupport/content/exUnregisterer.js"/>
-<script type="application/x-javascript" src="chrome://rubysupport/content/prefOverlay.js"/>
-<script type="application/x-javascript" src="chrome://rubysupport/content/globalOverlay.js"/>
-<script type="application/x-javascript" src="chrome://global/content/nsUserSettings.js"/>
-
-
-
-<tabbox orient="vertical">
-<tabs>
-	<tab label="&ruby.tab.general;"/>
-	<tab label="&ruby.tab.style;"/>
-</tabs>
-<tabpanels>
-
-
-
-<tabpanel orient="vertical">
 	<groupbox orient="vertical">
 		<caption label="&ruby.rendering;"/>
 		<checkbox label="&ruby.enabled;"
-			prefstring="rubysupport.general.enabled"
-			id="rubysupport.general.enabled"/>
+			preference="rubysupport.general.enabled"
+			id="rubysupport.general.enabled-check"/>
 	</groupbox>
 
 	<groupbox orient="vertical">
@@ -43,23 +42,23 @@
 			<caption><checkbox label="&ruby.expand.enabled;"
 				linked="rubysupport.expand.list.abbr rubysupport.expand.list.dfn rubysupport.expand.mode rubysupport.expand.noPseuds"
 				oncommand="controlLinkedItems(this);"
-				prefstring="rubysupport.expand.enabled"
-				id="rubysupport.expand.enabled"/></caption>
+				preference="rubysupport.expand.enabled"
+				id="rubysupport.expand.enabled-check"/></caption>
 			<vbox oncommand="updateExpandList();">
 				<checkbox label="&ruby.expand.list.abbr;"
 					id="rubysupport.expand.list.abbr"/>
 				<checkbox label="&ruby.expand.list.dfn;"
 					id="rubysupport.expand.list.dfn"/>
 			</vbox>
-			<textbox id="rubysupport.expand.list"
-				prefstring="rubysupport.expand.list"
+			<textbox id="rubysupport.expand.list-textbox"
+				preference="rubysupport.expand.list"
 				style="visibility: collapse;"/>
 		</groupbox>
 		<box orient="horizontal" align="center">
 			<label value="&ruby.expand.mode;"
 				control="rubysupport.expand.mode"/>
-			<menulist id="rubysupport.expand.mode" flex="1"
-				prefstring="rubysupport.expand.mode">
+			<menulist id="rubysupport.expand.mode-list" flex="1"
+				preference="rubysupport.expand.mode">
 				<menupopup>
 					<menuitem value="0" label="&ruby.expand.mode.all;"/>
 					<menuitem value="1" label="&ruby.expand.mode.onlyFirst;"/>
@@ -68,40 +67,26 @@
 		</box>
 		<box orient="vertical">
 			<checkbox label="&ruby.expand.noPseuds;"
-				prefstring="rubysupport.expand.noPseuds"
-				id="rubysupport.expand.noPseuds"/>
+				preference="rubysupport.expand.noPseuds"
+				id="rubysupport.expand.noPseuds-check"/>
 		</box>
 	</groupbox>
-
-	<spacer flex="1"/>
-
-	<groupbox orient="vertical">
-		<caption label="&ruby.about.title;"/>
-		<box orient="horizontal">
-			<spacer flex="1"/>
-			<description value="&ruby.about.name_before;&ruby.version;&ruby.about.name_after;"/>
-			<spacer flex="1"/>
-		</box>
-		<box orient="horizontal">
-			<spacer flex="1"/>
-			<description value="&ruby.about.destributed;"
-				onclick="loadURI('http://piro.sakura.ne.jp/', event);"
-				class="text-link"/>
-			<spacer flex="1"/>
-		</box>
-		<box orient="horizontal" id="uninstallBox">
-			<spacer flex="2"/>
-			<button flex="1"
-				label="&ruby.about.uninstall;"
-				oncommand="Unregister();"/>
-			<spacer flex="2"/>
-		</box>
-	</groupbox>
-
-</tabpanel>
+</prefpane>
 
 
-<tabpanel orient="vertical">
+<prefpane id="style-pane" label="&ruby.tab.style;">
+	<preferences>
+		<preference id="rubysupport.style.default.ruby-align"
+			name="rubysupport.style.default.ruby-align"
+			type="string"/>
+		<preference id="rubysupport.style.default.ruby-overhang"
+			name="rubysupport.style.default.ruby-overhang"
+			type="string"/>
+		<preference id="rubysupport.style.default.line-stacking-ruby"
+			name="rubysupport.style.default.line-stacking-ruby"
+			type="string"/>
+	</preferences>
+
 	<groupbox orient="vertical">
 		<caption>
 			<label value="&ruby.style.align;"
@@ -109,8 +94,8 @@
 				onclick="loadURI(this.getAttribute('descriptionURI'), event)"
 				descriptionURI="&ruby.style.align.uri;"/>
 		</caption>
-		<radiogroup id="rubysupport.style.default.ruby-align"
-			prefstring="rubysupport.style.default.ruby-align" orient="vertical">
+		<radiogroup id="rubysupport.style.default.ruby-align-radio"
+			preference="rubysupport.style.default.ruby-align" orient="vertical">
 			<hbox align="center">
 				<radio label="&ruby.style.align.start;" value="start"
 					class="image" src="chrome://rubysupport/content/styles/align-start.png"/>
@@ -138,8 +123,8 @@
 				onclick="loadURI(this.getAttribute('descriptionURI'), event)"
 				descriptionURI="&ruby.style.overhang.uri;"/>
 		</caption>
-		<radiogroup id="rubysupport.style.default.ruby-overhang"
-			prefstring="rubysupport.style.default.ruby-overhang" orient="vertical">
+		<radiogroup id="rubysupport.style.default.ruby-overhang-radio"
+			preference="rubysupport.style.default.ruby-overhang" orient="vertical">
 			<hbox align="center">
 				<radio label="&ruby.style.overhang.start;" value="start"
 					class="image" src="chrome://rubysupport/content/styles/overhang-start.png"/>
@@ -161,20 +146,17 @@
 				onclick="loadURI(this.getAttribute('descriptionURI'), event)"
 				descriptionURI="&ruby.style.line-stacking.uri;"/>
 		</caption>
-		<radiogroup id="rubysupport.style.default.line-stacking-ruby"
-			prefstring="rubysupport.style.default.line-stacking-ruby" orient="horizontal">
+		<radiogroup id="rubysupport.style.default.line-stacking-ruby-radio"
+			preference="rubysupport.style.default.line-stacking-ruby" orient="horizontal">
 			<radio label="&ruby.style.line-stacking.exclude;" value="exclude-ruby"/>
 			<radio label="&ruby.style.line-stacking.include;" value="include-ruby"/>
 		</radiogroup>
 	</groupbox>
-</tabpanel>
+</prefpane>
 
 
-</tabpanels>
+<script type="application/x-javascript" src="chrome://rubysupport/content/prefDialog.js"/>
+<script type="application/x-javascript" src="chrome://rubysupport/content/globalOverlay.js"/>
+<script type="application/x-javascript" src="chrome://global/content/nsUserSettings.js"/>
 
-</tabbox>
-
-
-</box>
-
-</overlay>
+</prefwindow>
