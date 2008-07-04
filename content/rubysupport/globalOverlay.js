@@ -907,7 +907,7 @@ dump(e+'\n');
 		this.initialized = true;
 
 		window.removeEventListener('load', this, false);
-s
+
 		if (!('gBrowser' in window)) return;
 
 		window.addEventListener('unload', this, false);

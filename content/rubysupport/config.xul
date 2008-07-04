@@ -40,7 +40,7 @@
 		<caption label="&ruby.expand;"/>
 		<groupbox orient="vertical">
 			<caption><checkbox label="&ruby.expand.enabled;"
-				linked="rubysupport.expand.list.abbr rubysupport.expand.list.dfn rubysupport.expand.mode rubysupport.expand.noPseuds"
+				linked="rubysupport.expand.list.abbr rubysupport.expand.list.dfn rubysupport.expand.mode-list rubysupport.expand.noPseuds-check"
 				oncommand="controlLinkedItems(this);"
 				preference="rubysupport.expand.enabled"
 				id="rubysupport.expand.enabled-check"/></caption>
