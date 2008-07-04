@@ -2,12 +2,11 @@ var RubyService =
 {
 	initialized : false,
 
-	useGlobalStyleSheets : false,
-
 	XHTMLNS : 'http://www.w3.org/1999/xhtml',
 	RUBYNS  : 'http://piro.sakura.ne.jp/rubysupport',
 
 	kSTATE : 'moz-ruby-parsed',
+	kMODE  : 'moz-ruby-mode',
 	kTYPE  : 'moz-ruby-type',
 	kALIGN  : 'moz-ruby-align',
 	kLINE_EDGE : 'moz-ruby-line-edge',
@@ -66,14 +65,6 @@ var RubyService =
 		return this._XULAppInfo;
 	},
 	_XULAppInfo : null,
-	get isGecko18OrLater()
-	{
-		if (!('_isGecko18OrLater' in this)) {
-			var version = this.XULAppInfo.platformVersion.split('.');
-			this._isGecko18OrLater = parseInt(version[0]) >= 1 || parseInt(version[1]) >= 8;
-		}
-		return this._isGecko18OrLater;
-	},
 	get isGecko19OrLater()
 	{
 		if (!('_isGecko19OrLater' in this)) {
@@ -85,8 +76,6 @@ var RubyService =
 	 
 	updateGlobalStyleSheets : function() 
 	{
-		if (!this.useGlobalStyleSheets) return;
-
 		var enabled = nsPreferences.getBoolPref(this.kPREF_ENABLED);
 
 		var sheet = this.IOService.newURI('chrome://rubysupport/content/styles/ruby.css', null, null);
@@ -116,7 +105,7 @@ var RubyService =
 			)
 			this.SSS.unregisterSheet(sheet, this.SSS.AGENT_SHEET);
 	},
- 
+ 	
 	parseRubyNodes : function(aWindow) 
 	{
 		if (!aWindow.document) return false;
@@ -136,9 +125,6 @@ var RubyService =
 			{
 				this.parseOneNode(target);
 			}
-
-			if (!this.useGlobalStyleSheets)
-				this.setRubyStyle(aWindow);
 		}
 
 		return true;
@@ -182,7 +168,7 @@ var RubyService =
 		}
 
 		if (this.isGecko19OrLater)
-			aNode.setAttribute(this.kTYPE, 'inline-table');
+			aNode.setAttribute(this.kMODE, 'block');
 
 		this.delayedReformRubyElement(aNode);
 	},
@@ -207,9 +193,6 @@ var RubyService =
 		}
 
 		if (!count) return;
-
-		if (!this.useGlobalStyleSheets)
-			this.setRubyStyle(aWindow);
 
 		this.startProgressiveParse(aWindow);
 	},
@@ -250,6 +233,8 @@ var RubyService =
 				tmp_td_content = rt.parentNode.replaceChild(tmp_td, rts.snapshotItem(i));
 				tmp_td.appendChild(tmp_td_content);
 			}
+
+			aNode.setAttribute(this.kTYPE, 'complex');
 		}
 	},
 	
@@ -257,7 +242,7 @@ var RubyService =
 	fixUpMSIERuby : function(aNode)
 	{
 try{
-		var namespace = this.isGecko18OrLater ? this.XHTMLNS : this.RUBYNS;
+		var namespace = this.XHTMLNS;
 
 		var i, j;
 		var doc = aNode.ownerDocument;
@@ -449,36 +434,7 @@ try{
 
 		this.reformRubyElement(aNode);
 	},
- 
-	// Apply Stylesheet (legacy operation, for old Mozilla) 
-	setRubyStyle : function(targetWindow)
-	{
-		var doc = targetWindow.document;
-		var node = doc.documentElement;
-		if (
-			!nsPreferences.getBoolPref(this.kPREF_ENABLED) ||
-			node.getAttribute(this.kLOADED) == 'true'
-			)
-			return;
-
-		// ルビ用のスタイルシートを追加する
-		this.addStyleSheet('chrome://rubysupport/content/styles/ruby.css', targetWindow);
-
-		if (nsPreferences.getBoolPref(this.kPREF_NOPSEUDS))
-			this.addStyleSheet('chrome://rubysupport/content/styles/ruby-expanded-nopseuds.css', targetWindow);
-
-		node.setAttribute(this.kLOADED, true);
-	},
-	
-	addStyleSheet : function(path, targetWindow) 
-	{
-		var d     = targetWindow.document,
-			newPI = document.createProcessingInstruction('xml-stylesheet',
-				'href="'+path+'" type="text/css" media="all"');
-		d.insertBefore(newPI, d.firstChild);
-		return;
-	},
-   
+  
 	reformRubyElement : function(aNode) 
 	{
 		var originalNode = aNode;
@@ -699,7 +655,7 @@ dump(e+'\n');
 			'; letter-spacing: '+space+'px !important;'
 		);
 	},
- 	
+ 
 	getLettersBox : function(aNode, aWrapped) 
 	{
 		var doc = aNode.ownerDocument;
@@ -867,7 +823,7 @@ dump(e+'\n');
 		if (firstLettersBoxInserted)
 			this.clearInnerBox(firstBase, firstLetters);
 		if (
-			lastLettersBoxInserted && 
+			lastLettersBoxInserted &&
 			(
 				!firstLettersBoxInserted ||
 				firstBase != lastBase
@@ -913,10 +869,7 @@ dump(e+'\n');
 		window.addEventListener('unload', this, false);
 
 		try {
-			if (this.SSS) {
-				this.useGlobalStyleSheets = true;
-				this.updateGlobalStyleSheets();
-			}
+			this.updateGlobalStyleSheets();
 
 			gBrowser.addEventListener('DOMContentLoaded', this, false);
 			gBrowser.addEventListener('DOMNodeInserted', this, false);

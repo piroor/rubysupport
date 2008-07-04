@@ -8,8 +8,13 @@
 /*	-moz-binding: url("chrome://rubysupport/content/styles/ruby.xml#ruby");*/
 }
 
-*|ruby[moz-ruby-parsed="done"][moz-ruby-type="inline-table"],
-*|*[moz-ruby-parsed="done"][moz-ruby-type="inline-table"] > *|ruby {
+*|ruby[moz-ruby-parsed="done"][moz-ruby-mode="block"],
+*|*[moz-ruby-parsed="done"][moz-ruby-mode="block"] > *|ruby {
+	display: inline-block !important;
+}
+
+*|ruby[moz-ruby-parsed="done"][moz-ruby-mode="block"][moz-ruby-type="complex"],
+*|*[moz-ruby-parsed="done"][moz-ruby-mode="block"][moz-ruby-type="complex"] > *|ruby {
 	display: inline-table !important;
 }
 
@@ -44,6 +49,7 @@
 *|*[moz-ruby-parsed="done"] > *|ruby[moz-ruby-align="line-edge"][moz-ruby-line-edge="right"] *|rb {
 	text-align: right !important;
 }
+
 
 
 /* ƒ‹ƒr—v‘f’¼‰º‚Ì—v‘f‚ğtbody‘Š“–‚É‚³‚¹Ac‚É•À‚×‚é */
