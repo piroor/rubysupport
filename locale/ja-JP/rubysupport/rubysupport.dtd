@@ -41,11 +41,3 @@
 <!ENTITY ruby.style.line-stacking.uri   "http://www.w3.org/TR/css3-linebox/#line-stacking-ruby">
 <!ENTITY ruby.style.line-stacking.exclude "何もしない">
 <!ENTITY ruby.style.line-stacking.include "ルビに合わせて広げる">
-
-
-
-<!ENTITY ruby.about.title       "XHTMLルビサポートについて">
-<!ENTITY ruby.about.name_before "XHTMLルビサポート Ver.">
-<!ENTITY ruby.about.name_after  "">
-<!ENTITY ruby.about.destributed "http://piro.sakura.ne.jp/">
-<!ENTITY ruby.about.uninstall   "アンインストール">
