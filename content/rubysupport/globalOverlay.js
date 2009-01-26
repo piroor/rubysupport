@@ -901,22 +901,29 @@ dump(e+'\n');
 			!(/^\[object .*Document\]$/.test(String(target))) &&
 			!RubyService.evaluateXPath('descendant-or-self::*[@title and not(@title = "")]', target).snapshotLength
 			) {
-			var rtc = RubyService.evaluateXPath('descendant::*[contains(" rtc RTC ", concat(" ", local-name(), " "))]', target);
-			if (rtc.snapshotLength) {
-				popuptext = rtc.snapshotItem(0).textContent;
-				if (rtc.snapshotLength > 1)
-					popuptext += ' / '+rtc.snapshotItem(1).textContent;
+			var expression;
+			var rtcs = 'descendant::*[contains(" rtc RTC ", concat(" ", local-name(), " "))]';
+			switch (parseInt(RubyService.evaluateXPath('count('+rtcs+')', target, XPathResult.NUMBER_TYPE).numberValue))
+			{
+				case 1:
+					expression = rtcs+'[1]';
+					break;
+
+				case 2:
+					expression = 'concat('+rtcs+'[1], " / ", '+rtcs+'[2])';
+					break;
+
+				default:
+					expression = 'descendant::*[contains(" rt RT ", concat(" ", local-name(), " "))][1]';
+					break;
 			}
-			else {
-				var rt = RubyService.evaluateXPath('descendant::*[contains(" rt RT ", concat(" ", local-name(), " "))]', target);
-				popuptext = rt.snapshotItem(0).textContent;
-			}
+			popuptext = RubyService.evaluateXPath('normalize-space('+expression+')', target, XPathResult.STRING_TYPE).stringValue;
 		}
 
 		if (popuptext) {
 			var popup = document.getElementById('aHTMLTooltip');
 			popup.removeAttribute('label');
-			popup.setAttribute('label', popuptext.replace(/\s\s+/g, ' '));
+			popup.setAttribute('label', popuptext);
 			return true;
 		}
 
