@@ -541,26 +541,22 @@ dump(e+'\n');
 	getRubyBase : function(aNode) 
 	{
 		if (!aNode) return null;
-		var bases = this.evaluateXPath('descendant::*[contains(" rb RB ", concat(" ", local-name(), " "))]', aNode);
-		if (bases.snapshotLength)
-			return bases.snapshotItem(0);
-
-		return aNode.getElementsByTagName('*')[0] || aNode.firstChild;
+		return this.evaluateXPath(
+				'descendant::*[contains(" rb RB ", concat(" ", local-name(), " "))]',
+				aNode,
+				XPathResult.FIRST_ORDERED_NODE_TYPE
+			).singleNodeValue ||
+			aNode.getElementsByTagName('*')[0] ||
+			aNode.firstChild;
 	},
  
 	getRubyTexts : function(aNode) 
 	{
-		var nodes = { top: null, bottom: null };
-		if (!aNode) return nodes;
-
-		var texts = this.evaluateXPath('child::*[contains(" rt rtc RT RTC ", concat(" ", local-name(), " "))]', aNode);
-
-		if (texts.snapshotLength > 0)
-			nodes.top = texts.snapshotItem(0);
-		if (texts.snapshotLength > 1)
-			nodes.bottom = texts.snapshotItem(1);
-
-		return nodes;
+		var rtc = 'child::*[contains(" rt rtc RT RTC ", concat(" ", local-name(), " "))]';
+		return {
+			top: this.evaluateXPath(rtc+'[1]', aNode, XPathResult.FIRST_ORDERED_NODE_TYPE).singleNodeValue,
+			bottom: this.evaluateXPath(rtc+[2], aNode, XPathResult.FIRST_ORDERED_NODE_TYPE).singleNodeValue
+		};
 	},
   
 	applyRubyAlign : function(aNode) 
