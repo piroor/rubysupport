@@ -501,14 +501,14 @@ dump(e+'\n');
 			baseBoxNode.appendChild(doc.createTextNode('?'));
 
 			base.insertBefore(baseBoxNode, base.firstChild);
-			var rbBox = doc.getBoxObjectFor(baseBoxNode);
+			var rbBox = this.getBoxObjectFor(baseBoxNode);
 
 			var parent = node.parentNode;
 			parent.insertBefore(beforeBoxNode, node);
 			parent.insertBefore(afterBoxNode, node.nextSibling);
 
-			var beforeBox = doc.getBoxObjectFor(beforeBoxNode);
-			var afterBox  = doc.getBoxObjectFor(afterBoxNode);
+			var beforeBox = this.getBoxObjectFor(beforeBoxNode);
+			var afterBox  = this.getBoxObjectFor(afterBoxNode);
 
 			var baseBox = (
 					Math.abs((rbBox.y+rbBox.height) - (beforeBox.y+beforeBox.height)) >
@@ -522,8 +522,8 @@ dump(e+'\n');
 				node.setAttribute('style', 'vertical-align: '+offset+'px !important;');
 
 			node.setAttribute(this.kLINE_EDGE,
-				rbBox.screenY > beforeBox.screenY ? 'left' :
-				rbBox.screenY < afterBox.screenY ? 'right' :
+				rbBox.y > beforeBox.y ? 'left' :
+				rbBox.y < afterBox.y ? 'right' :
 				'none'
 			);
 
@@ -603,8 +603,8 @@ dump(e+'\n');
 			letters = this.insertLettersBox(aNode);
 		}
 
-		var lettersBox = doc.getBoxObjectFor(letters);
-		var wholeBox = doc.getBoxObjectFor(
+		var lettersBox = this.getBoxObjectFor(letters);
+		var wholeBox = this.getBoxObjectFor(
 				whole.parentNode.localName.toLowerCase() == 'td' ?
 					whole.parentNode :
 					aNode
@@ -780,10 +780,8 @@ dump(e+'\n');
 			lastBase = this.evaluateXPath(expression+'[last()]', base, XPathResult.FIRST_ORDERED_NODE_TYPE).singleNodeValue;
 		}
 
-		var doc = aNode.ownerDocument;
-
 		var isWrapped = (aNode.getAttribute('class') == this.kAUTO_EXPANDED);
-		var wholeBox = doc.getBoxObjectFor(aNode);
+		var wholeBox = this.getBoxObjectFor(aNode);
 
 		var style = aNode.getAttribute('style');
 
@@ -800,8 +798,8 @@ dump(e+'\n');
 				firstLettersBoxInserted = true;
 				firstLetters = this.insertLettersBox(firstBase);
 			}
-			lettersBox = doc.getBoxObjectFor(firstLetters);
-			delta = lettersBox.screenX - wholeBox.screenX;
+			lettersBox = this.getBoxObjectFor(firstLetters);
+			delta = lettersBox.x - wholeBox.x;
 			if (delta >= 0) style += 'margin-left: '+(-delta)+'px !important;';
 		}
 
@@ -811,8 +809,8 @@ dump(e+'\n');
 				lastLettersBoxInserted = true;
 				lastLetters = this.insertLettersBox(lastBase);
 			}
-			lettersBox = doc.getBoxObjectFor(lastLetters);
-			delta = (wholeBox.screenX + wholeBox.width)-(lettersBox.screenX + lettersBox.width);
+			lettersBox = this.getBoxObjectFor(lastLetters);
+			delta = (wholeBox.x + wholeBox.width)-(lettersBox.x + lettersBox.width);
 			if (delta >= 0) style += 'margin-right: '+(-delta)+'px !important;';
 		}
 
@@ -840,15 +838,13 @@ dump(e+'\n');
 		var texts = this.getRubyTexts(aNode);
 		if (!texts.top && !texts.bottom) return;
 
-		var doc = aNode.ownerDocument;
-
 		var box;
 		var style = aNode.getAttribute('style');
 		if (texts.top) {
-			style += '; margin-top: -'+doc.getBoxObjectFor(texts.top).height+'px !important';
+			style += '; margin-top: -'+this.getBoxObjectFor(texts.top).height+'px !important';
 		}
 		if (texts.bottom) {
-			style += '; margin-bottom: -'+doc.getBoxObjectFor(texts.bottom).height+'px !important';
+			style += '; margin-bottom: -'+this.getBoxObjectFor(texts.bottom).height+'px !important';
 		}
 		aNode.setAttribute('style', style);
 	},
@@ -968,6 +964,31 @@ dump(e+'\n');
 				this.parseRubyNodes(doc.defaultView);
 				return;
 		}
+	},
+ 
+	getBoxObjectFor : function(aNode) 
+	{
+		if ('getBoxObjectFor' in aNode.ownerDocument)
+			return aNode.ownerDocument.getBoxObjectFor(aNode);
+
+		var box = {
+				x       : 0,
+				y       : 0,
+				width   : 0,
+				height  : 0,
+				screenX : 0,
+				screenY : 0
+			};
+		try {
+			var rect = aNode.getBoundingClientRect();
+			box.x = rect.left+1;
+			box.y = rect.top+1;
+			box.width  = rect.right-rect.left;
+			box.height = rect.bottom-rect.top;
+		}
+		catch(e) {
+		}
+		return box;
 	},
  
 	evaluateXPath : function(aExpression, aContextNode, aType) 
