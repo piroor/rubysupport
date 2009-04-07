@@ -73,7 +73,18 @@ var RubyService =
 		}
 		return this._isGecko19OrLater;
 	},
-	 
+	
+	initBrowser : function(aBrowser) 
+	{
+		aBrowser.addEventListener('DOMContentLoaded', this, false);
+		aBrowser.addEventListener('DOMNodeInserted', this, false);
+	},
+	destroyBrowser : function(aBrowser)
+	{
+		aBrowser.removeEventListener('DOMContentLoaded', this, false);
+		aBrowser.removeEventListener('DOMNodeInserted', this, false);
+	},
+ 
 	updateGlobalStyleSheets : function() 
 	{
 		var enabled = nsPreferences.getBoolPref(this.kPREF_ENABLED);
@@ -105,7 +116,7 @@ var RubyService =
 			)
 			this.SSS.unregisterSheet(sheet, this.SSS.AGENT_SHEET);
 	},
- 	
+ 
 	parseRubyNodes : function(aWindow) 
 	{
 		if (!aWindow.document) return false;
@@ -129,7 +140,7 @@ var RubyService =
 
 		return true;
 	},
-	 
+	
 	get parseTargetExpression() 
 	{
 		var conditions = [
@@ -463,7 +474,7 @@ dump(e+'\n');
 
 		originalNode.setAttribute(this.kREFORMED, 'done');
 	},
-	 
+	
 	delayedReformRubyElement : function(aNode) 
 	{
 		aNode.setAttribute(this.kREFORMED, 'progress');
@@ -569,7 +580,7 @@ dump(e+'\n');
 		for (var i = 0, maxi = boxes.snapshotLength; i < maxi; i++)
 			this.justifyText(boxes.snapshotItem(i));
 	},
-	 
+	
 	justifyText : function(aNode) 
 	{
 		var isWrapped = false;
@@ -862,11 +873,13 @@ dump(e+'\n');
 
 		try {
 			this.updateGlobalStyleSheets();
-
-			gBrowser.addEventListener('DOMContentLoaded', this, false);
-			gBrowser.addEventListener('DOMNodeInserted', this, false);
-
 			this.overrideFunctions();
+			this.initBrowser(gBrowser);
+			this.initBrowser(document.getElementById('sidebar'));
+
+			var appcontent = document.getElementById('appcontent');
+			appcontent.addEventListener('SubBrowserAdded', this, false);
+			appcontent.addEventListener('SubBrowserRemoveRequest', this, false);
 		}
 		catch(e) {
 			dump('CAUTION: XHTML Ruby Support fails to initialize!\n  Error: '+e+'\n');
@@ -880,7 +893,7 @@ dump(e+'\n');
 			window.FillInHTMLTooltip = this.FillInHTMLTooltip;
 		}
 	},
-	 
+	
 	FillInHTMLTooltip : function(elem) 
 	{
 		var popuptext = '',
@@ -936,8 +949,12 @@ dump(e+'\n');
 	{
 		window.removeEventListener('unload', this, false);
 		try {
-			gBrowser.removeEventListener('DOMContentLoaded', this, false);
-			gBrowser.removeEventListener('DOMNodeInserted', this, false);
+			this.destroyBrowser(gBrowser);
+			this.destroyBrowser(document.getElementById('sidebar'));
+
+			var appcontent = document.getElementById('appcontent');
+			appcontent.removeEventListener('SubBrowserAdded', this, false);
+			appcontent.removeEventListener('SubBrowserRemoveRequest', this, false);
 		}
 		catch(e) {
 		}
@@ -962,6 +979,13 @@ dump(e+'\n');
 				var doc = node.ownerDocument || node;
 				if (doc == document) return;
 				this.parseRubyNodes(doc.defaultView);
+				return;
+
+			case 'SubBrowserAdded':
+				this.initBrowser(aEvent.originalTarget.browser);
+				return;
+			case 'SubBrowserRemoveRequest':
+				this.destroyBrowser(aEvent.originalTarget.browser);
 				return;
 		}
 	},
