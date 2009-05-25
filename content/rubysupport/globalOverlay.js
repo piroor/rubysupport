@@ -426,9 +426,10 @@ try{
   
 	expandAttribute : function(aNode) 
 	{
-		if (!aNode.title ||
+		var title = aNode.title || aNode.getAttribute('title');
+		if (!title ||
 			!aNode.textContent ||
-			aNode.title.replace(/\s/g, '') == aNode.textContent.replace(/\s/g, ''))
+			title.replace(/\s/g, '') == aNode.textContent.replace(/\s/g, ''))
 			return;
 
 		var root = aNode.ownerDocument.documentElement;
@@ -439,12 +440,12 @@ try{
 			var key = encodeURIComponent([
 						aNode.localName,
 						aNode.textContent,
-						aNode.title
+						title
 					].join('::'));
 			if (('|'+expanded+'|').indexOf('|'+key+'|') > -1) return;
 			root.setAttribute(this.kEXPANDED, (expanded ? expanded + '|' : '' ) + key);
 		}
-		aNode.setAttribute('rubytext', aNode.title);
+		aNode.setAttribute('rubytext', title);
 		this.reformRubyElement(aNode);
 	},
   
