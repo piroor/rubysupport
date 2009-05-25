@@ -426,8 +426,12 @@ try{
   
 	expandAttribute : function(aNode) 
 	{
-		var root = aNode.ownerDocument.documentElement;
+		if (!aNode.title ||
+			!aNode.textContent ||
+			aNode.title.replace(/\s+/g, '') == aNode.textContent.replace(/\s+/g, ''))
+			return;
 
+		var root = aNode.ownerDocument.documentElement;
 		var mode = nsPreferences.getIntPref(this.kPREF_EXPAND_MODE);
 		if (mode == 1) {
 			// Šù‚É“WŠJ‚µ‚½—ªŒê‚Í‚à‚¤“WŠJ‚µ‚È‚¢
@@ -440,9 +444,7 @@ try{
 			if (('|'+expanded+'|').indexOf('|'+key+'|') > -1) return;
 			root.setAttribute(this.kEXPANDED, (expanded ? expanded + '|' : '' ) + key);
 		}
-
 		aNode.setAttribute('rubytext', aNode.title);
-
 		this.reformRubyElement(aNode);
 	},
   
