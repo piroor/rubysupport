@@ -428,7 +428,7 @@ try{
 	{
 		if (!aNode.title ||
 			!aNode.textContent ||
-			aNode.title.replace(/\s+/g, '') == aNode.textContent.replace(/\s+/g, ''))
+			aNode.title.replace(/\s/g, '') == aNode.textContent.replace(/\s/g, ''))
 			return;
 
 		var root = aNode.ownerDocument.documentElement;
