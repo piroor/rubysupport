@@ -992,8 +992,12 @@ dump(e+'\n');
 	{
 		window.removeEventListener('unload', this, false);
 		try {
-			this.destroyBrowser(gBrowser);
 			this.destroyBrowser(document.getElementById('sidebar'));
+
+			Array.slice(gBrowser.mTabContainer.childNodes)
+				.forEach(function(aTab) {
+					this.destroyBrowser(aTab.linkedBrowser);
+				}, this);
 
 			var appcontent = document.getElementById('appcontent');
 			appcontent.removeEventListener('SubBrowserAdded', this, false);
