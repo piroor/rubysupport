@@ -1,0 +1,44 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.1//EN" "http://www.w3.org/TR/xhtml11/DTD/xhtml11.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml" xml:lang="en">
+ <head>
+  <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+  <title>Ruby Test</title>
+ </head>
+
+ <body>
+  <h2>Ruby Test</h2>
+  <p>
+   If a "display: none" style element is set to 'block' on by javascript, 
+   the ruby text is not aligned properly.
+  </p>
+  <p style="border: 1px solid green;">
+    This text is shown by default, and the alignment is acceptable:  
+    <br/>
+    <span id="shown" style="display: block">
+        Test 
+        <ruby><rb>RUBY</rb><rp>(</rp><rt>ruby</rt><rp>)</rp></ruby> text.
+    </span>. 
+  </p>
+  <p style="border: 1px solid red;">
+    The following is the same text (hidden by default) which aligns to 
+    the superscript instead of the base. 
+    <br/>
+    To show the text (by setting "display: block")
+    <input type="button" 
+        onclick="document.getElementById('hidden').style.display='block'" 
+        value="press this"/>
+
+    <br/>
+    <span id="hidden" style="display: none">
+        Test 
+        <ruby><rb>RUBY</rb><rp>(</rp><rt>ruby</rt><rp>)</rp></ruby> text.
+    </span>. 
+  </p>
+  <p>
+    The above test works in Internet Explorer...
+  </p>
+ </body>
+</html>
+
+ 
