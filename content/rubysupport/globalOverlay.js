@@ -34,7 +34,38 @@ var RubyService =
 	kSTYLE_OVERHANG : 'rubysupport.style.default.ruby-overhang',
 	kSTYLE_STACKING : 'rubysupport.style.default.line-stacking-ruby',
 
-	kNARROW_CHARACTERS_PATTERN : /[\u0020-\u024F]+/ig,
+	kNARROW_CHARACTERS_PATTERN : /[^\u1100-\u11FF\u2190-\u21FF\u2460-\u257F\u2600-\u26FF\u27F0-\u297F\u2B00-\u2BFF\u2E00-\u2FDF\u2FF0-\u2FFF\u3000-\u318F\u31A0-\u4DBF\u4E00-\u9FFF\uAC00-\uD79F\uF900-\uFAFF\uFE10-\uFE1F\uFE30-\uFE4F]+/ig,
+	/*
+		\u1100-\u11FF Hangul Jamo
+		\u2190-\u21FF Arrows
+		\u2460-\u24FF Enclosed Alphanumerics
+		\u2500-\u257F Box Drawing
+		\u2600-\u26FF Miscellaneous Symbols
+		\u27F0-\u27FF Supplemental Arrows-A
+		\u2800-\u28FF Braille Patterns
+		\u2900-\u297F Supplemental Arrows-B
+		\u2B00-\u2BFF Miscellaneous Symbols and Arrows
+		\u2E00-\u2E7F Supplemental Punctuation
+		\u2E80-\u2EFF CJK Radicals Supplement
+		\u2F00-\u2FDF Kangxi Radicals
+		\u2FF0-\u2FFF Ideographic Description Characters
+		\u3000-\u303F CJK Symbols and Punctuation
+		\u3040-\u309F Hiragana
+		\u30A0-\u30FF Katakana
+		\u3100-\u312F Bopomofo
+		\u3130-\u318F Hangul Compatibility Jamo
+		\u31A0-\u31BF Bopomofo Extended
+		\u31C0-\u31EF CJK Strokes
+		\u31F0-\u31FF Katakana Phonetic Extensions
+		\u3200-\u32FF Enclosed CJK Letters and Months
+		\u3300-\u33FF CJK Compatibility
+		\u3400-\u4DBF CJK Unified Ideographs Extension A
+		\u4E00-\u9FFF CJK Unified Ideographs
+		\uAC00-\uD79F Hangul Syllables
+		\uF900-\uFAFF CJK Compatibility Ideographs
+		\uFE10-\uFE1F Vertical Forms
+		\uFE30-\uFE4F CJK Compatibility Forms
+	*/
 
 	get SSS()
 	{
