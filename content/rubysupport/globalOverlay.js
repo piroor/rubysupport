@@ -107,13 +107,13 @@ var RubyService =
 	
 	initBrowser : function(aBrowser) 
 	{
-		aBrowser.addEventListener('DOMContentLoaded', this, false);
-		aBrowser.addEventListener('DOMNodeInserted', this, false);
+		aBrowser.addEventListener('DOMContentLoaded', this, true);
+		aBrowser.addEventListener('DOMNodeInserted', this, true);
 	},
 	destroyBrowser : function(aBrowser)
 	{
-		aBrowser.removeEventListener('DOMContentLoaded', this, false);
-		aBrowser.removeEventListener('DOMNodeInserted', this, false);
+		aBrowser.removeEventListener('DOMContentLoaded', this, true);
+		aBrowser.removeEventListener('DOMNodeInserted', this, true);
 	},
  
 	updateGlobalStyleSheets : function() 
@@ -482,6 +482,9 @@ try{
   
 	reformRubyElement : function(aNode) 
 	{
+		// skip for hidden nodes
+		if (!this.getBoxObjectFor(aNode).width) return;
+
 		var originalNode = aNode;
 		if (String(aNode.localName).toLowerCase() != 'ruby') {
 			var doc = aNode.ownerDocument;
@@ -908,8 +911,14 @@ dump(e+'\n');
 		try {
 			this.updateGlobalStyleSheets();
 			this.overrideFunctions();
-			this.initBrowser(gBrowser);
 			this.initBrowser(document.getElementById('sidebar'));
+
+			Array.slice(gBrowser.mTabContainer.childNodes)
+				.forEach(function(aTab) {
+					this.initBrowser(aTab.linkedBrowser);
+				}, this);
+			gBrowser.addEventListener('TabOpen', this, false);
+			gBrowser.addEventListener('TabClose', this, false);
 
 			var appcontent = document.getElementById('appcontent');
 			appcontent.addEventListener('SubBrowserAdded', this, false);
@@ -1013,6 +1022,13 @@ dump(e+'\n');
 				var doc = node.ownerDocument || node;
 				if (doc == document) return;
 				this.parseRubyNodes(doc.defaultView);
+				return;
+
+			case 'TabOpen':
+				this.initBrowser(aEvent.originalTarget.linkedBrowser);
+				return;
+			case 'TabClose':
+				this.destroyBrowser(aEvent.originalTarget.linkedBrowser);
 				return;
 
 			case 'SubBrowserAdded':
