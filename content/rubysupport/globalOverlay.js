@@ -241,9 +241,9 @@ var RubyService =
 	
 	startProgressiveParse : function(aWindow) 
 	{
-		aWindow.setTimeout(function(aSelf) {
+		this.addDelayedTask(function(aSelf) {
 			aSelf.progressiveParse(aWindow);
-		}, 0, this);
+		});
 	},
   
 	parseRuby : function(aNode) 
@@ -482,9 +482,6 @@ try{
   
 	reformRubyElement : function(aNode) 
 	{
-		// skip for hidden nodes
-		if (!this.getBoxObjectFor(aNode).width) return;
-
 		var originalNode = aNode;
 		if (String(aNode.localName).toLowerCase() != 'ruby') {
 			var doc = aNode.ownerDocument;
@@ -516,9 +513,9 @@ dump(e+'\n');
 	{
 		aNode.setAttribute(this.kREFORMED, 'progress');
 
-		window.setTimeout(function(aSelf) {
+		this.addDelayedTask(function(aSelf) {
 			aSelf.reformRubyElement(aNode);
-		}, 0, this);
+		});
 	},
  
 	correctVerticalPosition : function(aNode) 
@@ -1042,6 +1039,29 @@ dump(e+'\n');
 				this.destroyBrowser(aEvent.originalTarget.browser);
 				return;
 		}
+	},
+ 
+	addDelayedTask : function(aTask) 
+	{
+		this._tasks.push(aTask);
+		if (!this._delayedTaskTimer)
+			this._delayedTaskTimer = window.setTimeout(this.doDekayedTask, 0, this);
+	},
+	_tasks : [],
+	_delayedTaskTimer : null,
+	doDekayedTask : function(aSelf)
+	{
+		if (!aSelf._tasks.length) return;
+		var task = aSelf._tasks.shift();
+		try {
+			task(aSelf);
+		}
+		catch(e) {
+		}
+		if (aSelf._tasks.length)
+			aSelf._delayedTaskTimer = window.setTimeout(arguments.callee, 0, aSelf);
+		else
+			aSelf._delayedTaskTimer = null;
 	},
  
 	getBoxObjectFor : function(aNode) 
