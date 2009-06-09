@@ -5,12 +5,12 @@ var RubyService =
 	XHTMLNS : 'http://www.w3.org/1999/xhtml',
 	RUBYNS  : 'http://piro.sakura.ne.jp/rubysupport',
 
-	kSTATE : 'moz-ruby-parsed',
-	kMODE  : 'moz-ruby-mode',
-	kTYPE  : 'moz-ruby-type',
-	kALIGN  : 'moz-ruby-align',
+	kSTATE     : 'moz-ruby-state',
+	kMODE      : 'moz-ruby-mode',
+	kTYPE      : 'moz-ruby-type',
+	kALIGN     : 'moz-ruby-align',
 	kLINE_EDGE : 'moz-ruby-line-edge',
-	kREFORMED : 'moz-ruby-reformed',
+	kREFORMED  : 'moz-ruby-reformed',
 
 	kLETTERS_BOX : 'ruby-text-innerBox',
 	kLAST_LETTER_BOX : 'ruby-text-lastLetterBox',
@@ -18,7 +18,6 @@ var RubyService =
 
 	kAUTO_EXPANDED : 'ruby-auto-expanded',
 
-	kDONE     : 'moz-ruby-parsed',
 	kLOADED   : 'moz-ruby-stylesheet-loaded',
 	kEXPANDED : 'moz-ruby-expanded',
 
@@ -109,11 +108,13 @@ var RubyService =
 	{
 		aBrowser.addEventListener('DOMContentLoaded', this, true);
 		aBrowser.addEventListener('XHTMLRubyInserted', this, true, true);
+		aBrowser.addEventListener('MozAfterPaint', this, true);
 	},
 	destroyBrowser : function(aBrowser)
 	{
 		aBrowser.removeEventListener('DOMContentLoaded', this, true);
 		aBrowser.removeEventListener('XHTMLRubyInserted', this, true, true);
+		aBrowser.removeEventListener('MozAfterPaint', this, true);
 	},
  
 	updateGlobalStyleSheets : function() 
@@ -148,15 +149,15 @@ var RubyService =
 			this.SSS.unregisterSheet(sheet, this.SSS.AGENT_SHEET);
 	},
  
-	parseRubyNodes : function(aWindow) 
+	processRubyNodes : function(aWindow, aPending) 
 	{
 		if (!aWindow.document) return false;
 
 		if (nsPreferences.getBoolPref(this.kPREF_PROGRESSIVE)) {
-			this.startProgressiveParse(aWindow);
+			this.startProgressiveProcess(aWindow, aPending);
 		}
 		else {
-			var expression = this.parseTargetExpression+'[last()]';
+			var expression = this.getProcessTargetExpression(aPending)+'[last()]';
 			var root = aWindow.document.documentElement;
 			var target;
 			while (target = this.evaluateXPath(
@@ -165,14 +166,14 @@ var RubyService =
 					XPathResult.FIRST_ORDERED_NODE_TYPE
 				).singleNodeValue)
 			{
-				this.parseOneNode(target);
+				this.processOneNode(target, aPending);
 			}
 		}
 
 		return true;
 	},
 	
-	get parseTargetExpression() 
+	getProcessTargetExpression : function(aPending) 
 	{
 		var conditions = [
 				'contains(" ruby RUBY ", concat(" ", local-name(), " "))'
@@ -183,16 +184,24 @@ var RubyService =
 			if (list)
 				conditions.push('contains(" '+list.toLowerCase()+' '+list.toUpperCase()+' ", concat(" ", local-name(), " ")) and @title');
 		}
+		var additionalCondition = aPending ?
+				' and @'+this.kREFORMED+'="pending"' :
+				' and (not(@'+this.kSTATE+') or not(@'+this.kREFORMED+'))' ;
 
 		return [
 			'/descendant::*[((',
 			conditions.join(') or ('),
-			')) and (not(@'+this.kSTATE+') or not(@'+this.kREFORMED+'))]'
+			'))'+additionalCondition+']'
 		].join('');
 	},
  
-	parseOneNode : function(aNode) 
+	processOneNode : function(aNode, aPending) 
 	{
+		if (aPending) {
+			this.delayedReformRubyElement(aNode);
+			return;
+		}
+
 		if (!aNode.hasAttribute(this.kSTATE)) {
 			aNode.setAttribute(this.kSTATE, 'progress');
 			try {
@@ -200,7 +209,7 @@ var RubyService =
 					this.expandAttribute(aNode);
 				}
 				else {
-					this.parseRuby(aNode);
+					this.processRuby(aNode);
 				}
 			}
 			catch(e) {
@@ -215,7 +224,7 @@ var RubyService =
 		this.delayedReformRubyElement(aNode);
 	},
  
-	progressiveParse : function(aWindow) 
+	progressiveProcess : function(aWindow, aPending) 
 	{
 		var doc = aWindow.document;
 
@@ -224,31 +233,33 @@ var RubyService =
 		var count = 0;
 		while (
 				(target = this.evaluateXPath(
-					this.parseTargetExpression,
+					this.getProcessTargetExpression(aPending),
 					doc.documentElement,
 					XPathResult.FIRST_ORDERED_NODE_TYPE
 				).singleNodeValue) &&
 				(count++ < unit)
 				)
 		{
-			this.parseOneNode(target);
+			this.processOneNode(target, aPending);
 		}
 
 		if (!count) return;
 
-		this.startProgressiveParse(aWindow);
+		this.startProgressiveProcess(aWindow, aPending);
 	},
 	
-	startProgressiveParse : function(aWindow) 
+	startProgressiveProcess : function(aWindow, aPending) 
 	{
-		if (aWindow._progressiveParseTimer) return;
-		aWindow._progressiveParseTimer = aWindow.setTimeout(function(aSelf) {
-				aWindow._progressiveParseTimer = null;
-				aSelf.progressiveParse(aWindow);
+		var timerName = '_progressiveProcessTimer';
+		if (aPending) timerName += 'Pending';
+		if (aWindow[timerName]) return;
+		aWindow[timerName] = aWindow.setTimeout(function(aSelf) {
+				aWindow[timerName] = null;
+				aSelf.progressiveProcess(aWindow, aPending);
 			}, 10, this);
 	},
   
-	parseRuby : function(aNode) 
+	processRuby : function(aNode) 
 	{
 		var doc = aNode.ownerDocument;
 
@@ -439,7 +450,7 @@ try{
 			range.setEndAfter(aNode);
 			range.insertNode(movedContents);
 			if (shouldCreateNewRubyElement)
-				this.parseRuby(movedContents);
+				this.processRuby(movedContents);
 		}
 
 
@@ -485,7 +496,10 @@ try{
 	reformRubyElement : function(aNode) 
 	{
 		// skip for hidden nodes
-		if (!this.getBoxObjectFor(aNode).width) return;
+		if (!this.getBoxObjectFor(aNode).width) {
+			aNode.setAttribute(this.kREFORMED, 'pending');
+			return;
+		}
 
 		var originalNode = aNode;
 		if (String(aNode.localName).toLowerCase() != 'ruby') {
@@ -516,7 +530,8 @@ dump(e+'\n');
 	
 	delayedReformRubyElement : function(aNode) 
 	{
-		aNode.setAttribute(this.kREFORMED, 'progress');
+		if (!aNode.hasAttribute(this.kREFORMED))
+			aNode.setAttribute(this.kREFORMED, 'progress');
 
 		aNode.ownerDocument.defaultView.setTimeout(function(aSelf) {
 			aSelf.reformRubyElement(aNode);
@@ -899,6 +914,11 @@ dump(e+'\n');
 		aNode.setAttribute('style', style);
 	},
   
+	processPendingItems : function(aWindow) 
+	{
+		this.delayedReformRubyElement();
+	},
+ 
 	init : function() 
 	{
 		if (this.initialized) return;
@@ -1027,7 +1047,17 @@ dump(e+'\n');
 				var node = aEvent.originalTarget || aEvent.target;
 				var doc = node.ownerDocument || node;
 				if (doc == document) return;
-				this.parseRubyNodes(doc.defaultView);
+				this.processRubyNodes(doc.defaultView);
+				return;
+
+			case 'MozAfterPaint':
+				if (!nsPreferences.getBoolPref(this.kPREF_ENABLED)) return;
+				var target = aEvent.originalTarget;
+				if (target instanceof Ci.nsIDOMElement)
+					target = target.ownerDocument.defaultView;
+				else if (target instanceof Ci.nsIDOMDocument)
+					target = target.defaultView;
+				this.processRubyNodes(target, true);
 				return;
 
 			case 'TabOpen':
