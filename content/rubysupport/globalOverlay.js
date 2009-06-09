@@ -108,12 +108,12 @@ var RubyService =
 	initBrowser : function(aBrowser) 
 	{
 		aBrowser.addEventListener('DOMContentLoaded', this, true);
-		aBrowser.addEventListener('DOMNodeInserted', this, true);
+		aBrowser.addEventListener('XHTMLRubyInserted', this, true, true);
 	},
 	destroyBrowser : function(aBrowser)
 	{
 		aBrowser.removeEventListener('DOMContentLoaded', this, true);
-		aBrowser.removeEventListener('DOMNodeInserted', this, true);
+		aBrowser.removeEventListener('XHTMLRubyInserted', this, true, true);
 	},
  
 	updateGlobalStyleSheets : function() 
@@ -1020,12 +1020,18 @@ dump(e+'\n');
 				return;
 
 			case 'DOMContentLoaded':
-			case 'DOMNodeInserted':
 				if (!nsPreferences.getBoolPref(this.kPREF_ENABLED)) return;
 				var node = aEvent.target;
 				var doc = node.ownerDocument || node;
 				if (doc == document) return;
 				this.parseRubyNodes(doc.defaultView);
+				return;
+
+			case 'XHTMLRubyInserted':
+				if (!nsPreferences.getBoolPref(this.kPREF_ENABLED)) return;
+				var node = aEvent.originalTarget;
+				if (node.parentNode.hasAttribute('rubytext')) node = node.parentNode;
+				this.parseOneNode(node);
 				return;
 
 			case 'TabOpen':

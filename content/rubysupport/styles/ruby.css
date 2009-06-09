@@ -2,6 +2,11 @@
 @namespace RUBY url("http://piro.sakura.ne.jp/rubysupport");
 
 
+*|ruby:not([moz-ruby-parsed="done"]),
+*|*:not([moz-ruby-parsed="done"]) > *|ruby {
+	-moz-binding: url("chrome://rubysupport/content/styles/ruby.xml#ruby");
+}
+
 *|ruby[moz-ruby-parsed="done"],
 *|*[moz-ruby-parsed="done"] > *|ruby {
 	display: inline !important;

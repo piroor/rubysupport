@@ -6,6 +6,16 @@
 		xmlns:html="http://www.w3.org/1999/xhtml"
 		xmlns:RUBY="http://piro.sakura.ne.jp/rubysupport">
 
+	<binding id="ruby" includes="*">
+		<implementation>
+			<constructor><![CDATA[
+				var event = document.createEvent('Events');
+				event.initEvent('XHTMLRubyInserted', true, true);
+				this.dispatchEvent(event);
+			]]></constructor>
+		</implementation>
+	</binding>
+
 	<binding id="ruby-attribute" includes="*">
 		<content>
 			<html:ruby
