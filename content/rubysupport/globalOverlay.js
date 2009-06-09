@@ -511,6 +511,9 @@ dump(e+'\n');
 	
 	delayedReformRubyElement : function(aNode) 
 	{
+		// skip for hidden nodes
+		if (!this.getBoxObjectFor(aNode).width) return;
+
 		aNode.setAttribute(this.kREFORMED, 'progress');
 
 		this.addDelayedTask(function(aSelf) {
@@ -1045,23 +1048,22 @@ dump(e+'\n');
 	{
 		this._tasks.push(aTask);
 		if (!this._delayedTaskTimer)
-			this._delayedTaskTimer = window.setTimeout(this.doDekayedTask, 0, this);
+			this._delayedTaskTimer = window.setTimeout(this.doDekayedTask, 10, this);
 	},
 	_tasks : [],
 	_delayedTaskTimer : null,
 	doDekayedTask : function(aSelf)
 	{
-		if (!aSelf._tasks.length) return;
-		var task = aSelf._tasks.shift();
-		try {
-			task(aSelf);
-		}
-		catch(e) {
-		}
-		if (aSelf._tasks.length)
-			aSelf._delayedTaskTimer = window.setTimeout(arguments.callee, 0, aSelf);
-		else
-			aSelf._delayedTaskTimer = null;
+		var tasks = aSelf._tasks;
+		aSelf._tasks = [];
+		aSelf._delayedTaskTimer = null;
+		tasks.forEach(function(aTask) {
+			try {
+				aTask(aSelf);
+			}
+			catch(e) {
+			}
+		});
 	},
  
 	getBoxObjectFor : function(aNode) 
