@@ -241,9 +241,9 @@ var RubyService =
 	
 	startProgressiveParse : function(aWindow) 
 	{
-		this.addDelayedTask(function(aSelf) {
+		aWindow.setTimeout(function(aSelf) {
 			aSelf.progressiveParse(aWindow);
-		});
+		}, 0, this);
 	},
   
 	parseRuby : function(aNode) 
@@ -482,6 +482,9 @@ try{
   
 	reformRubyElement : function(aNode) 
 	{
+		// skip for hidden nodes
+		if (!this.getBoxObjectFor(aNode).width) return;
+
 		var originalNode = aNode;
 		if (String(aNode.localName).toLowerCase() != 'ruby') {
 			var doc = aNode.ownerDocument;
@@ -511,14 +514,11 @@ dump(e+'\n');
 	
 	delayedReformRubyElement : function(aNode) 
 	{
-		// skip for hidden nodes
-		if (!this.getBoxObjectFor(aNode).width) return;
-
 		aNode.setAttribute(this.kREFORMED, 'progress');
 
-		this.addDelayedTask(function(aSelf) {
+		window.setTimeout(function(aSelf) {
 			aSelf.reformRubyElement(aNode);
-		});
+		}, 0, this);
 	},
  
 	correctVerticalPosition : function(aNode) 
@@ -1042,28 +1042,6 @@ dump(e+'\n');
 				this.destroyBrowser(aEvent.originalTarget.browser);
 				return;
 		}
-	},
- 
-	addDelayedTask : function(aTask) 
-	{
-		this._tasks.push(aTask);
-		if (!this._delayedTaskTimer)
-			this._delayedTaskTimer = window.setTimeout(this.doDekayedTask, 10, this);
-	},
-	_tasks : [],
-	_delayedTaskTimer : null,
-	doDekayedTask : function(aSelf)
-	{
-		var tasks = aSelf._tasks;
-		aSelf._tasks = [];
-		aSelf._delayedTaskTimer = null;
-		tasks.forEach(function(aTask) {
-			try {
-				aTask(aSelf);
-			}
-			catch(e) {
-			}
-		});
 	},
  
 	getBoxObjectFor : function(aNode) 
