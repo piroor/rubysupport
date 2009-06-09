@@ -6,6 +6,7 @@
 <!ENTITY ruby.rendering           "ルビの表示">
 
 <!ENTITY ruby.enabled             "XHTMLのルビを表示する">
+<!ENTITY ruby.observeDynamicChanges "スクリプトによるコンテンツの変更を監視する">
 
 <!ENTITY ruby.expand          "不可視情報のルビ表示">
 <!ENTITY ruby.expand.enabled  "以下の不可視情報をルビとして表示する">

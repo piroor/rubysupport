@@ -6,6 +6,7 @@
 <!ENTITY ruby.rendering           "Ruby Rendering">
 
 <!ENTITY ruby.enabled             "Show XHTML Ruby">
+<!ENTITY ruby.observeDynamicChanges "Observe dynamic changes by scripts in web pages">
 
 <!ENTITY ruby.expand          "Show Invisible Informations as Ruby">
 <!ENTITY ruby.expand.enabled  "Show Invisible Informations as Ruby">

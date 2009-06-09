@@ -27,6 +27,9 @@
 		<preference id="rubysupport.expand.noPseuds"
 			name="rubysupport.expand.noPseuds"
 			type="bool"/>
+		<preference id="rubysupport.general.observeDynamicChanges"
+			name="rubysupport.general.observeDynamicChanges"
+			type="bool"/>
 	</preferences>
 
 	<groupbox orient="vertical">
@@ -34,6 +37,9 @@
 		<checkbox label="&ruby.enabled;"
 			preference="rubysupport.general.enabled"
 			id="rubysupport.general.enabled-check"/>
+		<checkbox label="&ruby.observeDynamicChanges;"
+			preference="rubysupport.general.observeDynamicChanges"
+			id="rubysupport.general.observeDynamicChanges-check"/>
 	</groupbox>
 
 	<groupbox orient="vertical">

@@ -1,6 +1,7 @@
 pref("rubysupport.general.enabled", true);
 pref("rubysupport.general.progressive", true);
 pref("rubysupport.general.progressive.unit", 30);
+pref("rubysupport.general.observeDynamicChanges", true);
 pref("rubysupport.expand.enabled", true);
 pref("rubysupport.expand.list", "abbr acronym dfn");
 pref("rubysupport.expand.mode", 1);

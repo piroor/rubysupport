@@ -21,13 +21,14 @@ var RubyService =
 	kLOADED   : 'moz-ruby-stylesheet-loaded',
 	kEXPANDED : 'moz-ruby-expanded',
 
-	kPREF_ENABLED       : 'rubysupport.general.enabled',
-	kPREF_PROGRESSIVE   : 'rubysupport.general.progressive',
-	kPREF_PROGRESS_UNIT : 'rubysupport.general.progressive.unit',
-	kPREF_EXPAND        : 'rubysupport.expand.enabled',
-	kPREF_EXPAND_LIST   : 'rubysupport.expand.list',
-	kPREF_EXPAND_MODE   : 'rubysupport.expand.mode',
-	kPREF_NOPSEUDS      : 'rubysupport.expand.noPseuds',
+	kPREF_ENABLED         : 'rubysupport.general.enabled',
+	kPREF_PROGRESSIVE     : 'rubysupport.general.progressive',
+	kPREF_PROGRESS_UNIT   : 'rubysupport.general.progressive.unit',
+	kPREF_OBSERVE_CHANGES : 'rubysupport.general.observeDynamicChanges',
+	kPREF_EXPAND          : 'rubysupport.expand.enabled',
+	kPREF_EXPAND_LIST     : 'rubysupport.expand.list',
+	kPREF_EXPAND_MODE     : 'rubysupport.expand.mode',
+	kPREF_NOPSEUDS        : 'rubysupport.expand.noPseuds',
 
 	kSTYLE_ALIGN    : 'rubysupport.style.default.ruby-align',
 	kSTYLE_OVERHANG : 'rubysupport.style.default.ruby-overhang',
@@ -104,22 +105,9 @@ var RubyService =
 		return this._isGecko19OrLater;
 	},
 	
-	initBrowser : function(aBrowser) 
-	{
-		aBrowser.addEventListener('DOMContentLoaded', this, true);
-		aBrowser.addEventListener('XHTMLRubyInserted', this, true, true);
-		aBrowser.addEventListener('MozAfterPaint', this, true);
-	},
-	destroyBrowser : function(aBrowser)
-	{
-		aBrowser.removeEventListener('DOMContentLoaded', this, true);
-		aBrowser.removeEventListener('XHTMLRubyInserted', this, true, true);
-		aBrowser.removeEventListener('MozAfterPaint', this, true);
-	},
- 
 	updateGlobalStyleSheets : function() 
 	{
-		var enabled = nsPreferences.getBoolPref(this.kPREF_ENABLED);
+		var enabled = this.getPref(this.kPREF_ENABLED);
 
 		var sheet = this.IOService.newURI('chrome://rubysupport/content/styles/ruby.css', null, null);
 		if (
@@ -138,12 +126,12 @@ var RubyService =
 
 		sheet = this.IOService.newURI('chrome://rubysupport/content/styles/ruby-expanded-nopseuds.css', null, null);
 		if (
-			enabled && nsPreferences.getBoolPref(this.kPREF_NOPSEUDS) &&
+			enabled && this.getPref(this.kPREF_NOPSEUDS) &&
 			!this.SSS.sheetRegistered(sheet, this.SSS.AGENT_SHEET)
 			)
 			this.SSS.loadAndRegisterSheet(sheet, this.SSS.AGENT_SHEET);
 		else if (
-			(!enabled || !nsPreferences.getBoolPref(this.kPREF_NOPSEUDS)) &&
+			(!enabled || !this.getPref(this.kPREF_NOPSEUDS)) &&
 			this.SSS.sheetRegistered(sheet, this.SSS.AGENT_SHEET)
 			)
 			this.SSS.unregisterSheet(sheet, this.SSS.AGENT_SHEET);
@@ -153,7 +141,7 @@ var RubyService =
 	{
 		if (!aWindow.document) return false;
 
-		if (nsPreferences.getBoolPref(this.kPREF_PROGRESSIVE)) {
+		if (this.getPref(this.kPREF_PROGRESSIVE)) {
 			this.startProgressiveProcess(aWindow, aPending);
 		}
 		else {
@@ -179,8 +167,8 @@ var RubyService =
 				'contains(" ruby RUBY ", concat(" ", local-name(), " "))'
 			];
 
-		if (nsPreferences.getBoolPref(this.kPREF_EXPAND)) {
-			var list = nsPreferences.copyUnicharPref(this.kPREF_EXPAND_LIST);
+		if (this.getPref(this.kPREF_EXPAND)) {
+			var list = this.getPref(this.kPREF_EXPAND_LIST);
 			if (list)
 				conditions.push('contains(" '+list.toLowerCase()+' '+list.toUpperCase()+' ", concat(" ", local-name(), " ")) and @title');
 		}
@@ -228,7 +216,7 @@ var RubyService =
 	{
 		var doc = aWindow.document;
 
-		var unit = nsPreferences.getIntPref(this.kPREF_PROGRESS_UNIT);
+		var unit = this.getPref(this.kPREF_PROGRESS_UNIT);
 		var target;
 		var count = 0;
 		while (
@@ -477,7 +465,7 @@ try{
 			return;
 
 		var root = aNode.ownerDocument.documentElement;
-		var mode = nsPreferences.getIntPref(this.kPREF_EXPAND_MODE);
+		var mode = this.getPref(this.kPREF_EXPAND_MODE);
 		if (mode == 1) {
 			// ä˘Ç…ìWäJÇµÇΩó™åÍÇÕÇ‡Ç§ìWäJÇµÇ»Ç¢
 			var expanded = root.getAttribute(this.kEXPANDED) || '';
@@ -626,7 +614,7 @@ dump(e+'\n');
   
 	applyRubyAlign : function(aNode) 
 	{
-		var align = nsPreferences.copyUnicharPref(this.kSTYLE_ALIGN).toLowerCase();
+		var align = this.getPref(this.kSTYLE_ALIGN).toLowerCase();
 		aNode.setAttribute(this.kALIGN, align);
 		if (/left|start|right|end|center/.test(align)) return;
 
@@ -638,7 +626,7 @@ dump(e+'\n');
 	justifyText : function(aNode) 
 	{
 		var isWrapped = false;
-		var align = nsPreferences.copyUnicharPref(this.kSTYLE_ALIGN).toLowerCase();
+		var align = this.getPref(this.kSTYLE_ALIGN).toLowerCase();
 
 		// Ç‹Ç∏ÅAéöä‘Çí≤êÆÇ∑ÇÈëŒè€Ç©Ç«Ç§Ç©Çîªï 
 		var whole = aNode;
@@ -826,8 +814,8 @@ dump(e+'\n');
   
 	applyRubyOverhang : function(aNode) 
 	{
-		var overhang = nsPreferences.copyUnicharPref(this.kSTYLE_OVERHANG).toLowerCase();
-		var align = nsPreferences.copyUnicharPref(this.kSTYLE_ALIGN).toLowerCase();
+		var overhang = this.getPref(this.kSTYLE_OVERHANG).toLowerCase();
+		var align = this.getPref(this.kSTYLE_ALIGN).toLowerCase();
 		if (
 			overhang == 'none' ||
 			(overhang == 'start' && (align == 'left' || align == 'start')) ||
@@ -897,7 +885,7 @@ dump(e+'\n');
 	{
 		if (!this.isGecko19OrLater) return;
 
-		var stacking = nsPreferences.copyUnicharPref(this.kSTYLE_STACKING).toLowerCase();
+		var stacking = this.getPref(this.kSTYLE_STACKING).toLowerCase();
 		if (stacking == 'include-ruby') return;
 
 		var texts = this.getRubyTexts(aNode);
@@ -930,17 +918,12 @@ dump(e+'\n');
 
 		window.addEventListener('unload', this, false);
 
+		this.addPrefListener(this);
+
 		try {
 			this.updateGlobalStyleSheets();
 			this.overrideFunctions();
-			this.initBrowser(document.getElementById('sidebar'));
-
-			Array.slice(gBrowser.mTabContainer.childNodes)
-				.forEach(function(aTab) {
-					this.initBrowser(aTab.linkedBrowser);
-				}, this);
-			gBrowser.addEventListener('TabOpen', this, false);
-			gBrowser.addEventListener('TabClose', this, false);
+			this.initBrowsers();
 
 			var appcontent = document.getElementById('appcontent');
 			appcontent.addEventListener('SubBrowserAdded', this, false);
@@ -951,6 +934,33 @@ dump(e+'\n');
 		}
 	},
 	
+	initBrowsers : function() 
+	{
+		this.initBrowser(document.getElementById('sidebar'));
+		this.initTabBrowser(gBrowser);
+	},
+	
+	initBrowser : function(aBrowser) 
+	{
+		aBrowser.addEventListener('DOMContentLoaded', this, true);
+		if (this.getPref(this.kPREF_OBSERVE_CHANGES)) {
+			aBrowser.addEventListener('XHTMLRubyInserted', this, true, true);
+			aBrowser.addEventListener('MozAfterPaint', this, true);
+			aBrowser.__rubysupport__observeDynamicChanges = true;
+		}
+	},
+ 
+	initTabBrowser : function(aTabBrowser) 
+	{
+		Array.slice(aTabBrowser.mTabContainer.childNodes)
+			.forEach(function(aTab) {
+				this.initBrowser(aTab.linkedBrowser);
+			}, this);
+
+		aTabBrowser.addEventListener('TabOpen', this, false);
+		aTabBrowser.addEventListener('TabClose', this, false);
+	},
+  
 	overrideFunctions : function() 
 	{
 		if (window.FillInHTMLTooltip) {
@@ -1013,13 +1023,11 @@ dump(e+'\n');
 	destroy : function() 
 	{
 		window.removeEventListener('unload', this, false);
-		try {
-			this.destroyBrowser(document.getElementById('sidebar'));
 
-			Array.slice(gBrowser.mTabContainer.childNodes)
-				.forEach(function(aTab) {
-					this.destroyBrowser(aTab.linkedBrowser);
-				}, this);
+		this.removePrefListener(this);
+
+		try {
+			this.destroyBrowsers();
 
 			var appcontent = document.getElementById('appcontent');
 			appcontent.removeEventListener('SubBrowserAdded', this, false);
@@ -1028,7 +1036,34 @@ dump(e+'\n');
 		catch(e) {
 		}
 	},
+	
+	destroyBrowsers : function() 
+	{
+		this.destroyBrowser(document.getElementById('sidebar'));
+		this.destroyTabBrowser(gBrowser);
+	},
+	
+	destroyBrowser : function(aBrowser) 
+	{
+		aBrowser.removeEventListener('DOMContentLoaded', this, true);
+		if (aBrowser.__rubysupport__observeDynamicChanges) {
+			aBrowser.removeEventListener('XHTMLRubyInserted', this, true, true);
+			aBrowser.removeEventListener('MozAfterPaint', this, true);
+			aBrowser.__rubysupport__observeDynamicChanges = false;
+		}
+	},
  
+	destroyTabBrowser : function(aTabBrowser) 
+	{
+		Array.slice(aTabBrowser.mTabContainer.childNodes)
+			.forEach(function(aTab) {
+				this.destroyBrowser(aTab.linkedBrowser);
+			}, this);
+
+		aTabBrowser.removeEventListener('TabOpen', this, false);
+		aTabBrowser.removeEventListener('TabClose', this, false);
+	},
+   
 	handleEvent : function(aEvent) 
 	{
 		switch (aEvent.type)
@@ -1043,7 +1078,7 @@ dump(e+'\n');
 
 			case 'DOMContentLoaded':
 			case 'XHTMLRubyInserted':
-				if (!nsPreferences.getBoolPref(this.kPREF_ENABLED)) return;
+				if (!this.getPref(this.kPREF_ENABLED)) return;
 				var node = aEvent.originalTarget || aEvent.target;
 				var doc = node.ownerDocument || node;
 				if (doc == document) return;
@@ -1051,7 +1086,7 @@ dump(e+'\n');
 				return;
 
 			case 'MozAfterPaint':
-				if (!nsPreferences.getBoolPref(this.kPREF_ENABLED)) return;
+				if (!this.getPref(this.kPREF_ENABLED)) return;
 				var target = aEvent.originalTarget;
 				if (target instanceof Ci.nsIDOMElement)
 					target = target.ownerDocument.defaultView;
@@ -1076,6 +1111,29 @@ dump(e+'\n');
 		}
 	},
  
+/* Pref Listener */ 
+	
+	domains : [ 
+		'rubysupport.'
+	],
+ 
+	observe : function(aSubject, aTopic, aPrefName) 
+	{
+		if (aTopic != 'nsPref:changed') return;
+
+		var value = this.getPref(aPrefName);
+		switch (aPrefName)
+		{
+			case this.kPREF_OBSERVE_CHANGES:
+				this.destroyBrowsers();
+				this.initBrowsers();
+				break;
+
+			default:
+				break;
+		}
+	},
+  
 	getBoxObjectFor : function(aNode) 
 	{
 		if ('getBoxObjectFor' in aNode.ownerDocument)
@@ -1145,6 +1203,7 @@ dump(e+'\n');
 	}
  
 }; 
+RubyService.__proto__ = window['piro.sakura.ne.jp'].prefs;
   
 window.addEventListener('load', RubyService, false); 
  
