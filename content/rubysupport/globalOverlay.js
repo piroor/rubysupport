@@ -241,9 +241,11 @@ var RubyService =
 	
 	startProgressiveParse : function(aWindow) 
 	{
-		aWindow.setTimeout(function(aSelf) {
-			aSelf.progressiveParse(aWindow);
-		}, 0, this);
+		if (aWindow._progressiveParseTimer) return;
+		aWindow._progressiveParseTimer = aWindow.setTimeout(function(aSelf) {
+				aWindow._progressiveParseTimer = null;
+				aSelf.progressiveParse(aWindow);
+			}, 10, this);
 	},
   
 	parseRuby : function(aNode) 
@@ -516,7 +518,7 @@ dump(e+'\n');
 	{
 		aNode.setAttribute(this.kREFORMED, 'progress');
 
-		window.setTimeout(function(aSelf) {
+		aNode.ownerDocument.defaultView.setTimeout(function(aSelf) {
 			aSelf.reformRubyElement(aNode);
 		}, 0, this);
 	},
@@ -1022,7 +1024,7 @@ dump(e+'\n');
 			case 'DOMContentLoaded':
 			case 'XHTMLRubyInserted':
 				if (!nsPreferences.getBoolPref(this.kPREF_ENABLED)) return;
-				var node = aEvent.target;
+				var node = aEvent.originalTarget || aEvent.target;
 				var doc = node.ownerDocument || node;
 				if (doc == document) return;
 				this.parseRubyNodes(doc.defaultView);
