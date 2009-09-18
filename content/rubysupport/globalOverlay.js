@@ -974,7 +974,7 @@ dump(e+'\n');
 		var popuptext = '',
 			target;
 
-		target = RubyService.findParentNodeWithLocalName(elem, 'ruby');
+		target = RubyService.evaluateXPath(elem, 'ancestor-or-self::*[local-name()="ruby" or local-name()="RUBY"]', XPathResult.FIRST_ORDERED_NODE_TYPE).singleNodeValue;
 
 		if (
 			target &&
@@ -1008,16 +1008,6 @@ dump(e+'\n');
 		}
 
 		return __rubysupport__FillInHTMLTooltip(elem);
-	},
-	findParentNodeWithLocalName : function(aNode, aLocalName)
-	{
-		var name = String(aLocalName).toLowerCase();
-		var node = aNode;
-		while (node &&
-			String(Components.lookupMethod(node, 'localName').call(node)).toLowerCase() != name)
-			node = Components.lookupMethod(node, 'parentNode').call(node);
-
-		return node;
 	},
    
 	destroy : function() 
