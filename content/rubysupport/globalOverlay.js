@@ -1067,7 +1067,6 @@ dump(e+'\n');
 				return;
 
 			case 'DOMContentLoaded':
-			case 'XHTMLRubyInserted':
 				if (!this.getPref(this.kPREF_ENABLED)) return;
 				var node = aEvent.originalTarget || aEvent.target;
 				var doc = node.ownerDocument || node;
@@ -1075,14 +1074,22 @@ dump(e+'\n');
 				this.processRubyNodes(doc.defaultView);
 				return;
 
+			case 'XHTMLRubyInserted':
 			case 'MozAfterPaint':
 				if (!this.getPref(this.kPREF_ENABLED)) return;
-				var target = aEvent.originalTarget;
+				var target = aEvent.originalTarget || aEvent.target;
 				if (target instanceof Ci.nsIDOMElement)
 					target = target.ownerDocument.defaultView;
 				else if (target instanceof Ci.nsIDOMDocument)
 					target = target.defaultView;
-				this.processRubyNodes(target, true);
+				if (target.document == document ||
+					target.__rewindforward__processRubyNodesTimer)
+					return;
+				target.__rewindforward__processRubyNodesTimer = window.setTimeout(function(aSelf, aTarget) {
+Application.console.log(aEvent.type+Date.now()+_inspect(aEvent.boundingClientRect));
+					aSelf.processRubyNodes(aTarget, true);
+					aTarget.__rewindforward__processRubyNodesTimer = null;
+				}, 500, this, target);
 				return;
 
 			case 'TabOpen':
