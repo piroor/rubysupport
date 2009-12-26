@@ -10,7 +10,7 @@
 		<implementation>
 			<constructor><![CDATA[
 				var event = document.createEvent('Events');
-				event.initEvent('XHTMLRubyInserted', true, true);
+				event.initEvent('XHTMLRubyInserted', true, false);
 				this.dispatchEvent(event);
 			]]></constructor>
 		</implementation>
