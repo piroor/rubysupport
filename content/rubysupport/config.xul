@@ -161,8 +161,8 @@
 </prefpane>
 
 
-<script type="application/x-javascript" src="chrome://rubysupport/content/config.js"/>
-<script type="application/x-javascript" src="chrome://rubysupport/content/globalOverlay.js"/>
-<script type="application/x-javascript" src="chrome://global/content/nsUserSettings.js"/>
+<script type="application/javascript" src="chrome://rubysupport/content/config.js"/>
+<script type="application/javascript" src="chrome://rubysupport/content/globalOverlay.js"/>
+<script type="application/javascript" src="chrome://global/content/nsUserSettings.js"/>
 
 </prefwindow>

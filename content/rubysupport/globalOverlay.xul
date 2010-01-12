@@ -3,7 +3,7 @@
 <overlay
 	xmlns="http://www.mozilla.org/keymaster/gatekeeper/there.is.only.xul">
 
-<script type="application/x-javascript" src="prefs.js"/>
-<script type="application/x-javascript" src="globalOverlay.js"/>
+<script type="application/javascript" src="prefs.js"/>
+<script type="application/javascript" src="globalOverlay.js"/>
 
 </overlay>
