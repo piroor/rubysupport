@@ -957,8 +957,8 @@ dump(e+'\n');
 				this.initBrowser(aTab.linkedBrowser);
 			}, this);
 
-		aTabBrowser.addEventListener('TabOpen', this, false);
-		aTabBrowser.addEventListener('TabClose', this, false);
+		aTabBrowser.mTabContainer.addEventListener('TabOpen', this, false);
+		aTabBrowser.mTabContainer.addEventListener('TabClose', this, false);
 	},
   
 	overrideFunctions : function() 
@@ -1050,8 +1050,8 @@ dump(e+'\n');
 				this.destroyBrowser(aTab.linkedBrowser);
 			}, this);
 
-		aTabBrowser.removeEventListener('TabOpen', this, false);
-		aTabBrowser.removeEventListener('TabClose', this, false);
+		aTabBrowser.mTabContainer.removeEventListener('TabOpen', this, false);
+		aTabBrowser.mTabContainer.removeEventListener('TabClose', this, false);
 	},
    
 	handleEvent : function(aEvent) 
