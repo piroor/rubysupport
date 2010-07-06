@@ -449,7 +449,7 @@ try{
 			aNode.insertBefore(text, rts.snapshotItem(0));
 
 			for (i = rts.snapshotLength-1; i > -1; i--)
-				text.insertBefore(aNode.removeChild(rts.snapshotItem(i)), text.firstChild);
+				text.insertBefore(rts.snapshotItem(i), text.firstChild);
 		}
 }catch(e){
 	dump(e+'\n');
