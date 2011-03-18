@@ -1086,7 +1086,7 @@ dump(e+'\n');
 					target.__rewindforward__processRubyNodesTimer)
 					return;
 				target.__rewindforward__processRubyNodesTimer = window.setTimeout(function(aSelf, aTarget) {
-Application.console.log(aEvent.type+Date.now()+_inspect(aEvent.boundingClientRect));
+//Application.console.log(aEvent.type+Date.now()+_inspect(aEvent.boundingClientRect));
 					aSelf.processRubyNodes(aTarget, true);
 					aTarget.__rewindforward__processRubyNodesTimer = null;
 				}, 500, this, target);
