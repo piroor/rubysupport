@@ -1,8 +1,10 @@
 hbox, box[orient="horizontal"], row {
+	box-align: center;
 	-moz-box-align: center;
 }
 
 checkbox {
+	box-flex: 1;
 	-moz-box-flex: 1;
 }
 
