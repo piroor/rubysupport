@@ -261,4 +261,4 @@ Preferences（設定） > Advanced（詳細） > XHTML Ruby Support（XHTMLルビ
 
 ------------------------------------------------------------------------
 XHTML Ruby Support for NS7 & Moz & Firefox
-Copyright 2002-2005 Piro(SHIMODA Hiroshi)
+Copyright 2002-2005 Piro(YUKI "Piro" Hiroshi)

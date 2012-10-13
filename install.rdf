@@ -6,7 +6,7 @@
                    em:id="{0620B69D-7B58-416d-A92A-0198860C2757}"
                    em:name="XHTML Ruby Support"
                    em:version="3.0.2009060901"
-                   em:creator="SHIMODA Hiroshi"
+                   em:creator="YUKI &quot;Piro&quot; Hiroshi"
                    em:description="Adds XHTML Ruby support. Ruby texts will be rendered above the base texts, as a small text."
                    em:homepageURL="http://piro.sakura.ne.jp/xul/_rubysupport.html.en"
                    em:iconURL="chrome://rubysupport/content/icon.png"
