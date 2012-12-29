@@ -1,8 +1,8 @@
-content	rubysupport	jar:chrome/rubysupport.jar!/content/rubysupport/
+content	rubysupport	content/rubysupport/
 
 overlay	chrome://global/content/globalOverlay.xul	chrome://rubysupport/content/globalOverlay.xul
 overlay	chrome://communicator/content/pref/preftree.xul	chrome://rubysupport/content/preftreeOverlay.xul
 overlay	chrome://browser/content/browser.xul	chrome://rubysupport/content/globalOverlay.xul
 
-locale	rubysupport	en-US	jar:chrome/rubysupport.jar!/locale/en-US/rubysupport/
-locale	rubysupport	ja-JP	jar:chrome/rubysupport.jar!/locale/ja-JP/rubysupport/
+locale	rubysupport	en-US	locale/en-US/rubysupport/
+locale	rubysupport	ja-JP	locale/ja-JP/rubysupport/

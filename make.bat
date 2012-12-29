@@ -1,3 +1,3 @@
 copy buildscript\makexpi.sh .\
-bash makexpi.sh rubysupport version=0
+bash makexpi.sh -n rubysupport -o
 del makexpi.sh
