@@ -10,7 +10,8 @@
                    em:description="Adds XHTML Ruby support. Ruby texts will be rendered above the base texts, as a small text."
                    em:homepageURL="http://piro.sakura.ne.jp/xul/_rubysupport.html.en"
                    em:iconURL="chrome://rubysupport/content/icon.png"
-                   em:optionsURL="chrome://rubysupport/content/config.xul">
+                   em:optionsURL="chrome://rubysupport/content/config.xul"
+                   em:type="2">
 	<em:contributor>Takeshi Nishimura</em:contributor>
 
 
