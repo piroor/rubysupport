@@ -1,5 +1,8 @@
 # History
 
+ - master/HEAD
+   * Modified: "jar" archive is no longer included.
+   * Many tiny fixes. See the [commit log](https://github.com/piroor/rubysupport/commits/master) for more information.
  - 3.0.2009060901
    * Improved: Dynamic changes for RUBY elements, insertions and modifications of shown/hidden are observed. (Modifications of shown/hidden are observed only on Firefox 3.5 or later.)
    * Fixed: RUBY are disabled for abbreviations which have TITLE attribute equals to their content.
