@@ -1,4 +1,6 @@
-var RubyService = 
+(function() {
+var prefs = window['piro.sakura.ne.jp'].prefs;
+var RubyService = window.RubyService = 
 {
 	initialized : false,
 
@@ -107,7 +109,7 @@ var RubyService =
 	
 	updateGlobalStyleSheets : function() 
 	{
-		var enabled = this.getPref(this.kPREF_ENABLED);
+		var enabled = prefs.getPref(this.kPREF_ENABLED);
 
 		var sheet = this.IOService.newURI('chrome://rubysupport/content/styles/ruby.css', null, null);
 		if (
@@ -126,12 +128,12 @@ var RubyService =
 
 		sheet = this.IOService.newURI('chrome://rubysupport/content/styles/ruby-expanded-nopseuds.css', null, null);
 		if (
-			enabled && this.getPref(this.kPREF_NOPSEUDS) &&
+			enabled && prefs.getPref(this.kPREF_NOPSEUDS) &&
 			!this.SSS.sheetRegistered(sheet, this.SSS.AGENT_SHEET)
 			)
 			this.SSS.loadAndRegisterSheet(sheet, this.SSS.AGENT_SHEET);
 		else if (
-			(!enabled || !this.getPref(this.kPREF_NOPSEUDS)) &&
+			(!enabled || !prefs.getPref(this.kPREF_NOPSEUDS)) &&
 			this.SSS.sheetRegistered(sheet, this.SSS.AGENT_SHEET)
 			)
 			this.SSS.unregisterSheet(sheet, this.SSS.AGENT_SHEET);
@@ -141,7 +143,7 @@ var RubyService =
 	{
 		if (!aWindow.document) return false;
 
-		if (this.getPref(this.kPREF_PROGRESSIVE)) {
+		if (prefs.getPref(this.kPREF_PROGRESSIVE)) {
 			this.startProgressiveProcess(aWindow, aPending);
 		}
 		else {
@@ -167,8 +169,8 @@ var RubyService =
 				'contains(" ruby RUBY ", concat(" ", local-name(), " "))'
 			];
 
-		if (this.getPref(this.kPREF_EXPAND)) {
-			var list = this.getPref(this.kPREF_EXPAND_LIST);
+		if (prefs.getPref(this.kPREF_EXPAND)) {
+			var list = prefs.getPref(this.kPREF_EXPAND_LIST);
 			if (list)
 				conditions.push('contains(" '+list.toLowerCase()+' '+list.toUpperCase()+' ", concat(" ", local-name(), " ")) and @title');
 		}
@@ -216,7 +218,7 @@ var RubyService =
 	{
 		var doc = aWindow.document;
 
-		var unit = this.getPref(this.kPREF_PROGRESS_UNIT);
+		var unit = prefs.getPref(this.kPREF_PROGRESS_UNIT);
 		var target;
 		var count = 0;
 		while (
@@ -465,7 +467,7 @@ try{
 			return;
 
 		var root = aNode.ownerDocument.documentElement;
-		var mode = this.getPref(this.kPREF_EXPAND_MODE);
+		var mode = prefs.getPref(this.kPREF_EXPAND_MODE);
 		if (mode == 1) {
 			// ä˘Ç…ìWäJÇµÇΩó™åÍÇÕÇ‡Ç§ìWäJÇµÇ»Ç¢
 			var expanded = root.getAttribute(this.kEXPANDED) || '';
@@ -614,7 +616,7 @@ dump(e+'\n');
   
 	applyRubyAlign : function(aNode) 
 	{
-		var align = this.getPref(this.kSTYLE_ALIGN).toLowerCase();
+		var align = prefs.getPref(this.kSTYLE_ALIGN).toLowerCase();
 		aNode.setAttribute(this.kALIGN, align);
 		if (/left|start|right|end|center/.test(align)) return;
 
@@ -626,7 +628,7 @@ dump(e+'\n');
 	justifyText : function(aNode) 
 	{
 		var isWrapped = false;
-		var align = this.getPref(this.kSTYLE_ALIGN).toLowerCase();
+		var align = prefs.getPref(this.kSTYLE_ALIGN).toLowerCase();
 
 		// Ç‹Ç∏ÅAéöä‘Çí≤êÆÇ∑ÇÈëŒè€Ç©Ç«Ç§Ç©Çîªï 
 		var whole = aNode;
@@ -814,8 +816,8 @@ dump(e+'\n');
   
 	applyRubyOverhang : function(aNode) 
 	{
-		var overhang = this.getPref(this.kSTYLE_OVERHANG).toLowerCase();
-		var align = this.getPref(this.kSTYLE_ALIGN).toLowerCase();
+		var overhang = prefs.getPref(this.kSTYLE_OVERHANG).toLowerCase();
+		var align = prefs.getPref(this.kSTYLE_ALIGN).toLowerCase();
 		if (
 			overhang == 'none' ||
 			(overhang == 'start' && (align == 'left' || align == 'start')) ||
@@ -885,7 +887,7 @@ dump(e+'\n');
 	{
 		if (!this.isGecko19OrLater) return;
 
-		var stacking = this.getPref(this.kSTYLE_STACKING).toLowerCase();
+		var stacking = prefs.getPref(this.kSTYLE_STACKING).toLowerCase();
 		if (stacking == 'include-ruby') return;
 
 		var texts = this.getRubyTexts(aNode);
@@ -918,7 +920,7 @@ dump(e+'\n');
 
 		window.addEventListener('unload', this, false);
 
-		this.addPrefListener(this);
+		prefs.addPrefListener(this);
 
 		try {
 			this.updateGlobalStyleSheets();
@@ -943,7 +945,7 @@ dump(e+'\n');
 	initBrowser : function(aBrowser) 
 	{
 		aBrowser.addEventListener('DOMContentLoaded', this, true);
-		if (this.getPref(this.kPREF_OBSERVE_CHANGES)) {
+		if (prefs.getPref(this.kPREF_OBSERVE_CHANGES)) {
 			aBrowser.addEventListener('XHTMLRubyInserted', this, true, true);
 			aBrowser.addEventListener('MozAfterPaint', this, true);
 			aBrowser.__rubysupport__observeDynamicChanges = true;
@@ -1014,7 +1016,7 @@ dump(e+'\n');
 	{
 		window.removeEventListener('unload', this, false);
 
-		this.removePrefListener(this);
+		prefs.removePrefListener(this);
 
 		try {
 			this.destroyBrowsers();
@@ -1067,7 +1069,7 @@ dump(e+'\n');
 				return;
 
 			case 'DOMContentLoaded':
-				if (!this.getPref(this.kPREF_ENABLED)) return;
+				if (!prefs.getPref(this.kPREF_ENABLED)) return;
 				var node = aEvent.originalTarget || aEvent.target;
 				var doc = node.ownerDocument || node;
 				if (doc == document) return;
@@ -1076,7 +1078,7 @@ dump(e+'\n');
 
 			case 'XHTMLRubyInserted':
 			case 'MozAfterPaint':
-				if (!this.getPref(this.kPREF_ENABLED)) return;
+				if (!prefs.getPref(this.kPREF_ENABLED)) return;
 				var target = aEvent.originalTarget || aEvent.target;
 				if (target instanceof Ci.nsIDOMElement)
 					target = target.ownerDocument.defaultView;
@@ -1118,7 +1120,7 @@ dump(e+'\n');
 	{
 		if (aTopic != 'nsPref:changed') return;
 
-		var value = this.getPref(aPrefName);
+		var value = prefs.getPref(aPrefName);
 		switch (aPrefName)
 		{
 			case this.kPREF_OBSERVE_CHANGES:
@@ -1200,7 +1202,7 @@ dump(e+'\n');
 	}
  
 }; 
-RubyService.__proto__ = window['piro.sakura.ne.jp'].prefs;
   
 window.addEventListener('load', RubyService, false); 
  
+})();
