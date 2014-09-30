@@ -1080,9 +1080,9 @@ dump(e+'\n');
 			case 'MozAfterPaint':
 				if (!prefs.getPref(this.kPREF_ENABLED)) return;
 				var target = aEvent.originalTarget || aEvent.target;
-				if (target instanceof Ci.nsIDOMElement)
+				if (target instanceof Element)
 					target = target.ownerDocument.defaultView;
-				else if (target instanceof Ci.nsIDOMDocument)
+				else if (target instanceof Document)
 					target = target.defaultView;
 				if (target.document == document ||
 					target.__rewindforward__processRubyNodesTimer)
