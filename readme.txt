@@ -1,3 +1,6 @@
+**Important note**:
+This project was completely obsolete because HTML5 Ruby is now available by default on Firefox 38 and later.
+XHTML Ruby was dead, it was ignored by all browser vendors...
 
 ========================================================================
           XHTMLルビサポート for Netscape 7 & Mozilla & Firefox
