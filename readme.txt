@@ -1,262 +1,263 @@
+
 ========================================================================
-          XHTML���r�T�|�[�g for Netscape 7 & Mozilla & Firefox
+          XHTMLルビサポート for Netscape 7 & Mozilla & Firefox
 ========================================================================
-[����       ] XHTML���r�T�|�[�g for Netscape 7 & Mozilla & Firefox
-[�o�[�W���� ] 1.4.2006100801
-[���       ] �t���[�\�t�g�E�F�A
-[�����     ] Piro(���c �m�u)
-[�ŏI�X�V   ] 2006/10/8
-[���k�`��   ] LHA
-[�����   ] Netscape 7.0 �ȏ゠�邢��Mozilla 1.0 �ȏオ���삷����B
-              �����ł�Windows 2000��ŁAMozilla Firefox 2.0 RC2 �ɂē���
-              �̊m�F���s���Ă��܂��B
+[名称       ] XHTMLルビサポート for Netscape 7 & Mozilla & Firefox
+[バージョン ] 1.4.2006100801
+[種別       ] フリーソフトウェア
+[制作者     ] Piro(下田 洋志)
+[最終更新   ] 2006/10/8
+[圧縮形式   ] LHA
+[動作環境   ] Netscape 7.0 以上あるいはMozilla 1.0 以上が動作する環境。
+              当方ではWindows 2000上で、Mozilla Firefox 2.0 RC2 にて動作
+              の確認を行っています。
 
-[�]��/�Ĕz�z] ���f�]�ځE�Ĕz�z�͎��R�ɍs���Ă��������č\���܂���B������
-              �����̂����J���邱�Ƃ��������܂���B�������N���W�b�g�͌���
-              ���̂��c���悤�ɂ��Ă��������B
-              ���̃p�b�P�[�W�Ɋ܂܂��R�[�h�̖w�ǂ� MPL 1.1, GPL 2.0,
-              ����� LGPL 2.1 �̃g���v�����C�Z���X�ƂȂ��Ă��܂��̂ŁA
-              �����̓_�ɂ��ẮA���ꂼ��̃��C�Z���X�̏����ɏ]���ĉ�
-              �����B
-              �Ȃ��A���Ђ̕t�^CD-ROM��\�t�g�E�F�A���֎��^���Ă���������
-              �ꍇ�́A�K�����O�ɂ��A���������B
+[転載/再配布] 無断転載・再配布は自由に行っていただいて構いません。改造し
+              たものを公開することも制限しません。ただしクレジットは元の
+              ものを残すようにしてください。
+              このパッケージに含まれるコードの殆どは MPL 1.1, GPL 2.0,
+              および LGPL 2.1 のトリプルライセンスとなっていますので、
+              これらの点については、それぞれのライセンスの条件に従って下
+              さい。
+              なお、書籍の付録CD-ROMやソフトウェア等へ収録していただける
+              場合は、必ず事前にご連絡下さい。
 
-[���쌠     ] ���̃p�b�P�[�W�Ɋ܂܂��v���O�����̒��쌠��Piro(���c �m
-              �u)���ۗL���܂��B�����B
-              �Ă������v���O�����ɒ��쌠���ĔF�߂���񂾂����H ������
-              UI��XML�����B�����C���X�^���X�̃}�[�N�A�b�v�ɒ��쌠�͔���
-              ���Ȃ��Ƃ����̂����̌����������悤�ȋC���c�c
+[著作権     ] このパッケージに含まれるプログラムの著作権はPiro(下田 洋
+              志)が保有します。多分。
+              ていうかプログラムに著作権って認められるんだっけ？ しかも
+              UIはXMLだし。文書インスタンスのマークアップに著作権は発生
+              しないというのが公の見解だったような気も……
 
-[�A����     ] piro.outsider.reflex@gmail.com
-[�z�z��     ] http://piro.sakura.ne.jp/
+[連絡先     ] piro.outsider.reflex@gmail.com
+[配布元     ] http://piro.sakura.ne.jp/
               http://hp.vector.co.jp/authors/VA016061/
 
 
 ========================================================================
-���ڎ�
+＊目次
 
-  �E�w�b�_
-  �E�ڎ�
-  �E�t�@�C���\��
-  �E�Љ�
-  �E�C���X�g�[���菇
-  �E�A���C���X�g�[���菇
-  �E�ӎ�
-  �E�Ɛ�
-  �E�X�V�����i�����j
-
-
-========================================================================
-���t�@�C���\��
-
-  �Ereadme.txt     : �戵����(���̃t�@�C��)
-  �Erubysupport.xpi: XPInstall Package�{��
-
- ���ǂ�����A�C���X�g�[����͍폜���Ă��܂��܂���B
+  ・ヘッダ
+  ・目次
+  ・ファイル構成
+  ・紹介
+  ・インストール手順
+  ・アンインストール手順
+  ・謝辞
+  ・免責
+  ・更新履歴（抜粋）
 
 
 ========================================================================
-���Љ�
+＊ファイル構成
 
-Moz/NS7 ��XHTML�̃��r��\���ł���悤�ɂ���g���@�\�ł��B�P�����r�E���G
-���r�̗����ɑΉ����Ă��܂��B�܂��A����̃t���X�y����� title �����ŗ^
-�����Ă���ꍇ�A��������r�Ƃ��ĕ\���ł��܂��B
+  ・readme.txt     : 取扱説明(このファイル)
+  ・rubysupport.xpi: XPInstall Package本体
 
-Advanced �i�ڍׁj�̒��ɉ����ݒ�p�l���ł́A���r�\���̗L�������A�����
-���r�\������ꍇ�ׂ̍����ݒ��ύX�ł��܂��B
+ ※どちらも、インストール後は削除してかまいません。
 
 
 ========================================================================
-���C���X�g�[���菇
+＊紹介
+
+Moz/NS7 でXHTMLのルビを表示できるようにする拡張機能です。単純ルビ・複雑
+ルビの両方に対応しています。また、略語のフルスペル情報が title 属性で与
+えられている場合、それをルビとして表示できます。
+
+Advanced （詳細）の中に加わる設定パネルでは、ルビ表示の有効無効、略語を
+ルビ表示する場合の細かい設定を変更できます。
+
+
+========================================================================
+＊インストール手順
 
   +-----------------------------------------------------------------+
-  | �����o�[�W��������̍X�V�̏ꍇ�A�C���X�g�[�����n�߂�O�ɁA�K    |
-  |   ���A�����́u�A���C���X�g�[���菇�v�ɏ]���ċ��o�[�W�������A    |
-  |   ���C���X�g�[�����Ă����ĉ������B���o�[�W�����̃t�@�C�����c��  |
-  |   �Ă���ꍇ�A�����Ɏ��s������ANS/Moz�̓���Ɏx�Ⴊ�o��ꍇ    |
-  |   ������܂��B                                                  |
-  | ���C���X�g�[�����s���O�ɁAPreferences�i�ݒ�j >                 |
-  |   Advanced�i�ڍׁj > Software Installation�i�\�t�g�E�F�A�̃C    |
-  |   ���X�g�[���j�ŁuEnable software installation�i�\�t�g�E�F�A    |
-  |   �̃C���X�g�[�����\�ɂ���j�v�Ƀ`�F�b�N�����ĉ������B      |
-  | ��Mozilla 1.3�ȑO�ł́A�Ǘ��Ҍ����łȂ��ƃC���X�g�[���ł��܂�   |
-  |   ��B�����͕K���Aroot���邢��admin�Ń��O�I�����čs���ĉ������B |
+  | ※旧バージョンからの更新の場合、インストールを始める前に、必    |
+  |   ず、次項の「アンインストール手順」に従って旧バージョンをア    |
+  |   ンインストールしておいて下さい。旧バージョンのファイルが残っ  |
+  |   ている場合、導入に失敗したり、NS/Mozの動作に支障が出る場合    |
+  |   があります。                                                  |
+  | ※インストールを行う前に、Preferences（設定） >                 |
+  |   Advanced（詳細） > Software Installation（ソフトウェアのイ    |
+  |   ンストール）で「Enable software installation（ソフトウェア    |
+  |   のインストールを可能にする）」にチェックを入れて下さい。      |
+  | ※Mozilla 1.3以前では、管理者権限でないとインストールできませ   |
+  |   ん。導入は必ず、rootあるいはadminでログオンして行って下さい。 |
   +-----------------------------------------------------------------+
 
-step1: �t�@�C���̃R�s�[
-  rubysupport.xpi���u���E�U�̃E�B���h�E�Ƀh���b�v����ƁA�C���X�g�[��
-  ���J�n����܂��B
-  �r���A���{��̌���p�b�N��o�^���邩�ǂ����̊m�F������̂ŁA�K�v�ɉ���
-  �đI�����ĉ������B
+step1: ファイルのコピー
+  rubysupport.xpiをブラウザのウィンドウにドロップすると、インストール
+  が開始されます。
+  途中、日本語の言語パックを登録するかどうかの確認があるので、必要に応じ
+  て選択して下さい。
 
-step2: NS/Moz�̍ċN��
-  �t�@�C���̃R�s�[���I�������ANS/Moz���ċN�����܂��B
-  �R�s�[�����t�@�C���Q���A�N������NS/Moz�ɓo�^����܂��B
+step2: NS/Mozの再起動
+  ファイルのコピーが終わったら、NS/Mozを再起動します。
+  コピーしたファイル群が、起動時にNS/Mozに登録されます。
 
 
 ========================================================================
-���A���C���X�g�[���̎菇
+＊アンインストールの手順
 
-Preferences�i�ݒ�j > Advanced�i�ڍׁj > XHTML Ruby Support�iXHTML���r
-�T�|�[�g�j�ŁuUninstall�i�A���C���X�g�[���j�v�Ə����ꂽ�{�^�����N���b�N
-����ƁA�����ŃA���C���X�g�[�����s���܂��B
+Preferences（設定） > Advanced（詳細） > XHTML Ruby Support（XHTMLルビ
+サポート）で「Uninstall（アンインストール）」と書かれたボタンをクリック
+すると、自動でアンインストールが行われます。
 
-�Ȃ��A�t�@�C���̍폜�͎����ł͍s���܂���B�\������郁�b�Z�[�W�ɏ]��
-�āA�u���E�U���I����������ɁA�w�肳�ꂽ�t�@�C�����蓮�ō폜���ĉ������B
+なお、ファイルの削除は自動では行われません。表示されるメッセージに従っ
+て、ブラウザを終了させた後に、指定されたファイルを手動で削除して下さい。
 
 
-�u���E�U���̋N���ł��Ȃ��Ȃǂً̋}�̏ꍇ�ɂ́A�ȉ��̎菇�ɏ]���āA�蓮
-�ŃA���C���X�g�[�����s���ĉ������B
+ブラウザ自体起動できないなどの緊急の場合には、以下の手順に従って、手動
+でアンインストールを行って下さい。
 
-  1. NS/Moz ���I��������B�ȈՋN���i�����N���j���L���ɂȂ��Ă���ꍇ�A
-     �^�X�N�g���C�̃A�C�R�����E�N���b�N���āA��������I��������B
-  2. ���[�U�[�v���t�@�C���f�B���N�g�����A NS/Moz ���C���X�g�[������
-     �f�B���N�g���i�Ǘ��Ҍ����ŃC���X�g�[�������ꍇ�j�̒��ɂ���
-     /chrome/ �t�H���_����A rubysupport.jar, overlayinfo �f�B���N�g��,
-     chrome.rdf ���폜����B
-  3. �Ǘ��Ҍ����ŃC���X�g�[�������ꍇ�Ainstalled-chrome.txt ����������
-     �ŊJ���A�ȉ��̍s���폜����B
-     �Econtent,install,url,jar:resource:/chrome/rubysupport.jar!
+  1. NS/Moz を終了させる。簡易起動（高速起動）が有効になっている場合、
+     タスクトレイのアイコンを右クリックして、そちらも終了させる。
+  2. ユーザープロファイルディレクトリか、 NS/Moz をインストールした
+     ディレクトリ（管理者権限でインストールした場合）の中にある
+     /chrome/ フォルダから、 rubysupport.jar, overlayinfo ディレクトリ,
+     chrome.rdf を削除する。
+  3. 管理者権限でインストールした場合、installed-chrome.txt をメモ帳等
+     で開き、以下の行を削除する。
+     ・content,install,url,jar:resource:/chrome/rubysupport.jar!
                            /content/rubysupport/
-     �Elocale,install,url,jar:resource:/chrome/rubysupport.jar!
+     ・locale,install,url,jar:resource:/chrome/rubysupport.jar!
                            /locale/en-US/rubysupport/
-    (�Elocale,install,url,jar:resource:/chrome/rubysupport.jar!
+    (・locale,install,url,jar:resource:/chrome/rubysupport.jar!
                            /locale/ja-JP/rubysupport/)
 
-���̎菇�ł͐ݒ���Ȃǂ��c�����܂܂ɂȂ�܂����A�u���E�U���g�p�����
-�ł͖�肠��܂���B
+この手順では設定情報などが残ったままになりますが、ブラウザを使用する上
+では問題ありません。
 
 
 ========================================================================
-���ӎ�
+＊謝辞
 
-���̃p�b�P�[�W�����J����ɂ�����A���r�\���̃X�^�C���V�[�g���l�Ă��ꂽ
-�k�������ihttp://www.akatsukinishisu.net/�j�ɐ[�����ӂ������܂��B
-
-
-========================================================================
-���Ɛ�
-
-���̃p�b�P�[�W���g�p�������ɂ�蔭�����������Ȃ��Q�ɑ΂��Ă��A�����
-�͈�؂̐ӔC�������܂���B�S�Ďg�p�҂̌l�̐ӔC�Ɋ�Â����̂Ƃ��܂��B
+このパッケージを公開するにあたり、ルビ表示のスタイルシートを考案された
+北村曉氏（http://www.akatsukinishisu.net/）に深く感謝いたします。
 
 
 ========================================================================
-���X�V�����i�����j
+＊免責
+
+このパッケージを使用した事により発生したいかなる障害に対しても、制作者
+は一切の責任を持ちません。全て使用者の個人の責任に基づくものとします。
+
+
+========================================================================
+＊更新履歴（抜粋）
 
 1.4.2006100801
-    �E����̃t���X�y�������r�\������@�\�𖳌��ɂ��Ă���ƁA���r
-      ���w�肳�ꂽ�����̏|�̕\���ʒu���␳����Ȃ������C��
+    ・略語のフルスペルをルビ表示する機能を無効にしていると、ルビ
+      が指定された部分の楯の表示位置が補正されない問題を修正
 1.4.2005110501
-    �E����̃t���X�y�������r�\������@�\�������Ȃ��Ȃ��Ă�����
-      ���C��
-    �EForefox�p�̐ݒ��ʂŃA���C���X�g�[���p�̃{�^�����\������
-      �Ă����̂��C��
+    ・略語のフルスペルをルビ表示する機能が働かなくなっていたの
+      を修正
+    ・Forefox用の設定画面でアンインストール用のボタンが表示され
+      ていたのを修正
 1.4.20050828
-    �E���r���w�肳�ꂽ�����̏c�̕\���ʒu��␳���鏈�������P
-      �iby Takeshi Nishimura�j
+    ・ルビが指定された部分の縦の表示位置を補正する処理を改善
+      （by Takeshi Nishimura）
 1.4.20050713
-    �EDeer Park Alpha2�œ��삵�Ȃ������C��
+    ・Deer Park Alpha2で動作しない問題を修正
 1.4.20050604
-    �EIE�p�̃��r�����߂���A���S���Y�����C��
-    �E����������XPath�����p����悤�ɂ���
+    ・IE用のルビを解釈するアルゴリズムを修正
+    ・内部処理にXPathを活用するようにした
 1.3.20050422
-    �EIE�p�̃��r�����߂���A���S���Y�����C��
+    ・IE用のルビを解釈するアルゴリズムを修正
 1.3.20050420
-    �E���r�x�[�X���������Ă��܂������C��
-    �E���������������C��
+    ・ルビベースが消失してしまう問題を修正
+    ・内部処理を少し修正
 1.3.20050419
-    �E���r�e�L�X�g�����r�x�[�X�ɂ߂荞��ł����̂����P
-    �E���r���w�肵����̕\���ʒu�̃Y���̕␳�A���S���Y�������P
+    ・ルビテキストがルビベースにめり込んでいたのを改善
+    ・ルビを指定した語の表示位置のズレの補正アルゴリズムを改善
 1.3.20050227
-    �EIE�p�̃��r�����߂���A���S���Y�������P
-    �EIE�p�̃��r�����߂��鏈���ŃG���[���N�����Ă����̂��C��
+    ・IE用のルビを解釈するアルゴリズムを改善
+    ・IE用のルビを解釈する処理でエラーが起こっていたのを修正
 1.3.20050224
-    �EIE�p�̃��r�����߂���A���S���Y�������P
+    ・IE用のルビを解釈するアルゴリズムを改善
 1.3.20050218
-    �EIE�p�̃��r�����߂���A���S���Y�������P
+    ・IE用のルビを解釈するアルゴリズムを改善
 1.3.20050121
-    �EIE�p�̃��r�����߂���A���S���Y�������P
+    ・IE用のルビを解釈するアルゴリズムを改善
 1.3.20050115
-    �EIE�p�̃��r�����߂���A���S���Y�������P�iby Takeshi Nishimura�j
-    �E�t���[�����̃y�[�W�̃��r���\������Ȃ������C���iby Takeshi
-      Nishimura�j
-    �Erbspan���w�肳�ꂽ���G���r�𐳂����\���ł��Ȃ������C���iby
-      Takeshi Nishimura�j
-    �E��������r�ŕ\������ݒ�̎��A�ŏ��ɓo�ꂷ��v�f�ł͂Ȃ��Ō��
-      �o�ꂷ��v�f���W�J����Ă��܂��Ă����̂��C��
+    ・IE用のルビを解釈するアルゴリズムを改善（by Takeshi Nishimura）
+    ・フレーム内のページのルビが表示されない問題を修正（by Takeshi
+      Nishimura）
+    ・rbspanが指定された複雑ルビを正しく表示できない問題を修正（by
+      Takeshi Nishimura）
+    ・略語をルビで表示する設定の時、最初に登場する要素ではなく最後に
+      登場する要素が展開されてしまっていたのを修正
 1.3.20040818
-    �EFirefox�̐ݒ�_�C�A���O���t���[�Y����\�����������̂��C��
+    ・Firefoxの設定ダイアログがフリーズする可能性があったのを修正
 1.3.20040523
-    �EFirefox�Őݒ�_�C�A���O���g����悤�ɂ���
+    ・Firefoxで設定ダイアログを使えるようにした
 1.3.20030612
-    �E�ŐV��Mozilla�Ő���ɓ��삵�Ȃ������C��
+    ・最新のMozillaで正常に動作しない問題を修正
 1.3.20030413
-    �E�v���t�@�C���f�B���N�g����overlays.rdf�ɃS�~���c���Ȃ��悤�ɂ���
-      �i���[�U�[�ʂɃC���X�g�[��������ŃA���C���X�g�[�����Ǘ��Ҍ�����
-        �ăC���X�g�[�������ꍇ�ɓ��삵�Ȃ����̑Ώ��j
+    ・プロファイルディレクトリのoverlays.rdfにゴミを残さないようにした
+      （ユーザー別にインストールした後でアンインストールし管理者権限で
+        再インストールした場合に動作しない問題の対処）
 1.3.20030405
-    �E���r�e�L�X�g���|�b�v�A�b�v�ł��Ȃ��Ȃ��Ă����̂��C��
-    �E�A���C���X�g�[���̃~�X���C��
+    ・ルビテキストをポップアップできなくなっていたのを修正
+    ・アンインストーラのミスを修正
 1.3.20021222
-    �E�y�[�W�Ƀ��r���܂܂�Ă��Ȃ��Ƃ��̓X�^�C���V�[�g�������Ȃ��悤�ɂ�
-      ��
-    �E�����Ɏ��s���Ă����̂��C��
+    ・ページにルビが含まれていないときはスタイルシートを加えないようにし
+      た
+    ・処理に失敗していたのを修正
 1.3.20021127
-    �E�ŋ߂�Mozilla�ŐV�K�^�u���J�����ɃG���[�ɂȂ�����C��
+    ・最近のMozillaで新規タブを開く時にエラーになる問題を修正
 1.3.20021120
-    �E�G���[�ŏ�������~���Ă����̂��C��
+    ・エラーで処理が停止していたのを修正
 1.3.20021119
-    �EgetBrowser()���g��Ȃ��悤�ɂ���
-    �E�v�f�̓����e�L�X�g�𓾂鏈�����C��
+    ・getBrowser()を使わないようにした
+    ・要素の内部テキストを得る処理を修正
 1.3.20021004
-    �EPhoenix��Themes and Extensions�p�l���ŗL��������ݒ�ł���悤�ɂ�
-      ��
+    ・PhoenixのThemes and Extensionsパネルで有効無効を設定できるようにし
+      た
 1.3.20021003
-    �EPhoenix�ւ̑Ή����ڂڂJ�n
+    ・Phoenixへの対応をぼつぼつ開始
 1.3.20020930
-    �EMozilla 1.2 �ȍ~�ɂ�����text/html�̃y�[�W�Ń��r���g���Ă���ꍇ
-      �ɃN���b�V����������C��
+    ・Mozilla 1.2 以降においてtext/htmlのページでルビが使われている場合
+      にクラッシュする問題を修正
 1.3.20020928
-    �E�m�[�h���X�g�̘A���Ɏ��s��������C��
-    �EArray��concat�Ńm�[�h���X�g������Ȃ��悤�ɂ���
+    ・ノードリストの連結に失敗する問題を修正
+    ・Arrayのconcatでノードリストを扱わないようにした
 1.3.20020925
-    �E���ȃA���C���X�g�[���@�\�������Ȃ������C��
-    �E�ȗ����ꂽ�}�[�N�A�b�v�̕⊮�iDOM�m�[�h�c���[�̏C���j���A
-      QuirksMode���邢��XHTML�ȊO��HTML�̏ꍇ�ɍs���悤�ɂ���
+    ・自己アンインストール機能が働かない問題を修正
+    ・省略されたマークアップの補完（DOMノードツリーの修復）を、
+      QuirksModeあるいはXHTML以外のHTMLの場合に行うようにした
 1.3.20020923
-    �EXBL���g�킸�ɏ�������悤�ɂ���
-    �E�v�f�̕\���ʒu�̂������ɕ␳����悤�ɂ���
+    ・XBLを使わずに処理するようにした
+    ・要素の表示位置のずれを常に補正するようにした
 1.2.20020918
-    �E���ȃA���C���X�g�[���@�\��Mozilla1.2a�ȍ~�œ����Ȃ������C��
+    ・自己アンインストール機能がMozilla1.2a以降で働かない問題を修正
 1.2.20020912
-    �E�P�̂œ���ł��Ȃ��悤�ɂȂ��Ă��������C��
-    �EIE�p�̕����̃��r�e�L�X�g�ɑΉ�
-    �E�v�f�̕\���ʒu�̂����␳����@�\�������Ȃ��ꍇ���������̂��C��
+    ・単体で動作できないようになっていた問題を修正
+    ・IE用の複数のルビテキストに対応
+    ・要素の表示位置のずれを補正する機能が働かない場合があったのを修正
 1.2.20020907
-    �E���r���ӂ����v�f�̕\���ʒu�̂�����AXBL��p���Ď����ŕ␳�ł����
-      ���ɂ����i���኱�s����ɂȂ�܂��j
+    ・ルビをふった要素の表示位置のずれを、XBLを用いて自動で補正できるよ
+      うにした（※若干不安定になります）
 1.1.20020830
-    �ENS6�p�̃R�[�h������
-    �E���G���r�̕\�����������s���Ă��Ȃ������̂��C��
-    �E���r��������c�[���`�b�v�ŕ\������悤�ɂ���
-    �E���ȃA���C���X�g�[���@�\��ǉ�
+    ・NS6用のコードを除去
+    ・複雑ルビの表示が正しく行われていなかったのを修正
+    ・ルビ文字列をツールチップで表示するようにした
+    ・自己アンインストール機能を追加
 1.0.20020821
-    �EIE�����̃��r�}�[�N�A�b�v��XHTML���r�ɕ⊮����@�\�������Ă��Ȃ���
-      ���̂��C��
+    ・IE向けのルビマークアップをXHTMLルビに補完する機能が働いていなかっ
+      たのを修正
 1.0.20020628
-    �EMozilla 1.0 �ȍ~�ł�"@mozilla.org/rdf/datasource;1?name=window-
-      mediator"�̑����"@mozilla.org/appshell/window-mediator;1"���g��
-      �悤�ɂ���
+    ・Mozilla 1.0 以降では"@mozilla.org/rdf/datasource;1?name=window-
+      mediator"の代わりに"@mozilla.org/appshell/window-mediator;1"を使う
+      ようにした
 1.0.20020619
-    �E�R�[�h�𐮗�
+    ・コードを整理
 1.0.20020531
-    �E�]�v�ȃR�[�h���������Ă����̂��C��
+    ・余計なコードが混入していたのを修正
 1.0.20020528
-    �E�R���e�L�X�g���j���[�g���Ƌ@�\�Փ˂��N���������C��
+    ・コンテキストメニュー拡張と機能衝突を起こす問題を修正
 1.0.20020527
-    �E�R���e�L�X�g���j���[�g������p�b�P�[�W�𕪗�
-    �E�ݒ�̕\�L�Ȃǂ������ύX
+    ・コンテキストメニュー拡張からパッケージを分離
+    ・設定の表記などを少し変更
 
 
 ------------------------------------------------------------------------
